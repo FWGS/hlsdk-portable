@@ -29,6 +29,8 @@
 //#include "maprules.h" //empty file
 #include "cbase.h"
 #include "player.h"
+#include "shake.h"
+#include "weapons.h"
 
 class CRuleEntity : public CBaseEntity
 {
@@ -198,7 +200,22 @@ void CGameEnd::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useT
 	if( !CanFireForActivator( pActivator ) )
 		return;
 
-	g_pGameRules->EndMultiplayerGame();
+	CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+	if(pEntity)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pEntity->pev);
+		if(pPlayer)
+		{
+			pPlayer->Clear_SayText();
+			pPlayer->EnableControl(FALSE);
+			pPlayer->m_trainning = 1;
+			UTIL_ScreenFade( pPlayer, Vector(0,0,0), 4.0, 6.0, 255, FFADE_OUT );
+			pPlayer->m_iClient_Gameover = -1;
+			pPlayer->pev->health = 0;
+			pPlayer->m_fGameOverTime = gpGlobals->time + 4;
+		}
+	}
+	//g_pGameRules->EndMultiplayerGame();
 }
 
 //
@@ -223,16 +240,23 @@ public:
 	inline	const char *MessageGet( void )	{ return STRING(pev->message); }
 
 private:
+	int		m_iszSentence;		// string index for idle animation
+	int		m_iszEntity;	// entity that is wanted for this sentence
+	int		m_iszPlay;
 
 	hudtextparms_t	m_textParms;
 };
 
 LINK_ENTITY_TO_CLASS( game_text, CGameText )
+LINK_ENTITY_TO_CLASS( game_saytext, CGameText );
 
 // Save parms as a block.  Will break save/restore if the structure changes, but this entity didn't ship with Half-Life, so
 // it can't impact saved Half-Life games.
 TYPEDESCRIPTION	CGameText::m_SaveData[] = 
 {
+	DEFINE_FIELD( CGameText, m_iszSentence, FIELD_STRING ),
+	DEFINE_FIELD( CGameText, m_iszEntity, FIELD_STRING ),
+	DEFINE_FIELD( CGameText, m_iszPlay, FIELD_STRING ),
 	DEFINE_ARRAY( CGameText, m_textParms, FIELD_CHARACTER, sizeof(hudtextparms_t) ),
 };
 
@@ -300,6 +324,21 @@ void CGameText::KeyValue( KeyValueData *pkvd )
 		m_textParms.fxTime = atof( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "sentence"))
+	{
+		m_iszSentence = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "entity"))
+	{
+		m_iszEntity = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "m_iszPlay"))
+	{
+		m_iszPlay = ALLOC_STRING( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CRulePointEntity::KeyValue( pkvd );
 }
@@ -309,15 +348,343 @@ void CGameText::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 	if( !CanFireForActivator( pActivator ) )
 		return;
 
-	if( MessageToAll() )
+	if ( FClassnameIs( pev, "game_saytext" ) )
 	{
-		UTIL_HudMessageAll( m_textParms, MessageGet() );
+		if(pev->frags == 1)
+		{
+			CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+			if ( pEntity )
+			{
+				CBaseEntity *pEntity2 = UTIL_FindEntityByTargetname( NULL, "legless_bar" );
+				if ( pEntity2 ){
+					if ( pEntity2->pev->deadflag == DEAD_NO )
+					{
+						CBaseMonster *pEnemyMonster;
+						pEnemyMonster = pEntity2->MyMonsterPointer();
+						if(pEnemyMonster)
+						{
+							pEnemyMonster->m_rpgms_inteam = 4;
+						}
+						CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pEntity->pev);
+						pPlayer->m_skill_defguard = 2;
+						pPlayer->TeamMate_Nagamatagi_Allclear(0);
+						
+						char text[256];
+						sprintf( text, "- Kadoma Learning New Skill! (Defensive array)\n");
+						UTIL_SayTextAll( text,this );
+						sprintf( text, "- Aimed friendly units press T (Use / Cancel) to form a defensive formation.\n");
+						UTIL_SayTextAll( text,this );
+					}
+				}
+			}
+		}
+		else if(pev->frags == 2)
+		{
+			CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+			if ( pEntity )
+			{
+				CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pEntity->pev);
+				pPlayer->m_music_save = 18;
+				CLIENT_COMMAND(pPlayer->edict(), "cd loop 8\n");
+				//SERVER_COMMAND("mp3 loop media/music23.mp3\n");
+			}
+		}
+		else if(pev->frags == 3)
+		{
+			CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+			if ( pEntity )
+			{
+				CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pEntity->pev);
+
+				MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+				WRITE_BYTE( TE_LARGEFUNNEL );
+				WRITE_COORD( pev->origin.x );
+				WRITE_COORD( pev->origin.y );
+				WRITE_COORD( pev->origin.z );
+				WRITE_SHORT( g_sModelIndexFlareGlow );
+				WRITE_SHORT( 1 );
+				MESSAGE_END();
+
+				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "newadd/Flash3.wav", 1, 0);
+				UTIL_ScreenFade( pPlayer, Vector(255,255,255), 1, 1, 255, FFADE_IN );
+
+				pPlayer->pev->origin = pev->origin + Vector(0,0,36);
+				pPlayer->pev->health = pPlayer->pev->max_health;
+				pPlayer->TeamMate_Nagamatagi_RespawnStone(1);
+				pPlayer->TeamMate_Nagamatagi_Teleport(4);
+
+				UTIL_Remove( this );
+			}
+		}
+		else if(pev->frags >= 4)
+		{
+			CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+			if ( pEntity )
+			{
+				CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pEntity->pev);
+				if(m_textParms.holdTime > 0)
+				{
+					pPlayer->m_fNextClearTextTime = gpGlobals->time + m_textParms.holdTime;
+				}
+				else if(m_textParms.holdTime <= -1)
+				{
+					pPlayer->Clear_SayText();
+					return;
+				}
+			}
+
+			char text[256];
+			if(pev->frags == 4)
+			{
+				sprintf( text, "- BOSS RUSH Mode\n");
+				UTIL_SayTextAll( text,this );
+				
+				sprintf( text, "- Fully armed in Kadoma's strongest state, defeat nine bosses in a row.\n");
+				UTIL_SayTextAll( text,this );
+				sprintf( text, "- (Saving and loading are prohibited)\n");
+				UTIL_SayTextAll( text,this );
+
+				return;
+			}
+			
+			if(pev->frags == 5)
+			{
+				sprintf( text, "- HeadCrab Ball Mode\n");
+				UTIL_SayTextAll( text,this );
+		
+				sprintf( text, "- Continuously knock the headcrab thrown by the enemy into the air.\n");
+				UTIL_SayTextAll( text,this );
+				sprintf( text, "- (Saving and loading are prohibited)\n");
+				UTIL_SayTextAll( text,this );
+			
+				return;
+			}
+		}
+		else
+		{
+			CBaseEntity *pEntity2 = UTIL_FindEntityByTargetname( NULL, STRING(m_iszEntity) );
+			if ( pEntity2 )
+			{
+				if ( pEntity2->pev->deadflag == DEAD_NO )
+				{
+
+					CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+					if ( pEntity )
+					{
+					CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pEntity->pev);
+						if(m_textParms.holdTime > 0)
+						{
+							pPlayer->m_fNextClearTextTime = gpGlobals->time + m_textParms.holdTime;
+						}
+						else if(m_textParms.holdTime <= -1)
+						{
+							pPlayer->Clear_SayText();
+							return;
+						}
+					}
+						
+					char text[256];
+					if ( FStrEq(STRING(pev->targetname), "legless_say1") )
+					{
+						sprintf( text, "Guard: Ugh, this is bad. I got shot, and lost a leg.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "legless_say2") )
+					{
+						sprintf( text, "Guard: Do you know who's behind this?\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "legless_say3") )
+					{
+						sprintf( text, "Guard: Do you know how many of us have died?\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "legless_say4") )
+					{
+						sprintf( text, "Guard: I can't go on; you must help me.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "legless_say7") )
+					{
+						sprintf( text, "Guard: I hope you do better than I did.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "scisaytext_1") )
+					{
+						sprintf( text, "Scientist: Hold on, I'll let you in.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "scisaytext_2") )
+					{
+						sprintf( text, "Scientist: Protect us, and we'll get you some valuable supplies.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "scisaytext_3") )
+					{
+						sprintf( text, "Scientist: We just want to get out alive.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "scisaytext_4") )
+					{
+						sprintf( text, "Scientist: We'll do anything!\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "scisaytext_5") )
+					{
+						sprintf( text, "Scientist: We'll stop our awful experiments.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "ecysci_saytext1") )
+					{
+						sprintf( text, "Scientist: Oh, I really do miss the 2D world.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "ecysci_saytext2") )
+					{
+						sprintf( text, "Scientist: You think the same?\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "ecysci_saytext3") )
+					{
+						sprintf( text, "Scientist: Oh, come on.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "ecysci_saytext4") )
+					{
+						sprintf( text, "Scientist: I want to give my right brain a break.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "eat_shitfood") )
+					{
+						sprintf( text, "???: Mmmm yummy.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "medic_ass_sci_text1") )
+					{
+						sprintf( text, "Guard: What are you doing?\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "medic_ass_sci_text2") )
+					{
+						sprintf( text, "Scientist: You look awful.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "medic_ass_sci_text3") )
+					{
+						sprintf( text, "Scientist: I think you need medical attention.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "medic_ass_sci_text4") )
+					{
+						sprintf( text, "Guard: Come on, old man!\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "medic_ass_sci_text5") )
+					{
+						sprintf( text, "Guard: Are you looking for trouble?\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "medic_ass_sci_text6") )
+					{
+						sprintf( text, "Scientist: This might hurt a bit.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "xen_power_sci_text1") )
+					{
+						sprintf( text, "Scientist: The antiproton spectrometer says 114514%.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "xen_power_sci_text2") )
+					{
+						sprintf( text, "Scientist: This is the purest sample we've seen - this is once-in-a-lifetime.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "xen_power_sci_text3") )
+					{
+						sprintf( text, "Scientist: Its power is greatly concentrated - very useful.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "xen_power_sci_text4") )
+					{
+						sprintf( text, "Scientist: Try it!\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "xen_power_sci_text5") )
+					{
+						sprintf( text, "Scientist: If anyone can end this, it will be what's left of the Lambda team on the other end.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "xen_power_sci_text6") )
+					{
+						sprintf( text, "Scientist: It's hell over there. Lots of monsters.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "xen_power_sci_text7") )
+					{
+						sprintf( text, "Scientist: It has a big gate, leading to another world.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "xen_power_sci_text8") )
+					{
+						sprintf( text, "Scientist: You'll know it when you see it.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "xen_power_sci_text9") )
+					{
+						sprintf( text, "Scientist: You must kill Gman and Doma before they get any stronger.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "xen_power_sci_text10") )
+					{
+						sprintf( text, "Scientist: You can trust them. You can trust all of us. Good luck.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "bar_biomssay_text1") )
+					{
+						sprintf( text, "Guard: What is this all about?\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "bar_biomssay_text2") )
+					{
+						sprintf( text, "Guard: You seen anything like this?\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "eyelambdabar_saytext1") )
+					{
+						sprintf( text, "Guard: Hey, wait!\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "eyelambdabar_saytext2") )
+					{
+						sprintf( text, "Guard: If it sees you, you'll die.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "eyelambdabar_saytext3") )
+					{
+						sprintf( text, "Guard: Stay in the safe zone.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "lambda_sci_tripsay1") )
+					{
+						sprintf( text, "Scientist: Are you sure someone will rescue us?\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "lambda_sci_tripsay2") )
+					{
+						sprintf( text, "Scientist: I don't know.\n");
+					}
+					else if ( FStrEq(STRING(pev->targetname), "xenworld_telp_sbtn") )
+					{
+						sprintf( text, "Scientist: We have total confidence in you.\n");
+					}
+
+					if (text[0] != '\0')
+					{
+						UTIL_SayTextAll( text,this );
+					}
+					else if (!FStringNull(pev->message))
+					{
+						UTIL_SayTextAll( MessageGet(),this );
+					}
+
+					if (!FStringNull(m_iszPlay) || !FStringNull(m_iszSentence))
+					{
+						CBaseMonster *pEnemyMonster;
+						pEnemyMonster = pEntity2->MyMonsterPointer();
+						if(pEnemyMonster)
+						{
+							if (!FStringNull(m_iszPlay))
+							{
+								pEnemyMonster->pev->sequence = pEnemyMonster->LookupSequence( STRING(m_iszPlay) );
+								pEnemyMonster->ResetSequenceInfo( );
+								pEnemyMonster->pev->frame = 0;
+								pEnemyMonster->SetState( MONSTERSTATE_HUNT );
+								pEnemyMonster->pev->angles = pev->angles;
+							}
+							EMIT_SOUND_DYN( pEnemyMonster->edict(), CHAN_VOICE, STRING(m_iszSentence), VOL_NORM, 0, 0, PITCH_NORM );
+						}
+					}
+				}
+			}
+		}
+
+		UTIL_Remove( this );
 	}
 	else
 	{
-		if( pActivator && pActivator->IsNetClient() )
+		if( MessageToAll() )
 		{
-			UTIL_HudMessage( pActivator, m_textParms, MessageGet() );
+			UTIL_HudMessageAll( m_textParms, MessageGet() );
+		}
+		else
+		{
+			if( pActivator && pActivator->IsNetClient() )
+			{
+				UTIL_HudMessage( pActivator, m_textParms, MessageGet() );
+			}
 		}
 	}
 }
@@ -611,6 +978,18 @@ void CGamePlayerHurt::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 
 	if( pActivator->IsPlayer() )
 	{
+		if(pev->impulse == 1)
+		{
+			if(pev->origin.z < pActivator->pev->origin.z)
+				return;
+		}
+		if(pev->impulse == 2)
+		{
+			pActivator->pev->origin.z = pActivator->pev->origin.z + 768;
+			UTIL_Remove( this );
+			return;
+		}
+
 		if( pev->dmg < 0 )
 			pActivator->TakeHealth( -pev->dmg, DMG_GENERIC );
 		else

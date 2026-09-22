@@ -25,6 +25,8 @@
 #include <string.h>
 #include <stdio.h>
 
+extern int iMouseInUse;
+
 DECLARE_MESSAGE( m_Battery, Battery )
 
 int CHudBattery::Init( void )
@@ -71,7 +73,7 @@ int CHudBattery::MsgFunc_Battery( const char *pszName,  int iSize, void *pbuf )
 
 int CHudBattery::Draw( float flTime )
 {
-	if( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH )
+	if( iMouseInUse || gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH )
 		return 1;
 
 	int r, g, b, x, y, a;
@@ -80,7 +82,7 @@ int CHudBattery::Draw( float flTime )
 	rc = *m_prc2;
 	rc.top  += m_iHeight * ( (float)( 100 - ( Q_min( 100, m_iBat ) ) ) * 0.01f );	// battery can go from 0 to 100 so * 0.01 goes from 0 to 1
 
-	UnpackRGB( r, g, b, RGB_YELLOWISH );
+	UnpackRGB( r, g, b, RGB_WHITE );
 
 	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
 		return 1;

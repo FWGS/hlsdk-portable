@@ -24,8 +24,12 @@
 #include "doors.h"
 #include "game.h"
 #include "weapons.h"
+#include "player.h"
+#include "shake.h"
 
 extern void SetMovedir( entvars_t *ev );
+
+extern DLL_GLOBAL int		g_restore_fix;
 
 #define noiseMoving noise1
 #define noiseArrived noise2
@@ -38,6 +42,8 @@ public:
 	virtual void KeyValue( KeyValueData *pkvd );
 	virtual void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	virtual void Blocked( CBaseEntity *pOther );
+	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
 
 	virtual int ObjectCaps( void ) 
 	{ 
@@ -48,9 +54,15 @@ public:
 	};
 	virtual int Save( CSave &save );
 	virtual int Restore( CRestore &restore );
+	void EXPORT		Die( void );
 	static TYPEDESCRIPTION m_SaveData[];
 
 	virtual void SetToggleState( int state );
+
+	int pGibName;
+	int pGibName2;
+	int pGibName3;
+	int pGibName4;
 
 	// used to selectivly override defaults
 	void EXPORT DoorTouch( CBaseEntity *pOther );
@@ -264,10 +276,285 @@ touch or takedamage doors).
 */
 
 LINK_ENTITY_TO_CLASS( func_door, CBaseDoor )
+LINK_ENTITY_TO_CLASS( func_door_breaker, CBaseDoor );
+LINK_ENTITY_TO_CLASS( func_door_toggle, CBaseDoor );
 //
 // func_water - same as a door. 
 //
 LINK_ENTITY_TO_CLASS( func_water, CBaseDoor )
+
+void CBaseDoor::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+{
+	if ( (FClassnameIs( pev, "func_door_breaker" ) || FClassnameIs ( pev, "func_door_rotating_breaker" ) ) && pev->armortype != 3 )
+	{
+		if ( pev->dmgtime != gpGlobals->time)
+		{
+			pev->dmgtime = gpGlobals->time;
+			UTIL_WhiteSparks( ptr->vecEndPos, ptr->vecPlaneNormal, 9, 5, 5, 100 );//puntos
+		}
+	}
+	CBaseDelay::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+}
+
+void CBaseDoor::Die( void )
+{
+	Vector vecSpot;// shard origin
+	Vector vecVelocity;// shard velocity
+	CBaseEntity *pEntity = NULL;
+	char cFlag = 0;
+	int pitch;
+	float fvol;
+	
+	pitch = 95 + RANDOM_LONG(0,29);
+
+	if (pitch > 97 && pitch < 103)
+		pitch = 100;
+
+	// The more negative pev->health, the louder
+	// the sound should be.
+
+	fvol = 1.0;
+
+	if(pev->armortype == 3)
+	{
+		switch ( RANDOM_LONG(0,1) )
+		{
+		case 0:	
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustglass1.wav", fvol, ATTN_NORM, 0, pitch);	
+			break;
+		case 1:	
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustglass2.wav", fvol, ATTN_NORM, 0, pitch);	
+			break;
+		}
+		cFlag = BREAK_GLASS;
+	}
+	else if(pev->armortype == 2)
+	{
+		switch ( RANDOM_LONG(0,1) )
+		{
+		case 0:	
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustflesh1.wav", fvol, ATTN_NORM, 0, pitch);	
+			break;
+		case 1:	
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustflesh2.wav", fvol, ATTN_NORM, 0, pitch);	
+			break;
+		}
+		cFlag = BREAK_WOOD;
+	}
+	else if(pev->armortype == 1)
+	{
+		switch ( RANDOM_LONG(0,1) )
+		{
+		case 0:	
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustcrate1.wav", fvol, ATTN_NORM, 0, pitch);	
+			break;
+		case 1:	
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustcrate2.wav", fvol, ATTN_NORM, 0, pitch);	
+			break;
+		}
+		cFlag = BREAK_WOOD;
+	}
+	else
+	{
+		switch ( RANDOM_LONG(0,1) )
+		{
+		case 0:	
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustmetal1.wav", fvol, ATTN_NORM, 0, pitch);	
+			break;
+		case 1:	
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustmetal2.wav", fvol, ATTN_NORM, 0, pitch);	
+			break;
+		}
+		cFlag = BREAK_METAL;
+	}
+    
+	vecVelocity.x = 0;
+	vecVelocity.y = 0;
+	vecVelocity.z = 0;
+
+	vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
+
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
+		WRITE_BYTE( TE_BREAKMODEL);
+
+		// position
+		WRITE_COORD( vecSpot.x );
+		WRITE_COORD( vecSpot.y );
+		WRITE_COORD( vecSpot.z );
+
+		// size
+		WRITE_COORD( pev->size.x);
+		WRITE_COORD( pev->size.y);
+		WRITE_COORD( pev->size.z);
+
+		// velocity
+		WRITE_COORD( vecVelocity.x ); 
+		WRITE_COORD( vecVelocity.y );
+		WRITE_COORD( vecVelocity.z );
+
+		// randomization
+		WRITE_BYTE( 10 ); 
+
+		// Model
+		if(pev->armortype == 3)
+		{
+			WRITE_SHORT( pGibName4 );	//model id#
+		}
+		else if(pev->armortype == 2)
+		{
+			WRITE_SHORT( pGibName3 );	//model id#
+		}
+		else if(pev->armortype == 1)
+		{
+			WRITE_SHORT( pGibName2 );	//model id#
+		}
+		else
+		{
+			WRITE_SHORT( pGibName );	//model id#
+		}
+
+		// # of shards
+		WRITE_BYTE( 0 );	// let client decide
+
+		// duration
+		WRITE_BYTE( 100 );// 10.0 seconds
+
+		// flags
+		WRITE_BYTE( cFlag );
+	MESSAGE_END();
+
+	float size = pev->size.x;
+	if ( size < pev->size.y )
+		size = pev->size.y;
+	if ( size < pev->size.z )
+		size = pev->size.z;
+
+	// !!! HACK  This should work!
+	// Build a box above the entity that looks like an 8 pixel high sheet
+	Vector mins = pev->absmin;
+	Vector maxs = pev->absmax;
+	mins.z = pev->absmax.z;
+
+	if(pev->armortype == 2){
+	SpawnBlood(vecSpot, BLOOD_COLOR_RED, 200);
+	FX_Explosion( vecSpot, 236 );
+	}
+
+	if(pev->armortype == 0 && pev->frags != 6)
+	{
+		FX_Explosion( vecSpot, EXPLOSION_TRIPMINE );
+		FX_Trail( vecSpot, entindex(), (UTIL_PointContents(pev->origin) == CONTENT_WATER)?PROJ_M203_DETONATE_WATER:PROJ_M203_DETONATE );
+		::RadiusDamage2( vecSpot, pev, pev, 150, 400, CLASS_NONE, DMG_BLAST);
+
+		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, vecSpot );
+			WRITE_BYTE( TE_EXPLOSION);
+			WRITE_COORD( vecSpot.x );
+			WRITE_COORD( vecSpot.y );
+			WRITE_COORD( vecSpot.z );
+			WRITE_SHORT( g_sModelIndexFireball );
+			WRITE_BYTE( 0 ); // no sprite
+			WRITE_BYTE( 15  ); // framerate
+			WRITE_BYTE( TE_EXPLFLAG_NONE );
+		MESSAGE_END();
+		
+		maxs.z += 8;
+	}
+}
+
+int CBaseDoor :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
+{
+	if(bitsDamageType == DMG_OPEN_DOOR)
+	{
+		if (m_toggle_state == TS_AT_BOTTOM || FBitSet(pev->spawnflags, SF_DOOR_NO_AUTO_RETURN) && m_toggle_state == TS_AT_TOP)
+		{
+			if (FStringNull ( pev->targetname ) && pevAttacker )
+			{
+				CBaseEntity *pEntity = GetClassPtr((CBaseEntity *)pevAttacker);
+				m_hActivator = pEntity;
+				DoorActivate();
+				return 0;
+			}
+		}
+	}
+	
+	if(pev->takedamage == DAMAGE_NO)
+		return 0;
+	
+	if(!FClassnameIs ( pev, "func_door_breaker" ) && !FClassnameIs ( pev, "func_door_rotating_breaker" ) )
+		return 0;
+	
+	Vector	vecTemp;
+
+	// if Attacker == Inflictor, the attack was a melee or other instant-hit attack.
+	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin). 
+	if ( pevAttacker == pevInflictor )	
+	{
+		vecTemp = pevInflictor->origin - ( pev->absmin + ( pev->size * 0.5 ) );
+	}
+	else
+	// an actual missile was involved.
+	{
+		vecTemp = pevInflictor->origin - ( pev->absmin + ( pev->size * 0.5 ) );
+	}
+		
+	pev->health -= flDamage;
+	if (pev->health <= 0)
+	{
+		Killed( pevAttacker, GIB_NORMAL );
+		Die();
+		UTIL_Remove( this );
+		return 0;
+	}
+
+	// Make a shard noise each time func breakable is hit.
+	// Don't play shard noise if cbreakable actually died.
+	int pitch;
+	float fvol;
+	char *rgpsz[6];
+	int i;
+
+	if (RANDOM_LONG(0,2))
+	{
+		pitch = PITCH_NORM;
+	}
+	else
+	{
+		pitch = 95 + RANDOM_LONG(0,34);
+	}
+
+	fvol = RANDOM_FLOAT(0.75, 1.0);
+
+	if(pev->armortype == 3)
+	{
+		rgpsz[0] = "debris/glass1.wav";
+		rgpsz[1] = "debris/glass2.wav";
+		rgpsz[2] = "debris/glass3.wav";
+	}
+	else if(pev->armortype == 2)
+	{
+		rgpsz[0] = "debris/flesh1.wav";
+		rgpsz[1] = "debris/flesh2.wav";
+		rgpsz[2] = "debris/flesh3.wav";
+	}
+	else if(pev->armortype == 1)
+	{
+		rgpsz[0] = "debris/wood1.wav";
+		rgpsz[1] = "debris/wood2.wav";
+		rgpsz[2] = "debris/wood3.wav";
+	}
+	else
+	{
+		rgpsz[0] = "debris/metal1.wav";
+		rgpsz[1] = "debris/metal3.wav";
+		rgpsz[2] = "debris/metal2.wav";
+	}
+
+	i = 2;
+	
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, rgpsz[RANDOM_LONG(0,i-1)], fvol, ATTN_NORM, 0, pitch);
+
+	return 1;
+}
 
 void CBaseDoor::Spawn()
 {
@@ -311,6 +598,22 @@ void CBaseDoor::Spawn()
 
 	m_toggle_state = TS_AT_BOTTOM;
 
+	if ( FClassnameIs( pev, "func_door_toggle" ) )
+	{
+		pev->solid = SOLID_NOT;
+		pev->effects |= EF_NODRAW;
+	}
+
+	if ( FClassnameIs( pev, "func_door_breaker" ) || FClassnameIs ( pev, "func_door_rotating_breaker" ) )
+	{
+		pev->takedamage = DAMAGE_YES;
+	}
+
+	if(pev->impulse == 1)
+	{
+		pev->flags |= FL_MONSTERCLIP;
+	}
+
 	// if the door is flagged for USE button activation only, use NULL touch function
 	if( FBitSet( pev->spawnflags, SF_DOOR_USE_ONLY ) )
 	{
@@ -332,6 +635,46 @@ void CBaseDoor::Precache( void )
 {
 	const char *pszSound;
 	BOOL NullSound = FALSE;
+
+	if (FClassnameIs(pev, "func_door_breaker") || FClassnameIs ( pev, "func_door_rotating_breaker" ) )
+	{
+		if(pev->armortype == 3)
+		{
+			pGibName4 = PRECACHE_MODEL("models/glassgibs.mdl");
+			PRECACHE_SOUND("debris/glass1.wav");
+			PRECACHE_SOUND("debris/glass2.wav");
+			PRECACHE_SOUND("debris/glass3.wav");
+			PRECACHE_SOUND("debris/bustglass1.wav");
+			PRECACHE_SOUND("debris/bustglass2.wav");
+		}
+		else if(pev->armortype == 2)
+		{
+			pGibName3 = PRECACHE_MODEL("models/fleshgibs.mdl");
+			PRECACHE_SOUND("debris/flesh1.wav");
+			PRECACHE_SOUND("debris/flesh2.wav");
+			PRECACHE_SOUND("debris/flesh3.wav");
+			PRECACHE_SOUND("debris/bustflesh1.wav");
+			PRECACHE_SOUND("debris/bustflesh2.wav");
+		}
+		else if(pev->armortype == 1)
+		{
+			pGibName2 = PRECACHE_MODEL("models/woodgibs.mdl");
+			PRECACHE_SOUND("debris/wood1.wav");
+			PRECACHE_SOUND("debris/wood2.wav");
+			PRECACHE_SOUND("debris/wood3.wav");
+			PRECACHE_SOUND("debris/bustcrate1.wav");
+			PRECACHE_SOUND("debris/bustcrate2.wav");
+		}
+		else
+		{
+			pGibName = PRECACHE_MODEL("models/metalplategibs.mdl");
+			PRECACHE_SOUND("debris/metal1.wav");
+			PRECACHE_SOUND("debris/metal2.wav");
+			PRECACHE_SOUND("debris/metal3.wav");
+			PRECACHE_SOUND("debris/bustmetal1.wav");
+			PRECACHE_SOUND("debris/bustmetal2.wav");
+		}
+	}
 
 	// set the door's "in-motion" sound
 	switch( m_bMoveSnd )
@@ -365,6 +708,18 @@ void CBaseDoor::Precache( void )
 			break;
 		case 10:
 			pszSound = "doors/doormove10.wav";
+			break;
+		case 11:
+			pszSound = "doors/doormove11.wav";
+			break;
+		case 12:
+			pszSound = "doors/doormove12.wav";
+			break;
+		case 13:
+			pszSound = "doors/doormove13.wav";
+			break;
+		case 14:
+			pszSound = "doors/doortrain_move.wav";
 			break;
 		case 0:
 		default:
@@ -520,9 +875,291 @@ void CBaseDoor::Precache( void )
 //
 void CBaseDoor::DoorTouch( CBaseEntity *pOther )
 {
+	if(pev->frags > 0)
+	{
+		if ( !(pOther->pev->flags & FL_CLIENT) )
+			return;
+	}
+
+	entvars_t*	pevToucher = pOther->pev;
+
+	if(pev->frags == 1)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+		if(pPlayer)
+		{
+			if(pPlayer->m_fGlodenKey)
+			{
+				pPlayer->m_fGlodenKey -= 1;
+				pPlayer->MenuItem_remove(3);
+				m_hActivator = pOther;// remember who activated the door
+
+				if (DoorActivate( ))
+					SetTouch( NULL ); // Temporarily disable the touch function, until movement is finished.
+
+				pev->frags = 0;
+			}
+			else
+			{
+				UTIL_CenterPrintAll( "Need Gold Keys" );
+				PlayLockSounds(pev, &m_ls, TRUE, FALSE);
+			}
+			return;
+		}
+	}
+	else if(pev->frags == 2)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+		if(pPlayer)
+		{
+			CBaseEntity *pEvent = Create( "main_cg_event_new", pevToucher->origin, Vector(0,180,0), NULL );
+			pEvent->pev->armortype = 5;
+			pev->frags = 0;
+			return;
+		}
+	}
+	else if(pev->frags == 3)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+		if(pPlayer)
+		{
+			if(pPlayer->m_fGenerenKey)
+			{
+				pPlayer->m_fGenerenKey = FALSE;
+				pPlayer->MenuItem_remove(4);
+				m_hActivator = pOther;// remember who activated the door
+
+				if (DoorActivate( ))
+					SetTouch( NULL ); // Temporarily disable the touch function, until movement is finished.
+
+				pev->frags = 0;
+			}
+			else
+			{
+				UTIL_CenterPrintAll( "Need Generic Keys" );
+				PlayLockSounds(pev, &m_ls, TRUE, FALSE);
+			}
+			return;
+		}
+	}
+	else if(pev->frags == 4)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+		if(pPlayer)
+		{
+			if( g_restore_fix <= 0)
+			{
+
+				char text[256];
+				sprintf( text, "- You passed the Training room!\n");
+				UTIL_SayTextAll( text,this );
+
+				pPlayer->EnableControl(FALSE);
+				pPlayer->m_trainning = 1;
+				UTIL_ScreenFade( pPlayer, Vector(0,0,0), 4.0, 6.0, 255, FFADE_OUT );
+				pPlayer->m_iClient_Gameover = 3;
+				pPlayer->m_fGameOverTime = gpGlobals->time + 6;
+
+				pev->frags = 0;
+			}
+			return;
+		}
+	}
+	else if(pev->frags == 5)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+		if(pPlayer)
+		{
+			if(pPlayer->m_fSecurityKey)
+			{
+				pPlayer->m_fSecurityKey = FALSE;
+				pPlayer->MenuItem_remove(5);
+				m_hActivator = pOther;// remember who activated the door
+
+				if (DoorActivate( ))
+					SetTouch( NULL ); // Temporarily disable the touch function, until movement is finished.
+
+				pev->frags = 0;
+			}
+			else
+			{
+				UTIL_CenterPrintAll( "Need Security Keys" );
+				PlayLockSounds(pev, &m_ls, TRUE, FALSE);
+			}
+			return;
+		}
+	}
+	else if(pev->frags == 6)
+	{
+		return;
+	}
+	/*
+	else if(pev->frags == 7){
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+		if(pPlayer)
+		{
+			if(pPlayer->m_fControlKey)
+			{
+				pPlayer->m_fControlKey = FALSE;
+				m_hActivator = pOther;// remember who activated the door
+
+				if (DoorActivate( ))
+					SetTouch( NULL ); // Temporarily disable the touch function, until movement is finished.
+
+				pev->frags = 0;
+			}
+			else
+			{
+				UTIL_CenterPrintAll( "Need Control Room Keys" );
+				PlayLockSounds(pev, &m_ls, TRUE, FALSE);
+			}
+			return;
+		}
+	}*/
+	else if(pev->frags == 8)
+	{
+		if(!FStringNull(pev->target))
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+			if(pPlayer)
+			{
+				SUB_UseTargets( pPlayer, USE_TOGGLE, 0 );
+				pev->target = 0;
+			}
+		}
+		return;
+	}
+	else if(pev->frags == 9)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+		if(pPlayer)
+		{
+			pPlayer->m_trainning = 2;
+			pev->frags = 0;
+			return;
+		}
+	}
+	else if(pev->frags == 10)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+		if(pPlayer)
+		{
+			CBaseEntity *pEvent = Create( "main_cg_event_new4", pevToucher->origin, Vector(0,180,0), NULL );
+			pEvent->pev->armortype = 52;
+			pev->frags = 0;
+			return;
+		}
+	}
+	else if(pev->frags == 11)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+		if(pPlayer)
+		{
+			CBaseEntity *pEvent = Create( "main_cg_event_new4", pevToucher->origin, Vector(0,180,0), NULL );
+			pEvent->pev->armortype = 53;
+			pev->frags = 0;
+			return;
+		}
+	}
+	else if(pev->frags == 12)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+		if(pPlayer)
+		{
+			CBaseEntity *pEvent = Create( "main_cg_event_new6", pevToucher->origin, g_vecZero, NULL );
+			pEvent->pev->armortype = 74;
+			pev->frags = 0;
+			return;
+		}
+	}
+	else if(pev->frags == 13)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+		if(pPlayer)
+		{
+			CBaseEntity *pEvent = Create( "main_cg_event_new6", pevToucher->origin, g_vecZero, NULL );
+			pEvent->pev->armortype = 80;
+			pev->frags = 0;
+			return;
+		}
+	}
+	else if(pev->frags == 14)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+		if(pPlayer)
+		{
+			if( g_restore_fix <= 0)
+			{
+				pPlayer->EnableControl(FALSE);
+				pPlayer->m_trainning = 1;
+				UTIL_ScreenFade( pPlayer, Vector(0,0,0), 3.0, 3.0, 255, FFADE_OUT );
+				pPlayer->m_iClient_Gameover = 3;
+				pPlayer->m_fGameOverTime = gpGlobals->time + 4;
+
+				pev->frags = 0;
+			}
+		}
+		return;
+	}
+	else if(pev->frags == 15)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+		if(pPlayer)
+		{
+			edict_t* pentTarget	= NULL;
+			pentTarget = FIND_ENTITY_BY_TARGETNAME( pentTarget, STRING(pev->target) );
+			if (FNullEnt(pentTarget))
+				return;	
+			
+			Vector tmp = VARS( pentTarget )->origin;
+
+			tmp.z -= pPlayer->pev->mins.z;// make origin adjustments in case the teleportee is a player. (origin in center, not at feet)
+
+			tmp.z++;
+
+			pevToucher->flags &= ~FL_ONGROUND;
+			
+			UTIL_SetOrigin( pevToucher, tmp );
+
+			pevToucher->angles = pentTarget->v.angles;
+
+			UTIL_ScreenFade( pPlayer, Vector(0,0,0), 0.5, 0.5, 255, FFADE_IN );
+
+			pevToucher->fixangle = TRUE;
+		}
+		return;
+	}
+	else if(pev->frags == 16)
+	{
+		SERVER_COMMAND( "map wdoor_boss_rush\n" );
+		pev->frags = 0;
+		return;
+	}
+	else if(pev->frags == 17)
+	{
+		SERVER_COMMAND( "map wdoor_headcrab_ball\n" );
+		pev->frags = 0;
+		return;
+	}
+
 	// Ignore touches by anything but players
 	if( !pOther->IsPlayer() )
+	{
+		if ( pevToucher->flags & FL_MONSTER )
+		{
+			CBaseMonster *pEnemyMonster;
+			pEnemyMonster = pOther->MyMonsterPointer();
+			if(pEnemyMonster)
+			{
+				if(pEnemyMonster->m_forcefuckdoor == TRUE)
+				{
+					goto monster_opendoor;
+				}
+			}
+		}
 		return;
+	}
+	monster_opendoor:
 
 	// If door has master, and it's not ready to trigger, 
 	// play 'locked' sound
@@ -562,6 +1199,12 @@ int CBaseDoor::DoorActivate()
 {
 	if( !UTIL_IsMasterTriggered( m_sMaster, m_hActivator ) )
 		return 0;
+
+	if( FClassnameIs( pev, "func_door_toggle" ) )
+	{
+		pev->solid = SOLID_BSP;
+		pev->effects &= ~EF_NODRAW;
+	}
 
 	if( FBitSet( pev->spawnflags, SF_DOOR_NO_AUTO_RETURN ) && m_toggle_state == TS_AT_TOP )
 	{
@@ -609,7 +1252,7 @@ void CBaseDoor::DoorGoUp( void )
 	m_toggle_state = TS_GOING_UP;
 
 	SetMoveDone( &CBaseDoor::DoorHitTop );
-	if( FClassnameIs( pev, "func_door_rotating" ) )		// !!! BUGBUG Triggered doors don't work with this yet
+	if( FClassnameIs( pev, "func_door_rotating" ) || FClassnameIs(pev, "func_door_rotating_breaker") )		// !!! BUGBUG Triggered doors don't work with this yet
 	{
 		float sign = 1.0f;
 
@@ -642,6 +1285,12 @@ void CBaseDoor::DoorGoUp( void )
 //
 void CBaseDoor::DoorHitTop( void )
 {
+	if( FClassnameIs( pev, "func_door_toggle" ) )
+	{
+		pev->solid = SOLID_NOT;
+		pev->effects |= EF_NODRAW;
+	}
+
 	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
 	{
 		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
@@ -691,10 +1340,15 @@ void CBaseDoor::DoorGoDown( void )
 	m_toggle_state = TS_GOING_DOWN;
 
 	SetMoveDone( &CBaseDoor::DoorHitBottom );
-	if( FClassnameIs( pev, "func_door_rotating" ) )//rotating door
-		AngularMove( m_vecAngle1, pev->speed );
+	float slowsp = pev->speed;
+	if(pev->armorvalue == 3)
+	{
+		slowsp = pev->speed * 0.25;
+	}
+	if( FClassnameIs( pev, "func_door_rotating" ) || FClassnameIs(pev, "func_door_rotating_breaker"))//rotating door
+		AngularMove( m_vecAngle1, slowsp );
 	else
-		LinearMove( m_vecPosition1, pev->speed );
+		LinearMove( m_vecPosition1, slowsp);
 }
 
 //
@@ -702,6 +1356,18 @@ void CBaseDoor::DoorGoDown( void )
 //
 void CBaseDoor::DoorHitBottom( void )
 {
+	if(pev->armorvalue == 3)
+	{
+		DoorGoUp();
+		return;
+	}
+
+	if ( FClassnameIs( pev, "func_door_toggle" ) )
+	{
+		pev->solid = SOLID_NOT;
+		pev->effects |= EF_NODRAW;
+	}
+
 	if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
 	{
 		STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
@@ -733,6 +1399,29 @@ void CBaseDoor::Blocked( CBaseEntity *pOther )
 	CBaseDoor *pDoor = NULL;
 
 	// Hurt the blocker a little.
+	if(pev->armorvalue == 3 || pev->armorvalue == 4)
+	{
+		if(pOther->pev->health > 1)
+		{
+			pOther->pev->health = 1;
+		}
+		pOther->Killed( pev, GIB_ALWAYS );
+		return;
+	}
+		
+	if(pOther->pev->deadflag != DEAD_NO)
+	{
+		pOther->TakeDamage( pev, pev, 300, DMG_CRUSH | GIB_ALWAYS );
+	}
+
+	if(pev->armorvalue == 5)
+	{
+		if(pOther->Classify() == CLASS_ALIEN_MONSTER)
+		{
+			pOther->TakeDamage( pev, pev, 300, DMG_CRUSH | GIB_ALWAYS );
+		}
+	}
+
 	if( pev->dmg )
 		pOther->TakeDamage( pev, pev, pev->dmg, DMG_CRUSH );
 
@@ -745,20 +1434,23 @@ void CBaseDoor::Blocked( CBaseEntity *pOther )
 
 	// if a door has a negative wait, it would never come back if blocked,
 	// so let it just squash the object to death real fast
-	if( m_flWait >= 0.0f )
+	if(pev->armorvalue != 1 && pev->armorvalue != 3 && pev->armorvalue != 5) 
 	{
-		// BMod Start - Door sound fix.
-		if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
-			STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
-		// BMod End
+		if( m_flWait >= 0.0f )
+		{
+			// BMod Start - Door sound fix.
+			if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
+				STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
+			// BMod End
 
-		if( m_toggle_state == TS_GOING_DOWN )
-		{
-			DoorGoUp();
-		}
-		else
-		{
-			DoorGoDown();
+			if( m_toggle_state == TS_GOING_DOWN )
+			{
+				DoorGoUp();
+			}
+			else
+			{
+				DoorGoDown();
+			}
 		}
 	}
 
@@ -796,13 +1488,17 @@ void CBaseDoor::Blocked( CBaseEntity *pOther )
 								pDoor->pev->avelocity = g_vecZero;
 							}
 						}
-						if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
-							STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
 
-						if( pDoor->m_toggle_state == TS_GOING_DOWN )
-							pDoor->DoorGoUp();
-						else
-							pDoor->DoorGoDown();
+						if(pev->armorvalue != 1)
+						{
+							if( !FBitSet( pev->spawnflags, SF_DOOR_SILENT ) )
+								STOP_SOUND( ENT( pev ), CHAN_STATIC, STRING( pev->noiseMoving ) );
+
+							if( pDoor->m_toggle_state == TS_GOING_DOWN )
+								pDoor->DoorGoUp();
+							else
+								pDoor->DoorGoDown();
+						}
 					}
 				}
 			}
@@ -856,7 +1552,8 @@ public:
 	virtual void SetToggleState( int state );
 };
 
-LINK_ENTITY_TO_CLASS( func_door_rotating, CRotDoor )
+LINK_ENTITY_TO_CLASS( func_door_rotating, CRotDoor );
+LINK_ENTITY_TO_CLASS( func_door_rotating_breaker, CRotDoor );
 
 void CRotDoor::Spawn( void )
 {
@@ -899,6 +1596,11 @@ void CRotDoor::Spawn( void )
 	}
 
 	m_toggle_state = TS_AT_BOTTOM;
+
+	if( FClassnameIs ( pev, "func_door_rotating_breaker" ) )
+	{
+		pev->takedamage = DAMAGE_YES;
+	}
 
 	if( FBitSet( pev->spawnflags, SF_DOOR_USE_ONLY ) )
 	{

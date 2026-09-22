@@ -45,6 +45,25 @@ Vector VecBModelOrigin( entvars_t* pevBModel )
 	return pevBModel->absmin + ( pevBModel->size * 0.5f );
 }
 
+
+static float Fix( float angle )
+{
+	while ( angle < 0 )
+		angle += 360;
+	while ( angle > 360 )
+		angle -= 360;
+
+	return angle;
+}
+
+
+static void FixupAngles( Vector &v )
+{
+	v.x = Fix( v.x );
+	v.y = Fix( v.y );
+	v.z = Fix( v.z );
+}
+
 // =================== FUNC_WALL ==============================================
 
 /*QUAKED func_wall (0 .5 .8) ?
@@ -61,6 +80,9 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( func_wall, CFuncWall )
+LINK_ENTITY_TO_CLASS( func_barrel, CFuncWall );
+LINK_ENTITY_TO_CLASS( func_wall_origin, CFuncWall );
+LINK_ENTITY_TO_CLASS( func_wall_sniper, CFuncWall );
 
 void CFuncWall::Spawn( void )
 {
@@ -68,6 +90,23 @@ void CFuncWall::Spawn( void )
 	pev->movetype = MOVETYPE_PUSH;  // so it doesn't get pushed by anything
 	pev->solid = SOLID_BSP;
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
+
+	if(FClassnameIs(pev, "func_wall_origin") || FClassnameIs(pev, "func_wall_toggle_origin"))
+	{
+		pev->origin.z += 1;	// Pick up off of the floor
+		UTIL_SetSize (pev, pev->mins, pev->maxs);
+		UTIL_SetOrigin( pev, pev->origin - (pev->mins + pev->maxs)* 0.5 );
+	}
+
+	if(FClassnameIs(pev, "func_barrel"))
+	{
+		Vector org  = pev->absmin + (pev->size * 0.5);
+		org.z  = pev->absmin.z;
+		SET_MODEL( ENT(pev), "models/props_all.mdl" );
+		pev->origin = org;
+		UTIL_SetSize(pev, Vector(-18, -18, 0), Vector(18, 18, 56));
+		pev->solid = SOLID_BBOX;
+	}
 
 	// If it can't move/go away, it's really part of the world
 	pev->flags |= FL_WORLDBRUSH;
@@ -77,6 +116,15 @@ void CFuncWall::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE use
 {
 	if( ShouldToggle( useType, (int)( pev->frame ) ) )
 		pev->frame = 1 - pev->frame;
+	
+	if(FClassnameIs(pev, "func_wall_origin"))
+	{
+		if(pev->frags == 1)
+		{
+			pev->origin.y -= 512;
+			UTIL_SetOrigin( pev, pev->origin);
+		}
+	}
 }
 
 #define SF_WALL_START_OFF		0x0001
@@ -91,11 +139,17 @@ public:
 	BOOL IsOn( void );
 };
 
+LINK_ENTITY_TO_CLASS( func_illusionary_toggle, CFuncWallToggle );
 LINK_ENTITY_TO_CLASS( func_wall_toggle, CFuncWallToggle )
+LINK_ENTITY_TO_CLASS( func_wall_toggle_origin, CFuncWallToggle );
 
 void CFuncWallToggle::Spawn( void )
 {
 	CFuncWall::Spawn();
+	
+	if(FClassnameIs(pev,"func_illusionary_toggle"))
+		pev->solid = SOLID_NOT;
+
 	if( pev->spawnflags & SF_WALL_START_OFF )
 		TurnOff();
 }
@@ -109,14 +163,17 @@ void CFuncWallToggle::TurnOff( void )
 
 void CFuncWallToggle::TurnOn( void )
 {
-	pev->solid = SOLID_BSP;
+	if(FClassnameIs(pev,"func_illusionary_toggle"))
+		pev->solid = SOLID_NOT;
+	else
+		pev->solid = SOLID_BSP;
 	pev->effects &= ~EF_NODRAW;
 	UTIL_SetOrigin( pev, pev->origin );
 }
 
 BOOL CFuncWallToggle::IsOn( void )
 {
-	if( pev->solid == SOLID_NOT )
+	if( pev->effects & EF_NODRAW )
 		return FALSE;
 	return TRUE;
 }
@@ -159,7 +216,7 @@ void CFuncConveyor::Spawn( void )
 	if( pev->spawnflags & SF_CONVEYOR_NOTSOLID )
 	{
 		pev->solid = SOLID_NOT;
-		pev->skin = 0;		// Don't want the engine thinking we've got special contents on this brush
+		pev->flags = 0;		// Don't want the engine thinking we've got special contents on this brush
 	}
 
 	if( pev->speed == 0.0f )
@@ -185,8 +242,16 @@ void CFuncConveyor::UpdateSpeed( float speed )
 
 void CFuncConveyor::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-    pev->speed = -pev->speed;
-	UpdateSpeed( pev->speed );
+	if(pev->frags == 1)
+	{
+		UpdateSpeed( 0 );
+		pev->flags &= ~FL_CONVEYOR;
+	}
+	else
+	{
+		pev->speed = -pev->speed;
+		UpdateSpeed( pev->speed );
+	}
 }
 
 // =================== FUNC_ILLUSIONARY ==============================================
@@ -253,7 +318,7 @@ LINK_ENTITY_TO_CLASS( func_monsterclip, CFuncMonsterClip )
 void CFuncMonsterClip::Spawn( void )
 {
 	CFuncWall::Spawn();
-	if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
+	//if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
 		pev->effects = EF_NODRAW;
 	pev->flags |= FL_MONSTERCLIP;
 }

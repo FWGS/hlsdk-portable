@@ -32,7 +32,7 @@ Task_t tlFail[] =
 {
 	{ TASK_STOP_MOVING, 0 },
 	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
-	{ TASK_WAIT, (float)2 },
+	{ TASK_WAIT, (float)1 },
 	{ TASK_WAIT_PVS, (float)0 },
 };
 
@@ -41,7 +41,8 @@ Schedule_t slFail[] =
 	{
 		tlFail,
 		ARRAYSIZE( tlFail ),
-		bits_COND_CAN_ATTACK,
+		bits_COND_CAN_ATTACK |
+		bits_COND_SEE_ENEMY,
 		0,
 		"Fail"
 	},
@@ -50,6 +51,23 @@ Schedule_t slFail[] =
 //=========================================================
 //	Idle Schedules
 //=========================================================
+Task_t	tlLongming[] =
+{
+	{ TASK_STOP_MOVING,			0				},
+	{ TASK_SET_LONGMING,		0				},
+};
+
+Schedule_t	slLongming[] =
+{
+	{ 
+		tlLongming,
+		ARRAYSIZE ( tlLongming ), 
+		0,
+		0,
+		"Long Ming"
+	},
+};
+
 Task_t tlIdleStand1[] =
 {
 	{ TASK_STOP_MOVING, 0 },
@@ -63,7 +81,7 @@ Schedule_t slIdleStand[] =
 		tlIdleStand1,
 		ARRAYSIZE( tlIdleStand1 ),
 		bits_COND_NEW_ENEMY |
-		bits_COND_SEE_FEAR |
+		bits_COND_SEE_ENEMY |
 		bits_COND_LIGHT_DAMAGE |
 		bits_COND_HEAVY_DAMAGE |
 		bits_COND_HEAR_SOUND |
@@ -95,6 +113,53 @@ Schedule_t slIdleTrigger[] =
 	},
 };
 
+Task_t	tlIdleWalk_Around[] =
+{
+	{ TASK_STOP_MOVING,				(float)0					},
+	{ TASK_WAIT,					(float)0.2					},
+	{ TASK_FIND_ROAD_FORWARD,		(float)0					},
+	{ TASK_WAIT_FOR_MOVEMENT,		(float)0					},
+};
+
+Schedule_t	slIdleWalk_Around[] =
+{
+	{ 
+		tlIdleWalk_Around,
+		ARRAYSIZE ( tlIdleWalk_Around ), 
+		bits_COND_NEW_ENEMY		|
+		bits_COND_SEE_ENEMY		|
+		bits_COND_CAN_ATTACK	|
+		bits_COND_LIGHT_DAMAGE	|
+		bits_COND_HEAVY_DAMAGE	|
+
+		bits_COND_HEAR_SOUND,
+		bits_SOUND_DANGER,
+
+		"Idle Walk Around"
+	},
+};
+
+Task_t	tlIdleWalk1_path[] =
+{
+	{ TASK_WALK_PATH,			(float)9999 },
+	{ TASK_WAIT_FOR_MOVEMENT,	(float)0	},
+};
+
+Schedule_t	slIdleWalk1_path[] =
+{
+	{ 
+		tlIdleWalk1_path,
+		ARRAYSIZE ( tlIdleWalk1_path ), 
+		bits_COND_NEW_ENEMY		|
+		bits_COND_SEE_ENEMY		|
+		bits_COND_CAN_ATTACK	|
+		bits_MEMORY_KILLED,
+		0,
+
+		"Idle Walk Path"
+	},
+};
+
 Task_t tlIdleWalk1[] =
 {
 	{ TASK_WALK_PATH, (float)9999 },
@@ -107,6 +172,7 @@ Schedule_t slIdleWalk[] =
 		tlIdleWalk1,
 		ARRAYSIZE( tlIdleWalk1 ),
 		bits_COND_NEW_ENEMY |
+		bits_COND_SEE_ENEMY |
 		bits_COND_LIGHT_DAMAGE |
 		bits_COND_HEAVY_DAMAGE |
 		bits_COND_HEAR_SOUND |
@@ -178,6 +244,7 @@ Schedule_t slActiveIdle[] =
 		tlActiveIdle,
 		ARRAYSIZE( tlActiveIdle ),
 		bits_COND_NEW_ENEMY |
+		bits_COND_SEE_ENEMY |
 		bits_COND_LIGHT_DAMAGE |
 		bits_COND_HEAVY_DAMAGE |
 		bits_COND_PROVOKED |
@@ -229,6 +296,7 @@ Schedule_t slAlertFace[] =
 		ARRAYSIZE( tlAlertFace1 ),
 		bits_COND_NEW_ENEMY |
 		bits_COND_SEE_FEAR |
+		bits_COND_SEE_ENEMY |
 		bits_COND_LIGHT_DAMAGE |
 		bits_COND_HEAVY_DAMAGE |
 		bits_COND_PROVOKED,
@@ -267,7 +335,7 @@ Task_t tlAlertStand1[] =
 {
 	{ TASK_STOP_MOVING, 0 },
 	{ TASK_SET_ACTIVITY, (float)ACT_IDLE },
-	{ TASK_WAIT, (float)20 },
+	{ TASK_WAIT, (float)1 },
 	{ TASK_SUGGEST_STATE, (float)MONSTERSTATE_IDLE },
 };
 
@@ -277,6 +345,7 @@ Schedule_t slAlertStand[] =
 		tlAlertStand1,
 		ARRAYSIZE( tlAlertStand1 ),
 		bits_COND_NEW_ENEMY |
+		bits_COND_ENEMY_DEAD |
 		bits_COND_SEE_ENEMY |
 		bits_COND_SEE_FEAR |
 		bits_COND_LIGHT_DAMAGE |
@@ -322,7 +391,7 @@ Schedule_t slInvestigateSound[] =
 		tlInvestigateSound,
 		ARRAYSIZE( tlInvestigateSound ),
 		bits_COND_NEW_ENEMY |
-		bits_COND_SEE_FEAR |
+		bits_COND_SEE_ENEMY |
 		bits_COND_LIGHT_DAMAGE |
 		bits_COND_HEAVY_DAMAGE |
 		bits_COND_HEAR_SOUND,
@@ -427,6 +496,26 @@ Schedule_t slArmWeapon[] =
 };
 
 //=========================================================
+// Dis Arm weapon (draw gun)
+//=========================================================
+Task_t	tlDisArmWeapon[] =
+{
+	{ TASK_STOP_MOVING,		0				  },
+	{ TASK_PLAY_SEQUENCE,	(float)ACT_DISARM },
+};
+
+Schedule_t slDisArmWeapon[] = 
+{
+	{
+		tlDisArmWeapon,
+		ARRAYSIZE ( tlDisArmWeapon ),
+		0,
+		0,
+		"Dis Arm Weapon"
+	}
+};
+
+//=========================================================
 // reload schedule
 //=========================================================
 Task_t	tlReload[] =
@@ -440,15 +529,50 @@ Schedule_t slReload[] =
 	{
 		tlReload,
 		ARRAYSIZE( tlReload ),
-		bits_COND_HEAVY_DAMAGE,
+		0,
 		0,
 		"Reload"
+	}
+};
+
+Task_t	tlReload_deep[] =
+{
+	{ TASK_STOP_MOVING,			0					},
+	{ TASK_PLAY_SEQUENCE,		float(ACT_RELOAD)	},
+};
+
+Schedule_t slReload_deep[] = 
+{
+	{
+		tlReload_deep,
+		ARRAYSIZE ( tlReload_deep ),
+		0,
+		0,
+		"Reload Deep Mode"
 	}
 };
 
 //=========================================================
 //	Attack Schedules
 //=========================================================
+
+Task_t	tlRangeAttack1_garg[] =
+{
+	{ TASK_STOP_MOVING,			0				},
+	{ TASK_FACE_ENEMY,			(float)0		},
+	{ TASK_RANGE_ATTACK1,		(float)0		},
+};
+
+Schedule_t	slRangeAttack1_garg[] =
+{
+	{ 
+		tlRangeAttack1_garg,
+		ARRAYSIZE ( tlRangeAttack1_garg ), 
+		0,
+		0,
+		"Range Attack1 Garg"
+	},
+};
 
 // primary range attack
 Task_t tlRangeAttack1[] =
@@ -464,7 +588,7 @@ Schedule_t slRangeAttack1[] =
 		tlRangeAttack1,
 		ARRAYSIZE( tlRangeAttack1 ),
 		bits_COND_NEW_ENEMY |
-		bits_COND_ENEMY_DEAD |
+		// bits_COND_ENEMY_DEAD |
 		bits_COND_LIGHT_DAMAGE |
 		bits_COND_HEAVY_DAMAGE |
 		bits_COND_ENEMY_OCCLUDED |
@@ -488,13 +612,8 @@ Schedule_t slRangeAttack2[] =
 	{
 		tlRangeAttack2,
 		ARRAYSIZE( tlRangeAttack2 ),
-		bits_COND_NEW_ENEMY |
-		bits_COND_ENEMY_DEAD |
-		bits_COND_LIGHT_DAMAGE |
-		bits_COND_HEAVY_DAMAGE |
-		bits_COND_ENEMY_OCCLUDED |
-		bits_COND_HEAR_SOUND,
-		bits_SOUND_DANGER,
+		0,
+		0,
 		"Range Attack2"
 	},
 };
@@ -522,12 +641,48 @@ Schedule_t slPrimaryMeleeAttack[] =
 	},
 };
 
+Task_t	tlPrimaryMeleeAttack1_c[] =
+{
+	{ TASK_STOP_MOVING,			0				},
+	{ TASK_FACE_ENEMY,			(float)0		},
+	{ TASK_MELEE_ATTACK1,		(float)0		},
+};
+
+Schedule_t	slPrimaryMeleeAttack_c[] =
+{
+	{ 
+		tlPrimaryMeleeAttack1_c,
+		ARRAYSIZE ( tlPrimaryMeleeAttack1_c ), 
+		0,
+		0,
+		"Primary Melee Attack C"
+	},
+};
+
 // secondary melee attack
 Task_t tlSecondaryMeleeAttack1[] =
 {
 	{ TASK_STOP_MOVING, 0 },
 	{ TASK_FACE_ENEMY, (float)0 },
 	{ TASK_MELEE_ATTACK2, (float)0},
+};
+
+Task_t	tlSecondaryMeleeAttack1_c[] =
+{
+	{ TASK_STOP_MOVING,			0				},
+	{ TASK_FACE_ENEMY,			(float)0		},
+	{ TASK_MELEE_ATTACK2,		(float)0		},
+};
+
+Schedule_t	slSecondaryMeleeAttack_c[] =
+{
+	{ 
+		tlSecondaryMeleeAttack1_c,
+		ARRAYSIZE ( tlSecondaryMeleeAttack1_c ), 
+		0,
+		0,
+		"Secondary Melee Attack Crash"
+	},
 };
 
 Schedule_t slSecondaryMeleeAttack[] =
@@ -558,7 +713,7 @@ Schedule_t slSpecialAttack1[] =
 	{
 		tlSpecialAttack1,
 		ARRAYSIZE( tlSpecialAttack1 ),
-		bits_COND_NEW_ENEMY |
+		// bits_COND_NEW_ENEMY |
 		bits_COND_ENEMY_DEAD |
 		bits_COND_LIGHT_DAMAGE |
 		bits_COND_HEAVY_DAMAGE |
@@ -583,7 +738,7 @@ Schedule_t slSpecialAttack2[] =
 	{
 		tlSpecialAttack2,
 		ARRAYSIZE( tlSpecialAttack2 ),
-		bits_COND_NEW_ENEMY |
+		// bits_COND_NEW_ENEMY |
 		bits_COND_ENEMY_DEAD |
 		bits_COND_LIGHT_DAMAGE |
 		bits_COND_HEAVY_DAMAGE |
@@ -627,10 +782,10 @@ Task_t tlChaseEnemyFailed[] =
 {
 	{ TASK_STOP_MOVING, (float)0 },
 	{ TASK_WAIT, (float)0.2 },
-	{ TASK_FIND_COVER_FROM_ENEMY, (float)0 },
-	{ TASK_RUN_PATH, (float)0 },
+	{ TASK_FIND_COVER_FROM_ENEMY_RELOAD, (float)0 },
+	//{ TASK_RUN_PATH, (float)0 },
 	{ TASK_WAIT_FOR_MOVEMENT, (float)0 },
-	{ TASK_REMEMBER, (float)bits_MEMORY_INCOVER },
+	//{ TASK_REMEMBER, (float)bits_MEMORY_INCOVER },
 	//{ TASK_TURN_LEFT, (float)179 },
 	{ TASK_FACE_ENEMY, (float)0 },
 	{ TASK_WAIT, (float)1 },
@@ -641,14 +796,14 @@ Schedule_t slChaseEnemyFailed[] =
 	{
 		tlChaseEnemyFailed,
 		ARRAYSIZE( tlChaseEnemyFailed ),
-		bits_COND_NEW_ENEMY |
+		//bits_COND_NEW_ENEMY |
 		bits_COND_CAN_RANGE_ATTACK1 |
 		bits_COND_CAN_MELEE_ATTACK1 |
 		bits_COND_CAN_RANGE_ATTACK2 |
 		bits_COND_CAN_MELEE_ATTACK2 |
 		bits_COND_HEAR_SOUND,
 		bits_SOUND_DANGER,
-		"tlChaseEnemyFailed"
+		"Chase Enemy Failed"
 	},
 };
 
@@ -694,6 +849,25 @@ Schedule_t slDie[] =
 	},
 };
 
+Task_t tlFakeDie1[] =
+{
+	{ TASK_STOP_MOVING,			0					 },
+	{ TASK_PLAY_SEQUENCE,		(float)ACT_DIESIMPLE },
+	{ TASK_WAIT,				(float)3			},
+	{ TASK_FAKEDIE,				(float)0			 },
+};
+
+Schedule_t slFakeDie[] =
+{
+	{
+		tlFakeDie1,
+		ARRAYSIZE( tlFakeDie1 ),
+		0,
+		0,
+		"Fake Die"
+	},
+};
+
 //=========================================================
 // Victory Dance
 //=========================================================
@@ -709,11 +883,46 @@ Schedule_t slVictoryDance[] =
 	{
 		tlVictoryDance,
 		ARRAYSIZE( tlVictoryDance ),
-		0,
+		bits_COND_NEW_ENEMY		|
+		bits_COND_SEE_ENEMY		|
+		bits_COND_LIGHT_DAMAGE	|
+		bits_COND_HEAVY_DAMAGE,
+
+		bits_SOUND_DANGER		|
 		0,
 		"Victory Dance"
 	},
 };
+
+
+Task_t	tlVictoryDance2[] =
+{
+	{ TASK_STOP_MOVING,						(float)0					},
+	{ TASK_FACE_ENEMY,						(float)0					},
+	{ TASK_WAIT,							(float)0.5					},
+	{ TASK_GET_PATH_TO_ENEMY_CORPSE,		(float)0					},
+	{ TASK_WALK_PATH,						(float)0					},
+	{ TASK_WAIT_FOR_MOVEMENT,				(float)0					},
+	{ TASK_FACE_ENEMY,						(float)0					},
+	{ TASK_PLAY_SEQUENCE,					(float)ACT_VICTORY_DANCE	},
+};
+
+Schedule_t	slVictoryDance2[] =
+{
+	{ 
+		tlVictoryDance2,
+		ARRAYSIZE ( tlVictoryDance2 ), 
+		bits_COND_NEW_ENEMY		|
+		bits_COND_SEE_ENEMY		|
+		bits_COND_LIGHT_DAMAGE	|
+		bits_COND_HEAVY_DAMAGE,
+
+		bits_SOUND_DANGER		|
+		0,
+		"VictoryDance2"
+	},
+};
+
 
 //=========================================================
 // BarnacleVictimGrab - barnacle tongue just hit the monster,
@@ -915,6 +1124,7 @@ Schedule_t slTakeCoverFromOrigin[] =
 //=========================================================
 Task_t tlTakeCoverFromBestSound[] =
 {
+	{ TASK_SET_FAIL_SCHEDULE,			(float)SCHED_LONGMING		},
 	{ TASK_STOP_MOVING, (float)0 },
 	{ TASK_FIND_COVER_FROM_BEST_SOUND, (float)0 },
 	{ TASK_RUN_PATH, (float)0 },
@@ -948,17 +1158,52 @@ Task_t tlTakeCoverFromEnemy[] =
 	{ TASK_REMEMBER, (float)bits_MEMORY_INCOVER },
 	//{ TASK_TURN_LEFT, (float)179 },
 	{ TASK_FACE_ENEMY, (float)0 },
-	{ TASK_WAIT, (float)1 },
+	{ TASK_WAIT, (float)0.5 },
 };
 
 Schedule_t slTakeCoverFromEnemy[] =
 {
 	{
 		tlTakeCoverFromEnemy,
-		ARRAYSIZE( tlTakeCoverFromEnemy ),
-		bits_COND_NEW_ENEMY,
+		ARRAYSIZE ( tlTakeCoverFromEnemy ), 
+		bits_COND_NEW_ENEMY |
+		bits_COND_ENEMY_DEAD,
 		0,
-		"tlTakeCoverFromEnemy"
+		"TakeCover"
+	},
+};
+
+Task_t	tlfindallycorpse[] =
+{
+	{ TASK_GET_PATH_TO_ALLY_CORPSE,		    (float)0					},
+	{ TASK_RUN_PATH,						(float)0					},
+	{ TASK_WAIT_FOR_MOVEMENT,				(float)0					},
+	{ TASK_TURN_LEFT,						(float)179					},
+	{ TASK_WAIT,							(float)1					},
+	{ TASK_TURN_LEFT,						(float)179					},
+	{ TASK_WAIT,							(float)1					},
+	{ TASK_GET_PATH_TO_RETURN_OLD_ORIGIN,   (float)0					},
+	{ TASK_RUN_PATH,						(float)0					},
+	{ TASK_WAIT_FOR_MOVEMENT,				(float)0					},
+	{ TASK_TURN_LEFT,						(float)179					},
+	{ TASK_WAIT,							(float)1					},
+	{ TASK_TURN_LEFT,						(float)179					},
+	{ TASK_WAIT,							(float)1					},
+};
+
+Schedule_t	slfindallycorpse[] =
+{
+	{ 
+		tlfindallycorpse,
+		ARRAYSIZE ( tlfindallycorpse ), 
+        bits_COND_NEW_ENEMY		|
+		bits_COND_SEE_ENEMY		|
+		bits_COND_LIGHT_DAMAGE	|
+		bits_COND_HEAVY_DAMAGE,
+
+		bits_SOUND_DANGER		|
+		0,
+		"Ally Dead Corpse"
 	},
 };
 
@@ -1001,7 +1246,14 @@ Schedule_t *CBaseMonster::m_scheduleList[] =
 	slTakeCoverFromOrigin,
 	slTakeCoverFromBestSound,
 	slTakeCoverFromEnemy,
-	slFail
+	slFail,
+	slfindallycorpse,
+	slDisArmWeapon,
+	slReload_deep,
+	slIdleWalk1_path,
+	slIdleWalk_Around,
+	slFakeDie,
+	slVictoryDance2
 };
 
 Schedule_t *CBaseMonster::ScheduleFromName( const char *pName )
@@ -1081,6 +1333,14 @@ Schedule_t* CBaseMonster::GetScheduleOfType( int Type )
 		{
 			return &slIdleWalk[0];
 		}
+	case SCHED_IDLE_WALK_PATH:
+		{
+			return &slIdleWalk1_path[ 0 ];
+		}
+	case SCHED_IDLE_WALK_AROUND:
+		{
+			return &slIdleWalk_Around[ 0 ];
+		}
 	case SCHED_WAIT_TRIGGER:
 		{
 			return &slIdleTrigger[0];
@@ -1107,11 +1367,26 @@ Schedule_t* CBaseMonster::GetScheduleOfType( int Type )
 		}
 	case SCHED_CHASE_ENEMY:
 		{
-			return &slChaseEnemy[0];
+			if( m_chase_mode == 10 )
+				return &slCombatFace[0];
+			else
+				return &slChaseEnemy[0];
 		}
 	case SCHED_CHASE_ENEMY_FAILED:
 		{
-			return &slFail[0];
+			if(m_chase_mode >= 1)
+			{
+				m_chase_failed_delay += 1;
+				if( m_chase_failed_delay > m_chase_failed_max )
+				{
+					m_chase_failed_delay = 0;
+					return &slChaseEnemyFailed[0];
+				}
+				else
+					return &slFail[0];
+			}
+			else
+				return &slFail[0];
 		}
 	case SCHED_SMALL_FLINCH:
 		{
@@ -1125,9 +1400,17 @@ Schedule_t* CBaseMonster::GetScheduleOfType( int Type )
 		{
 			return &slReload[0];
 		}
+	case SCHED_RELOAD_DEEP:
+		{
+			return &slReload_deep[0];
+		}
 	case SCHED_ARM_WEAPON:
 		{
 			return &slArmWeapon[0];
+		}
+	case SCHED_DISARM_WEAPON:
+		{
+			return &slDisArmWeapon[0];
 		}
 	case SCHED_STANDOFF:
 		{
@@ -1135,7 +1418,14 @@ Schedule_t* CBaseMonster::GetScheduleOfType( int Type )
 		}
 	case SCHED_RANGE_ATTACK1:
 		{
-			return &slRangeAttack1[0];
+			if( FClassnameIs( pev, "monster_gargantua" ) || FClassnameIs( pev, "monster_crasher_boss" )
+			|| FClassnameIs( pev, "monster_stone_devil" ) || FClassnameIs( pev, "monster_gman_boss" )
+			|| FClassnameIs( pev, "monster_purple_guy" ) || FClassnameIs( pev, "monster_doraemon_boss" )
+			|| FClassnameIs( pev, "monster_thrower" ) || FClassnameIs( pev, "monster_doma_boss" )
+			|| FClassnameIs( pev, "monster_god625_boss" ))
+				return &slRangeAttack1_garg[0];
+			else
+				return &slRangeAttack1[0];
 		}
 	case SCHED_RANGE_ATTACK2:
 		{
@@ -1143,11 +1433,23 @@ Schedule_t* CBaseMonster::GetScheduleOfType( int Type )
 		}
 	case SCHED_MELEE_ATTACK1:
 		{
-			return &slPrimaryMeleeAttack[0];
+			if( FClassnameIs( pev, "monster_saintna" ) || FClassnameIs( pev, "monster_revenant" )
+			|| FClassnameIs( pev, "monster_human_grunt_torch" ) || FClassnameIs( pev, "monster_doraemon_boss" )
+			|| FClassnameIs( pev, "monster_doma_boss" ) || FClassnameIs( pev, "monster_god625_boss" ))
+				return &slPrimaryMeleeAttack_c[0];
+			else
+				return &slPrimaryMeleeAttack[0];
 		}
 	case SCHED_MELEE_ATTACK2:
 		{
-			return &slSecondaryMeleeAttack[0];
+			if( FClassnameIs( pev, "monster_crasher_boss" ) || FClassnameIs( pev, "monster_wisebeast" ) 
+			|| FClassnameIs( pev, "monster_hydra_boss" ) || FClassnameIs( pev, "monster_gman_boss" )
+			|| FClassnameIs( pev, "monster_dengor" ) || FClassnameIs( pev, "monster_mario" )
+			|| FClassnameIs( pev, "monster_barnacle_boss" ) || FClassnameIs( pev, "monster_revenant" )
+			|| FClassnameIs( pev, "monster_doraemon_boss" ) || FClassnameIs( pev, "monster_god625_boss" ))
+				return &slSecondaryMeleeAttack_c[0];
+			else
+				return &slSecondaryMeleeAttack[0];
 		}
 	case SCHED_SPECIAL_ATTACK1:
 		{
@@ -1189,17 +1491,32 @@ Schedule_t* CBaseMonster::GetScheduleOfType( int Type )
 		{
 			return &slDie[0];
 		}
+	case SCHED_FAKEDIE:
+		{
+			return &slFakeDie[0];
+		}
 	case SCHED_TAKE_COVER_FROM_ORIGIN:
 		{
 			return &slTakeCoverFromOrigin[0];
 		}
 	case SCHED_VICTORY_DANCE:
 		{
-			return &slVictoryDance[0];
+			if(m_victoryeat)
+				return &slVictoryDance2[0];
+			else
+				return &slVictoryDance[0];
 		}
 	case SCHED_FAIL:
 		{
 			return slFail;
+		}
+	case SCHED_CHASE_DEAD_ALLY:
+		{
+			return &slfindallycorpse[0];
+		}
+	case SCHED_LONGMING:
+		{
+			return &slLongming[0];
 		}
 	default:
 		{

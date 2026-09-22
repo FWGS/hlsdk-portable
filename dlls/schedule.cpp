@@ -26,6 +26,7 @@
 #include "nodes.h"
 #include "defaultai.h"
 #include "soundent.h"
+#include "player.h"
 
 extern CGraph WorldGraph;
 
@@ -234,6 +235,7 @@ void CBaseMonster::MaintainSchedule( void )
 			//   after successful completion (by setting bits_COND_SCHEDULE_DONE in iInterruptMask)
 			// DEAD & SCRIPT are not suggestions, they are commands!
 			if( m_IdealMonsterState != MONSTERSTATE_DEAD && 
+				m_IdealMonsterState != MONSTERSTATE_PLAYDEAD && 
 				 ( m_IdealMonsterState != MONSTERSTATE_SCRIPT || m_IdealMonsterState == m_MonsterState ) )
 			{
 				if( (m_afConditions && !HasConditions( bits_COND_SCHEDULE_DONE ) ) ||
@@ -250,6 +252,9 @@ void CBaseMonster::MaintainSchedule( void )
 				else
 					pNewSchedule = GetScheduleOfType( SCHED_FAIL );
 
+				if(m_walkaroundFail == TRUE)
+					pNewSchedule = GetScheduleOfType( SCHED_IDLE_WALK_AROUND );
+
 				// schedule was invalid because the current task failed to start or complete
 				ALERT( at_aiconsole, "Schedule Failed at %d!\n", m_iScheduleIndex );
 				ChangeSchedule( pNewSchedule );
@@ -257,7 +262,7 @@ void CBaseMonster::MaintainSchedule( void )
 			else
 			{
 				SetState( m_IdealMonsterState );
-				if( m_MonsterState == MONSTERSTATE_SCRIPT || m_MonsterState == MONSTERSTATE_DEAD )
+				if( m_MonsterState == MONSTERSTATE_SCRIPT || m_MonsterState == MONSTERSTATE_DEAD || m_MonsterState == MONSTERSTATE_PLAYDEAD )
 					pNewSchedule = CBaseMonster::GetSchedule();
 				else
 					pNewSchedule = GetSchedule();
@@ -274,9 +279,12 @@ void CBaseMonster::MaintainSchedule( void )
 		}
 
 		// UNDONE: Twice?!!!
-		if( m_Activity != m_IdealActivity )
+		if( m_MonsterState != MONSTERSTATE_HUNT && m_dieseq == 0 )
 		{
-			SetActivity( m_IdealActivity );
+			if( m_Activity != m_IdealActivity )
+			{
+				SetActivity( m_IdealActivity );
+			}
 		}
 
 		if( !TaskIsComplete() && m_iTaskStatus != TASKSTATUS_NEW )
@@ -293,9 +301,12 @@ void CBaseMonster::MaintainSchedule( void )
 	// UNDONE: We have to do this so that we have an animation set to blend to if RunTask changes the animation
 	// RunTask() will always change animations at the end of a script!
 	// Don't do this twice
-	if( m_Activity != m_IdealActivity )
+	if( m_MonsterState != MONSTERSTATE_HUNT && m_dieseq == 0 )
 	{
-		SetActivity( m_IdealActivity );
+		if( m_Activity != m_IdealActivity )
+		{
+			SetActivity( m_IdealActivity );
+		}
 	}
 }
 
@@ -372,7 +383,7 @@ void CBaseMonster::RunTask( Task_t *pTask )
 		}
 	case TASK_WAIT_PVS:
 		{
-			if( !FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ) )
+			if( m_no_pov_limit == 1 || !FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ) )
 			{
 				TaskComplete();
 			}
@@ -411,27 +422,33 @@ void CBaseMonster::RunTask( Task_t *pTask )
 				TaskFail();
 			else
 			{
-				distance = ( m_vecMoveGoal - pev->origin ).Length2D();
 
-				// Re-evaluate when you think your finished, or the target has moved too far
-				if( ( distance < pTask->flData ) || ( m_vecMoveGoal - m_hTargetEnt->pev->origin ).Length() > pTask->flData * 0.5f )
+				if ( FBitSet( m_hTargetEnt->pev->flags, FL_NOTARGET ) || FBitSet( m_hTargetEnt->pev->flags, FL_FROZEN ) )
+					TaskFail();
+				else
 				{
-					m_vecMoveGoal = m_hTargetEnt->pev->origin;
 					distance = ( m_vecMoveGoal - pev->origin ).Length2D();
-					FRefreshRoute();
-				}
 
-				// Set the appropriate activity based on an overlapping range
-				// overlap the range to prevent oscillation
-				if( distance < pTask->flData )
-				{
-					TaskComplete();
-					RouteClear();		// Stop moving
+					// Re-evaluate when you think your finished, or the target has moved too far
+					if( ( distance < pTask->flData ) || ( m_vecMoveGoal - m_hTargetEnt->pev->origin ).Length() > pTask->flData * 0.5f )
+					{
+						m_vecMoveGoal = m_hTargetEnt->pev->origin;
+						distance = ( m_vecMoveGoal - pev->origin ).Length2D();
+						FRefreshRoute();
+					}
+
+					// Set the appropriate activity based on an overlapping range
+					// overlap the range to prevent oscillation
+					if( distance < pTask->flData )
+					{
+						TaskComplete();
+						RouteClear();		// Stop moving
+					}
+					else if( distance < 180 && m_movementActivity != ACT_WALK )
+						m_movementActivity = ACT_WALK;
+					else if( distance >= 250 && m_movementActivity != ACT_RUN )
+						m_movementActivity = ACT_RUN;
 				}
-				else if( distance < 190 && m_movementActivity != ACT_WALK )
-					m_movementActivity = ACT_WALK;
-				else if( distance >= 270 && m_movementActivity != ACT_RUN )
-					m_movementActivity = ACT_RUN;
 			}
 			break;
 		}
@@ -448,23 +465,48 @@ void CBaseMonster::RunTask( Task_t *pTask )
 		{
 			if( m_fSequenceFinished && pev->frame >= 255 )
 			{
+				m_flDeadTime = gpGlobals->time;
 				pev->deadflag = DEAD_DEAD;
-
-				SetThink( NULL );
+				m_dieseq = 1;
+				//SetThink( NULL );
 				StopAnimation();
 
-				if( !BBoxFlat() )
+				if(m_rpgms_inteam >= 1 && m_rpgms_inteam <= 4 && m_hPlayer != NULL && m_gibed == 0)
 				{
-					// a bit of a hack. If a corpses' bbox is positioned such that being left solid so that it can be attacked will
-					// block the player on a slope or stairs, the corpse is made nonsolid. 
-					//pev->solid = SOLID_NOT;
-					UTIL_SetSize( pev, Vector( -4, -4, 0 ), Vector( 4, 4, 1 ) );
+					CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)m_hPlayer->pev);
+					if(pPlayer)
+					{
+						if(m_die_for_back >= 1)
+							m_die_for_back = 0;
+						
+						pPlayer->TeamMate_Nagamatagi_Switch_Auto(this);
+					}
 				}
-				else // !!!HACKHACK - put monster in a thin, wide bounding box until we fix the solid type/bounding volume problem
-					UTIL_SetSize( pev, Vector( pev->mins.x, pev->mins.y, pev->mins.z ), Vector( pev->maxs.x, pev->maxs.y, pev->mins.z + 1 ) );
+
+				if(m_die_for_back >= 1)
+					return;
+
+				if(m_die_corpse_solid == 1)
+					UTIL_SetSize ( pev, Vector ( pev->mins.x, pev->mins.y, pev->mins.z ), Vector ( pev->maxs.x, pev->maxs.y, 1 ) );
+				else if ( !BBoxFlat() || m_crouchmode != 0 )
+					UTIL_SetSize ( pev, Vector ( pev->mins.x, pev->mins.y, pev->mins.z ), Vector ( pev->maxs.x, pev->maxs.y, pev->mins.z + 2 ) );
+				else
+					UTIL_SetSize ( pev, Vector ( pev->mins.x, pev->mins.y, pev->mins.z ), Vector ( pev->maxs.x, pev->maxs.y, pev->mins.z + 4 ) );
 
 				if( ShouldFadeOnDeath() )
 				{
+					SetThink ( NULL );
+					SetTouch ( NULL );
+
+					StopAnimation();
+					if(pev->impulse != 278)
+					{
+						pev->velocity = g_vecZero;
+						pev->movetype = MOVETYPE_NONE;
+						pev->solid = SOLID_NOT;
+						pev->avelocity = g_vecZero;
+					}
+
 					// this monster was created by a monstermaker... fade the corpse out.
 					SUB_StartFadeOut();
 				}
@@ -534,6 +576,14 @@ void CBaseMonster::RunTask( Task_t *pTask )
 			{
 				m_pCine->SequenceDone( this );
 			}
+			break;
+		}
+	case TASK_FAKEDIE:
+		{
+			SetState( MONSTERSTATE_IDLE );
+			m_Activity = ACT_RESET;
+			ClearSchedule();
+			TaskComplete();
 			break;
 		}
 	}
@@ -643,6 +693,14 @@ void CBaseMonster::StartTask( Task_t *pTask )
 			TaskComplete();
 			break;
 		}
+	case TASK_SET_LONGMING:
+		{
+			if(m_listenlong < 30)
+				m_listenlong = 30;
+
+			TaskComplete();
+			break;
+		}
 	case TASK_PLAY_SEQUENCE_FACE_ENEMY:
 	case TASK_PLAY_SEQUENCE_FACE_TARGET:
 	case TASK_PLAY_SEQUENCE:
@@ -675,6 +733,12 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_FIND_NEAR_NODE_COVER_FROM_ENEMY:
 		{
+			if(m_no_cover_mode == 1)
+			{
+				TaskFail();
+				return;
+			}
+
 			if( m_hEnemy == 0 )
 			{
 				TaskFail();
@@ -695,6 +759,12 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_FIND_FAR_NODE_COVER_FROM_ENEMY:
 		{
+			if(m_no_cover_mode == 1)
+			{
+				TaskFail();
+				return;
+			}
+
 			if( m_hEnemy == 0 )
 			{
 				TaskFail();
@@ -715,6 +785,12 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_FIND_NODE_COVER_FROM_ENEMY:
 		{
+			if(m_no_cover_mode == 1)
+			{
+				TaskFail();
+				return;
+			}
+
 			if( m_hEnemy == 0 )
 			{
 				TaskFail();
@@ -735,6 +811,12 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_FIND_COVER_FROM_ENEMY:
 		{
+			if(m_no_cover_mode == 1)
+			{
+				TaskFail();
+				return;
+			}
+
 			entvars_t *pevCover;
 
 			if( m_hEnemy == 0 )
@@ -752,22 +834,339 @@ void CBaseMonster::StartTask( Task_t *pTask )
 				// try lateral first
 				m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
 				TaskComplete();
+				return;
 			}
 			else if( FindCover( pevCover->origin, pevCover->view_ofs, 0, CoverRadius() ) )
 			{
 				// then try for plain ole cover
 				m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
 				TaskComplete();
+				return;
 			}
-			else
+			else if( m_hEnemy != NULL){
+			
+
+				if( FInViewCone(m_hEnemy) && m_hEnemy->IsAlive() && m_HenemyEnemyMe >= 1 ){
+					float pnormal = pev->maxs.x + 8;
+					float distlimit = 128;
+
+					int type = 0;
+
+					Vector moveorigin;
+					TraceResult tr;
+
+					Vector enemyangles = m_hEnemy->pev->angles;
+					Vector vecDir = m_hEnemy->pev->origin - pev->origin;
+					vecDir = vecDir.Normalize( );
+					Vector monsterangles = UTIL_VecToAngles( vecDir );
+					UTIL_MakeVectors(monsterangles);
+
+					UTIL_TraceLine( Center(), Center() + gpGlobals->v_forward * -640, ignore_monsters, ENT( pev ), &tr );
+					
+					if ( tr.flFraction < 1.0 ){
+					moveorigin = tr.vecEndPos + (tr.vecPlaneNormal * pnormal);
+					}
+					else{
+					moveorigin = tr.vecEndPos;
+					}
+
+					float flDist = ( Center() - moveorigin).Length();
+
+						if ( LookupActivity( ACT_RUN ) != ACTIVITY_NOT_AVAILABLE)
+						{
+							m_movementActivity = ACT_RUN;
+						}
+						else if ( LookupActivity( ACT_WALK ) != ACTIVITY_NOT_AVAILABLE)
+						{
+							m_movementActivity = ACT_WALK;
+						}
+
+					if ( MoveToLocation( m_movementActivity, 0, moveorigin ) && flDist > distlimit)
+					{
+					//	sprintf( text, "- %s has Location forward! ang.y:%f eang.y:%f\n",STRING(pev->classname),monsterangles.y,enemyangles.y);
+					//	UTIL_SayTextAll( text,this );
+
+					m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
+					TaskComplete();
+					return;
+					}
+					else if(m_HenemyEnemyMe2 >= 1 && m_no_cover_mode != 2 || m_no_cover_mode == 3){
+						if ( RANDOM_LONG(0,1) ){
+						type = 0;
+						UTIL_TraceLine( Center(), Center() + gpGlobals->v_right * -640, ignore_monsters, ENT( pev ), &tr );
+						}
+						else{
+						type = 1;
+						UTIL_TraceLine( Center(), Center() + gpGlobals->v_right * 640, ignore_monsters, ENT( pev ), &tr );
+						}
+
+						if ( tr.flFraction < 1.0 ){
+						moveorigin = tr.vecEndPos + (tr.vecPlaneNormal * pnormal);
+						}
+						else{
+						moveorigin = tr.vecEndPos;
+						}
+						flDist = ( Center() - moveorigin).Length();
+						if ( MoveToLocation( m_movementActivity, 0, moveorigin ) && flDist > distlimit  )
+						{
+						//	sprintf( text, "- %s has Location right! ang.y:%f eang.y:%f type:%d hem2:%d\n",STRING(pev->classname),monsterangles.y,enemyangles.y,type,m_HenemyEnemyMe2);
+						//	UTIL_SayTextAll( text,this );
+
+						m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
+						TaskComplete();
+						return;
+						}
+						else if(m_HenemyEnemyMe2 >= 2 || m_no_cover_mode == 3){
+							if ( RANDOM_LONG(0,1) ){
+							type = 0;
+							UTIL_TraceLine( Center(), Center() + gpGlobals->v_right * -640 + gpGlobals->v_forward * 640, ignore_monsters, ENT( pev ), &tr );
+							}
+							else{
+							type = 1;
+							UTIL_TraceLine( Center(), Center() + gpGlobals->v_right * 640 + gpGlobals->v_forward * 640, ignore_monsters, ENT( pev ), &tr );
+							}
+
+							UTIL_TraceLine( Center(), Center() + gpGlobals->v_right * 640 + gpGlobals->v_forward * 640, ignore_monsters, ENT( pev ), &tr );
+
+							if ( tr.flFraction < 1.0 ){
+							moveorigin = tr.vecEndPos + (tr.vecPlaneNormal * pnormal);
+							}
+							else{
+							moveorigin = tr.vecEndPos;
+							}
+							flDist = ( Center() - moveorigin).Length();
+							if ( MoveToLocation( m_movementActivity, 0, moveorigin ) && flDist > distlimit  )
+							{
+							//sprintf( text, "- %s has Location forward+right! ang.y:%f eang.y:%f type:%d hem2:%d\n",STRING(pev->classname),monsterangles.y,enemyangles.y,type,m_HenemyEnemyMe2);
+							//UTIL_SayTextAll( text,this );
+
+							m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
+							TaskComplete();
+							return;
+							}
+						}
+					}
+
+				}
+			}
+
+			TaskFail();
+
+			break;
+		}
+	case TASK_FIND_ROAD_FORWARD:
+		{
+			int try_num = 0;
+			int fdist = 1000;
+			if(m_movestuck >= 5){
+			fdist = RANDOM_LONG(40,120);
+			}
+			Vector moveorigin;
+			Vector monsterangles = pev->angles;
+			TraceResult tr;
+			try_again:
+			UTIL_MakeVectors(monsterangles);
+			UTIL_TraceLine( Center(), Center() + gpGlobals->v_forward * fdist, dont_ignore_monsters, ENT( pev ), &tr );
+			float pnormal = pev->maxs.x + 8;
+
+			if ( FClassnameIs( pev, "monster_dengor" ) && m_crouchmode == 1  ){
+			pnormal += 8;
+			}
+
+			if ( tr.flFraction < 1.0 ){
+			moveorigin = tr.vecEndPos + (tr.vecPlaneNormal * pnormal);
+			}
+			else{
+			moveorigin = tr.vecEndPos;
+			}
+
+			float flDist = ( Center() - moveorigin).Length();
+			if(flDist <= 50 && try_num <= 1){
+				if ( FClassnameIs( pev, "monster_dengor" ) && m_crouchmode == 1  ){
+					if(RANDOM_LONG(0,1)){
+					monsterangles.y = 0;
+					}
+					else{
+					monsterangles.y = 90;
+					}
+				}
+				else{
+						if(RANDOM_LONG(0,1)){
+						monsterangles.y += RANDOM_LONG(10,120);
+						}
+						else{
+						monsterangles.y -= RANDOM_LONG(10,120);
+						}
+				}
+					try_num += 1;
+			goto try_again;
+			}
+
+					if(m_alwaysrunpath){
+						if ( LookupActivity( ACT_RUN ) != ACTIVITY_NOT_AVAILABLE)
+						{
+							m_movementActivity = ACT_RUN;
+						}
+						else if ( LookupActivity( ACT_WALK ) != ACTIVITY_NOT_AVAILABLE)
+						{
+							
+							m_movementActivity = ACT_WALK;
+						}
+					}
+					else{
+						if ( LookupActivity( ACT_WALK ) != ACTIVITY_NOT_AVAILABLE)
+						{
+							m_movementActivity = ACT_WALK;
+						}
+						else if ( LookupActivity( ACT_RUN ) != ACTIVITY_NOT_AVAILABLE)
+						{
+							m_movementActivity = ACT_RUN;
+						}
+					}
+
+			if ( MoveToLocation( m_movementActivity, 0, moveorigin )  )
 			{
-				// no coverwhatsoever.
-				TaskFail();
+			m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
+			m_movestuck = 0;
+			TaskComplete();
+			return;
 			}
+			m_movestuck += 1;
+			TaskFail();
+			break;
+		}
+	case TASK_FIND_COVER_FROM_ENEMY_RELOAD://����-ս����
+		{
+			if( m_hEnemy != NULL  ){
+				if( FInViewCone3(m_hEnemy) && m_hEnemy->IsAlive() ){
+					float pnormal = pev->maxs.x + 8;
+					float distlimit = 36;
+
+					Vector moveorigin;
+					TraceResult tr;
+
+					Vector vecDir = m_hEnemy->pev->origin - pev->origin;
+					vecDir = vecDir.Normalize( );
+					Vector monsterangles = UTIL_VecToAngles( vecDir );
+					UTIL_MakeVectors(monsterangles);
+
+					if(m_chase_mode == 1)
+					UTIL_TraceLine( Center(), Center() + gpGlobals->v_forward * -128, dont_ignore_monsters, ENT( pev ), &tr );
+					else if(m_chase_mode == 2)
+					UTIL_TraceLine( Center(), Center() + gpGlobals->v_forward * 256, dont_ignore_monsters, ENT( pev ), &tr );
+					else if(m_chase_mode == 3){
+						entvars_t *pevCover = m_hEnemy->pev;
+						if ( FindLateralCover( pevCover->origin, pevCover->view_ofs ) )
+						{
+							// try lateral first
+							m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
+							TaskComplete();
+							return;
+						}
+						else if ( FindCover( pevCover->origin, pevCover->view_ofs, 0, CoverRadius() ) )
+						{
+							// then try for plain ole cover
+							m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
+							TaskComplete();
+							return;
+						}	
+						UTIL_TraceLine( Center(), Center() + gpGlobals->v_forward * -512, dont_ignore_monsters, ENT( pev ), &tr );
+					}
+
+					if ( tr.flFraction < 1.0 ){
+					moveorigin = tr.vecEndPos + (tr.vecPlaneNormal * pnormal);
+					}
+					else{
+					moveorigin = tr.vecEndPos;
+					}
+
+					float flDist = ( Center() - moveorigin).Length();
+
+						if ( LookupActivity( ACT_RUN ) != ACTIVITY_NOT_AVAILABLE)
+						{
+							m_movementActivity = ACT_RUN;
+						}
+						else if ( LookupActivity( ACT_WALK ) != ACTIVITY_NOT_AVAILABLE)
+						{
+							
+							m_movementActivity = ACT_WALK;
+						}
+
+					if ( MoveToLocation( m_movementActivity, 0, moveorigin ) && flDist > distlimit  )
+					{
+					m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
+					TaskComplete();
+					return;
+					}
+					else if(m_chase_mode == 3){//��λ�
+						if (RANDOM_LONG(0,5) <= 2 )
+						UTIL_TraceLine( Center(), Center() + gpGlobals->v_right * -512, dont_ignore_monsters, ENT( pev ), &tr );
+						else
+						UTIL_TraceLine( Center(), Center() + gpGlobals->v_right * 512, dont_ignore_monsters, ENT( pev ), &tr );
+
+						if ( tr.flFraction < 1.0 ){
+						moveorigin = tr.vecEndPos + (tr.vecPlaneNormal * pnormal);
+						}
+						else{
+						moveorigin = tr.vecEndPos;
+						}
+						flDist = ( Center() - moveorigin).Length();
+						if ( MoveToLocation( m_movementActivity, 0, moveorigin ) && flDist > distlimit  )
+						{
+						m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
+						TaskComplete();
+						return;
+						}
+					}
+					else if(m_chase_mode == 2){//���
+						UTIL_TraceLine( Center(), Center() + gpGlobals->v_forward * -256, dont_ignore_monsters, ENT( pev ), &tr );
+
+						if ( tr.flFraction < 1.0 ){
+						moveorigin = tr.vecEndPos + (tr.vecPlaneNormal * pnormal);
+						}
+						else{
+						moveorigin = tr.vecEndPos;
+						}
+						flDist = ( Center() - moveorigin).Length();
+						if ( MoveToLocation( m_movementActivity, 0, moveorigin ) && flDist > distlimit  )
+						{
+						m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
+						TaskComplete();
+						return;
+						}
+					}
+					else if(m_chase_mode == 1){//ǰ��
+						UTIL_TraceLine( Center(), Center() + gpGlobals->v_forward * 128, dont_ignore_monsters, ENT( pev ), &tr );
+
+						if ( tr.flFraction < 1.0 ){
+						moveorigin = tr.vecEndPos + (tr.vecPlaneNormal * pnormal);
+						}
+						else{
+						moveorigin = tr.vecEndPos;
+						}
+						flDist = ( Center() - moveorigin).Length();
+						if ( MoveToLocation( m_movementActivity, 0, moveorigin ) && flDist > distlimit  )
+						{
+						m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
+						TaskComplete();
+						return;
+						}
+					}
+
+				}
+			}
+
+			TaskFail();
 			break;
 		}
 	case TASK_FIND_COVER_FROM_ORIGIN:
 		{
+			if(m_no_cover_mode == 1)
+			{
+				TaskFail();
+				return;
+			}
+
 			if( FindCover( pev->origin, pev->view_ofs, 0, CoverRadius() ) )
 			{
 				// then try for plain ole cover
@@ -783,6 +1182,12 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		break;
 	case TASK_FIND_COVER_FROM_BEST_SOUND:
 		{
+			if(m_no_cover_mode == 1)
+			{
+				TaskFail();
+				return;
+			}
+
 			CSound *pBestSound;
 
 			pBestSound = PBestSound();
@@ -805,9 +1210,65 @@ void CBaseMonster::StartTask( Task_t *pTask )
 			}
 			else
 			{
-				// no coverwhatsoever. or no sound in list
-				TaskFail();
+				float pnormal = pev->maxs.x + 8;
+				float distlimit = 60;
+
+				Vector moveorigin;
+					
+				TraceResult tr;
+
+				Vector vecDir = pBestSound->m_vecOrigin - pev->origin;
+				vecDir = vecDir.Normalize( );
+				Vector monsterangles = UTIL_VecToAngles( vecDir );
+				UTIL_MakeVectors(monsterangles);
+
+				
+				UTIL_TraceLine( Center(), Center() + gpGlobals->v_forward * -600, dont_ignore_monsters, ENT( pev ), &tr );
+					
+				if ( tr.flFraction < 1.0 )
+				{
+					moveorigin = tr.vecEndPos + (tr.vecPlaneNormal * pnormal);
+				}
+				else
+				{
+					moveorigin = tr.vecEndPos;
+				}
+
+				float flDist = ( Center() - moveorigin).Length();
+
+				if ( MoveToLocation( m_movementActivity, 0, moveorigin ) && flDist > distlimit  )
+				{
+					m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
+					TaskComplete();
+					return;
+				}
+				else
+				{
+					if (RANDOM_LONG(0,5) <= 2 )
+						UTIL_TraceLine( Center(), Center() + gpGlobals->v_right * -600, dont_ignore_monsters, ENT( pev ), &tr );
+					else
+						UTIL_TraceLine( Center(), Center() + gpGlobals->v_right * 600, dont_ignore_monsters, ENT( pev ), &tr );
+
+					if ( tr.flFraction < 1.0 )
+					{
+						moveorigin = tr.vecEndPos + (tr.vecPlaneNormal * pnormal);
+					}
+					else
+					{
+						moveorigin = tr.vecEndPos;
+					}
+					flDist = ( Center() - moveorigin).Length();
+					if ( MoveToLocation( m_movementActivity, 0, moveorigin ) && flDist > distlimit  )
+					{
+						m_flMoveWaitFinished = gpGlobals->time + pTask->flData;
+						TaskComplete();
+						return;
+					}
+				}
 			}
+			// no coverwhatsoever. or no sound in list
+			TaskFail();
+			
 			break;
 		}
 	case TASK_FACE_HINTNODE:
@@ -833,6 +1294,11 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		{
 			MakeIdealYaw( m_vecEnemyLKP );
 			SetTurnActivity(); 
+			break;
+		}
+	case TASK_FOGET_ENEMY:
+		{
+			SetConditions(bits_COND_NEW_ENEMY);
 			break;
 		}
 	case TASK_FACE_IDEAL:
@@ -963,7 +1429,134 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_SET_ACTIVITY:
 		{
-			m_IdealActivity = (Activity)(int)pTask->flData;
+			if(m_noidleseq)
+			{
+			//NO IDLE SEQ MODE
+			}
+			else if((Activity)(int)pTask->flData == ACT_IDLE && pev->deadflag != DEAD_NO)
+			{
+				m_IdealActivity = ACT_DIESIMPLE;
+			}
+			else
+			{
+				m_IdealActivity = (Activity)(int)pTask->flData;
+			}
+
+			if ( FClassnameIs(pev,"monster_takeboy") ){
+				if(pev->health == pev->max_health && pev->weapons == 1){
+				m_IdealActivity = ACT_STAND;
+				}
+				else if(pev->health == pev->max_health && pev->weapons == 2){
+				m_IdealActivity = ACT_USE;
+				}
+			}
+			else if ( FClassnameIs(pev,"monster_stone_devil") && m_crouchmode == 1 ){
+				if((Activity)(int)pTask->flData == ACT_IDLE && pev->health > 0){
+				m_IdealActivity = ACT_SLEEP;
+				}
+			}
+			else if ( FClassnameIs(pev,"monster_purple_guy") && pev->frags == 1 ){
+				if((Activity)(int)pTask->flData == ACT_IDLE && pev->health == pev->max_health){
+				m_IdealActivity = ACT_GUARD;
+				}
+			}
+			else if(FClassnameIs(pev,"monster_wisebeast")){
+				if(pev->frags == 1){
+					m_IdealActivity =  ACT_GLIDE;
+				}
+			}
+			else if(FClassnameIs(pev,"monster_generic")){
+				if(pev->weapons == 168){
+					m_IdealActivity =  ACT_SLEEP;
+				}
+			}
+			else if(FClassnameIs(pev,"monster_cleaner") ){
+				if(pev->weapons == 2){
+					if((Activity)(int)pTask->flData == ACT_IDLE){
+					m_IdealActivity =  ACT_GUARD;
+					}
+				}
+				else if(pev->weapons == 3){
+					m_IdealActivity =  ACT_COMBAT_IDLE;
+				}
+			}
+			else if(FClassnameIs(pev,"monster_gman")){
+				if(pev->frags == 1){
+				m_IdealActivity = ACT_USE;
+				}
+			}
+			else if(FClassnameIs(pev,"monster_vanlve")){
+				if(pev->frags == 1){
+				m_IdealActivity = ACT_CROUCHIDLE;
+				}
+				else if(pev->frags == 2){
+				m_IdealActivity = ACT_GUARD;
+				}
+			}
+			else if ( FClassnameIs(pev,"monster_human_assassin")){
+				if ( pev->spawnflags == 16 ){
+					if((Activity)(int)pTask->flData == ACT_IDLE && pev->health > 0){
+					m_IdealActivity = ACT_COMBAT_IDLE;
+					}
+				}
+			}
+			else if ( FClassnameIs(pev,"monster_zombie_soldier2")){
+				if((Activity)(int)pTask->flData == ACT_IDLE && pev->health > 0){
+				m_IdealActivity = ACT_COMBAT_IDLE;
+				}
+			}
+			else if ( FClassnameIs(pev,"monster_gus") && m_crouchmode == 1 ){
+				if((Activity)(int)pTask->flData == ACT_IDLE && pev->health > 0){
+				m_IdealActivity = ACT_CROUCHIDLE;
+				}
+			}
+			else if ( FClassnameIs(pev,"monster_zombie_sitting") && m_crouchmode == 1 ){
+				if((Activity)(int)pTask->flData == ACT_IDLE && pev->health > 0){
+				m_IdealActivity = ACT_SLEEP;
+				}
+			}
+			else if ( FClassnameIs(pev,"monster_cof_ms2") && m_crouchmode == 1 ){
+				if((Activity)(int)pTask->flData == ACT_IDLE && pev->health > 0){
+				m_IdealActivity = ACT_SLEEP;
+				}
+			}
+			else if ( FClassnameIs(pev,"monster_sewblade") && m_crouchmode == 1 ){
+				if((Activity)(int)pTask->flData == ACT_IDLE && pev->health > 0){
+				m_IdealActivity = ACT_FALL;
+				}
+			}
+			else if ( FClassnameIs(pev,"monster_cof_ms9") && m_crouchmode == 1 ){
+				if((Activity)(int)pTask->flData == ACT_IDLE && pev->health > 0){
+					if(pev->body == 0){
+					m_IdealActivity = ACT_SLEEP;
+					}
+					else{
+					m_IdealActivity = ACT_USE;
+					}
+				}
+			}
+			else if ( FClassnameIs(pev,"monster_cof_ms4") && pev->frags == 8 ){
+				if(pev->health > 0){
+					if( (Activity)(int)pTask->flData == ACT_IDLE ||
+					(Activity)(int)pTask->flData == ACT_WALK ||
+					(Activity)(int)pTask->flData == ACT_TURN_LEFT || 
+					(Activity)(int)pTask->flData == ACT_TURN_RIGHT){
+					m_IdealActivity = ACT_CROUCHIDLE;
+					}
+				}
+			}
+			else if ( FClassnameIs(pev,"monster_saintna") ){
+				if(pev->weapons == 1 && pev->health > 0){
+					m_IdealActivity = ACT_IDLE_ANGRY;
+				}
+				else if(pev->weapons == 2 && pev->health > 0){
+					m_IdealActivity = ACT_CROUCH;
+				}
+				else if(pev->weapons == 4 && pev->health > 0){
+					m_IdealActivity = ACT_CROUCHIDLE;
+				}
+			}
+
 			TaskComplete();
 			break;
 		}
@@ -1025,6 +1618,46 @@ void CBaseMonster::StartTask( Task_t *pTask )
 			}
 		}
 		break;
+	case TASK_GET_PATH_TO_ALLY_CORPSE:
+		{
+			UTIL_MakeVectors( pev->angles );
+			if ( BuildRoute ( m_vecAllyLKP - gpGlobals->v_forward * RANDOM_LONG(-64,64) - gpGlobals->v_right * RANDOM_LONG(-64,64), bits_MF_TO_LOCATION, NULL ) )
+			{
+				TaskComplete();
+			}
+			else
+			{
+				ALERT ( at_aiconsole, "GetPathToEnemyCorpse failed!!\n" );
+				TaskFail();
+			}
+		}
+		break;
+
+	case TASK_GET_PATH_TO_RETURN_OLD_ORIGIN:
+		{
+			if ( BuildRoute ( m_vecOldLKP, bits_MF_TO_LOCATION, NULL ) )
+			{
+				TaskComplete();
+			}
+			else
+			{
+				ALERT ( at_aiconsole, "GetPathToEnemyCorpse failed!!\n" );
+				TaskFail();
+			}
+		}
+		break;
+	case TASK_FACE_ALLY:
+		{
+		//	MakeIdealYaw ( m_vecAllyLKP );
+
+			ChangeYaw( pev->yaw_speed );
+
+			if ( FacingIdeal() )
+			{
+				TaskComplete();
+			}
+			break;
+		}
 	case TASK_GET_PATH_TO_SPOT:
 		{
 			CBaseEntity *pPlayer = CBaseEntity::Instance( FIND_ENTITY_BY_CLASSNAME( NULL, "player" ) );
@@ -1123,17 +1756,43 @@ void CBaseMonster::StartTask( Task_t *pTask )
 			}
 			break;
 		}
+	case TASK_COVER_RUN_PATH:
+		{
+			m_movementActivity = ACT_USE;
+			TaskComplete();
+			break;
+		}
 	case TASK_RUN_PATH:
 		{
 			// UNDONE: This is in some default AI and some monsters can't run? -- walk instead?
 			if( LookupActivity( ACT_RUN ) != ACTIVITY_NOT_AVAILABLE )
 			{
-				m_movementActivity = ACT_RUN;
+				if(m_enemyfollower != 0 && m_hEnemy != NULL)
+				{
+					if(m_hEnemy->IsPlayer())
+					{
+						m_movementActivity = ACT_WALK;
+					}
+					else
+					{
+						m_movementActivity = ACT_RUN;
+					}
+				}
+				else
+				{
+					m_movementActivity = ACT_RUN;
+				}
 			}
 			else
 			{
 				m_movementActivity = ACT_WALK;
 			}
+
+			if ( FClassnameIs(pev,"monster_majo") && pev->movetype == MOVETYPE_FLY )
+			{
+				m_movementActivity = ACT_GLIDE;
+			}
+
 			TaskComplete();
 			break;
 		}
@@ -1143,7 +1802,12 @@ void CBaseMonster::StartTask( Task_t *pTask )
 			{
 				m_movementActivity = ACT_FLY;
 			}
-			if( LookupActivity( ACT_WALK ) != ACTIVITY_NOT_AVAILABLE )
+
+			if ( LookupActivity( ACT_RUN ) != ACTIVITY_NOT_AVAILABLE && m_alwaysrunpath)
+			{
+				m_movementActivity = ACT_RUN;
+			}
+			else if( LookupActivity( ACT_WALK ) != ACTIVITY_NOT_AVAILABLE )
 			{
 				m_movementActivity = ACT_WALK;
 			}
@@ -1156,16 +1820,17 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_STRAFE_PATH:
 		{
-			Vector2D vec2DirToPoint; 
+			/*Vector2D vec2DirToPoint; 
 			Vector2D vec2RightSide;
 
 			// to start strafing, we have to first figure out if the target is on the left side or right side
 			UTIL_MakeVectors( pev->angles );
 
 			vec2DirToPoint = ( m_Route[0].vecLocation - pev->origin ).Make2D().Normalize();
-			vec2RightSide = gpGlobals->v_right.Make2D().Normalize();
+			vec2RightSide = gpGlobals->v_right.Make2D().Normalize();*/
 
-			if( DotProduct ( vec2DirToPoint, vec2RightSide ) > 0 )
+			//if( DotProduct ( vec2DirToPoint, vec2RightSide ) > 0 )
+			if ( RANDOM_LONG( 0, 1 ) )
 			{
 				// strafe right
 				m_movementActivity = ACT_STRAFE_RIGHT;
@@ -1208,13 +1873,28 @@ void CBaseMonster::StartTask( Task_t *pTask )
 		}
 	case TASK_SOUND_WAKE:
 		{
+			if ( m_fightmode == 0 )
+			{
+				Alert_Ally(m_hEnemy);
+			}
+
 			AlertSound();
 			TaskComplete();
 			break;
 		}
 	case TASK_SOUND_DIE:
 		{
-			DeathSound();
+			if(m_die <= 1)
+			{
+				if(m_die_dont_alert == 0 && m_fightmode == 0)
+				{
+					Alert_Ally(m_hEnemy);
+				}
+				if(m_candrownwater != 2)
+				{
+					DeathSound();
+				}
+			}
 			TaskComplete();
 			break;
 		}
@@ -1351,9 +2031,17 @@ Schedule_t *CBaseMonster::GetSchedule( void )
 			ALERT( at_aiconsole, "MONSTERSTATE IS NONE!\n" );
 			break;
 		}
+	case MONSTERSTATE_HUNT:
+		{
+			break;
+		}
 	case MONSTERSTATE_IDLE:
 		{
-			if( HasConditions( bits_COND_HEAR_SOUND ) )
+			if(m_walkaround == TRUE)
+			{
+				return GetScheduleOfType( SCHED_IDLE_WALK_AROUND );
+			}
+			else if ( HasConditions ( bits_COND_HEAR_SOUND ) && m_movementGoal != MOVEGOAL_PATHCORNER )
 			{
 				return GetScheduleOfType( SCHED_ALERT_FACE );
 			}
@@ -1371,7 +2059,16 @@ Schedule_t *CBaseMonster::GetSchedule( void )
 		}
 	case MONSTERSTATE_ALERT:
 		{
-			if( HasConditions( bits_COND_ENEMY_DEAD ) && LookupActivity( ACT_VICTORY_DANCE ) != ACTIVITY_NOT_AVAILABLE )
+			if ( !IsMoving() && m_hEnemy == NULL )
+			{
+				if(m_allydeadcheck == 1)
+				{
+					m_allydeadcheck = 0;
+					return GetScheduleOfType( SCHED_CHASE_DEAD_ALLY );
+				}
+			}
+
+			if( HasConditions( bits_COND_ENEMY_DEAD ) && LookupActivity( ACT_VICTORY_DANCE ) != ACTIVITY_NOT_AVAILABLE && m_no_victdance == 0 )
 			{
 				return GetScheduleOfType( SCHED_VICTORY_DANCE );
 			}
@@ -1390,6 +2087,10 @@ Schedule_t *CBaseMonster::GetSchedule( void )
 			else if( HasConditions ( bits_COND_HEAR_SOUND ) )
 			{
 				return GetScheduleOfType( SCHED_ALERT_FACE );
+			}
+			else if(m_walkaround == TRUE)
+			{
+				return GetScheduleOfType( SCHED_IDLE_WALK_AROUND );
 			}
 			else
 			{
@@ -1411,6 +2112,7 @@ Schedule_t *CBaseMonster::GetSchedule( void )
 				}
 				else
 				{
+					Forget( bits_MEMORY_FLINCHED );
 					SetState( MONSTERSTATE_ALERT );
 					return GetSchedule();
 				}
@@ -1422,10 +2124,20 @@ Schedule_t *CBaseMonster::GetSchedule( void )
 			}
 			else if( HasConditions( bits_COND_LIGHT_DAMAGE ) && !HasMemory( bits_MEMORY_FLINCHED ) )
 			{
+				m_finish = 100;
 				return GetScheduleOfType( SCHED_SMALL_FLINCH );
 			}
 			else if( !HasConditions( bits_COND_SEE_ENEMY ) )
 			{
+				m_alert = 100;
+				if ( FClassnameIs( pev, "monster_gargantua" ) )
+				{
+					if ( HasConditions(bits_COND_CAN_RANGE_ATTACK1) )
+					{
+						return GetScheduleOfType( SCHED_RANGE_ATTACK1 );
+					}
+				}
+
 				// we can't see the enemy
 				if( !HasConditions( bits_COND_ENEMY_OCCLUDED ) )
 				{
@@ -1435,8 +2147,15 @@ Schedule_t *CBaseMonster::GetSchedule( void )
 				}
 				else
 				{
-					// chase!
-					return GetScheduleOfType( SCHED_CHASE_ENEMY );
+					if(m_chase_mode >= 0)
+					{
+						// chase!
+						return GetScheduleOfType( SCHED_CHASE_ENEMY );
+					}
+					else
+					{
+						return GetScheduleOfType( SCHED_COMBAT_FACE );
+					}
 				}
 			}
 			else  
@@ -1460,10 +2179,15 @@ Schedule_t *CBaseMonster::GetSchedule( void )
 				}
 				if( !HasConditions( bits_COND_CAN_RANGE_ATTACK1 | bits_COND_CAN_MELEE_ATTACK1 ) )
 				{
-					// if we can see enemy but can't use either attack type, we must need to get closer to enemy
-					return GetScheduleOfType( SCHED_CHASE_ENEMY );
+					if(m_guard_mode)
+						return GetScheduleOfType( SCHED_COMBAT_FACE );
+					else
+					{
+						// if we can see enemy but can't use either attack type, we must need to get closer to enemy
+						return GetScheduleOfType( SCHED_CHASE_ENEMY );
+					}
 				}
-				else if( !FacingIdeal() )
+				else if( !FacingIdeal() || m_facing_fucking_mode == 1 )
 				{
 					//turn
 					return GetScheduleOfType( SCHED_COMBAT_FACE );
@@ -1477,7 +2201,15 @@ Schedule_t *CBaseMonster::GetSchedule( void )
 		}
 	case MONSTERSTATE_DEAD:
 		{
-			return GetScheduleOfType( SCHED_DIE );
+			if(m_dieseq == 0)
+			{
+				return GetScheduleOfType( SCHED_DIE );
+			}
+			break;
+		}
+	case MONSTERSTATE_PLAYDEAD:
+		{
+			return GetScheduleOfType( SCHED_FAKEDIE );
 			break;
 		}
 	case MONSTERSTATE_SCRIPT:

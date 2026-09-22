@@ -19,6 +19,9 @@
 #include "effects.h"
 #include "weapons.h"
 #include "explode.h"
+#include "monsters.h"
+#include "soundent.h"
+#include "gamerules.h"
 
 #include "player.h"
 
@@ -29,6 +32,8 @@
 #define SF_TANK_LINEOFSIGHT		0x0010
 #define SF_TANK_CANCONTROL		0x0020
 #define SF_TANK_SOUNDON			0x8000
+
+extern DLL_GLOBAL Vector		g_vecAttackDir;
 
 enum TANKBULLET
 {
@@ -52,6 +57,10 @@ public:
 	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	void Think( void );
 	void TrackTarget( void );
+	
+	virtual int TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType );
+	void TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType );
+	void EXPORT		Die( void );
 
 	virtual void Fire( const Vector &barrelEnd, const Vector &forward, entvars_t *pevAttacker );
 	virtual Vector UpdateTargetPosition( CBaseEntity *pTarget )
@@ -128,6 +137,8 @@ protected:
 	Vector		m_sightOrigin;	// Last sight of target
 	int			m_spread;		// firing spread
 	string_t	m_iszMaster;	// Master entity (game_team_master or multisource)
+
+	int			pGibName;
 };
 
 TYPEDESCRIPTION	CFuncTank::m_SaveData[] =
@@ -173,6 +184,209 @@ static Vector gTankSpread[] =
 
 #define MAX_FIRING_SPREADS ARRAYSIZE( gTankSpread )
 
+void CFuncTank::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
+{
+	if ( pev->frags != 0 )
+	{
+		if ( pev->dmgtime != gpGlobals->time || (RANDOM_LONG(0,100) < 20))
+		{
+			pev->dmgtime = gpGlobals->time;
+			UTIL_Sparks( ptr->vecEndPos );
+		}
+	}
+	
+	CBaseEntity::TraceAttack( pevAttacker, flDamage, vecDir, ptr, bitsDamageType );
+}
+
+int CFuncTank :: TakeDamage( entvars_t* pevInflictor, entvars_t* pevAttacker, float flDamage, int bitsDamageType )
+{
+	if (pev->frags == 0)
+		return 0;
+
+	if(bitsDamageType == DMG_NERVEGAS)
+		return 0;
+
+	if ( (bitsDamageType & DMG_ENERGYBEAM)
+	|| (bitsDamageType & DMG_DARK)
+	|| (bitsDamageType & DMG_BULLET))
+		flDamage *= 0.8;
+
+	Vector	vecTemp;
+
+	// if Attacker == Inflictor, the attack was a melee or other instant-hit attack.
+	// (that is, no actual entity projectile was involved in the attack so use the shooter's origin). 
+	if ( pevAttacker == pevInflictor )	
+	{
+		vecTemp = pevInflictor->origin - ( pev->absmin + ( pev->size * 0.5 ) );
+	}
+	else
+	// an actual missile was involved.
+	{
+		vecTemp = pevInflictor->origin - ( pev->absmin + ( pev->size * 0.5 ) );
+	}
+	
+
+	if( bitsDamageType & DMG_BLAST )
+	{
+		flDamage *= 2.5;
+	}
+	else if( bitsDamageType & DMG_ENERGYBLAST)
+	{
+		flDamage *= 2.0;
+	}
+	else if( (bitsDamageType & DMG_MORTAR) || (bitsDamageType & DMG_VALVE_SWORD) )
+	{
+		flDamage *= 1.2;
+	}
+
+// this global is still used for glass and other non-monster killables, along with decals.
+	g_vecAttackDir = vecTemp.Normalize();
+		
+// do the damage
+	pev->health -= flDamage;
+	if (pev->health <= 0)
+	{
+		pev->deadflag = DEAD_DEAD;
+		pev->takedamage = DAMAGE_NO;
+		Die();
+		return 0;
+	}
+
+	// Make a shard noise each time func breakable is hit.
+	// Don't play shard noise if cbreakable actually died.
+
+	int pitch;
+	float fvol;
+	fvol = RANDOM_FLOAT(0.75, 1.0);
+	if (RANDOM_LONG(0,2))
+		pitch = PITCH_NORM;
+	else
+		pitch = 95 + RANDOM_LONG(0,34);
+
+	char *rgpsz[3];
+	rgpsz[0] = "debris/metal1.wav";
+	rgpsz[1] = "debris/metal3.wav";
+	rgpsz[2] = "debris/metal2.wav";
+	EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, rgpsz[RANDOM_LONG(0,2)], fvol, ATTN_NORM, 0, pitch);
+
+	return 1;
+}
+
+void CFuncTank::Die( void )
+{
+	Vector vecSpot;// shard origin
+	Vector vecVelocity;// shard velocity
+	CBaseEntity *pEntity = NULL;
+	char cFlag = 0;
+	int pitch;
+	float fvol;
+	
+	pitch = 95 + RANDOM_LONG(0,29);
+
+	if (pitch > 97 && pitch < 103)
+		pitch = 100;
+
+	// The more negative pev->health, the louder
+	// the sound should be.
+
+	fvol = RANDOM_FLOAT(0.85, 1.0) + (fabs(pev->health) / 100.0);
+
+	if (fvol > 1.0)
+		fvol = 1.0;
+
+	switch ( RANDOM_LONG(0,1) )
+	{
+		case 0:	
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustmetal1.wav", fvol, ATTN_NORM, 0, pitch);	
+			break;
+		case 1:	
+			EMIT_SOUND_DYN(ENT(pev), CHAN_VOICE, "debris/bustmetal2.wav", fvol, ATTN_NORM, 0, pitch);	
+			break;
+	}
+
+	vecVelocity.x = 0;
+	vecVelocity.y = 0;
+	vecVelocity.z = 0;
+
+	vecSpot = pev->origin + (pev->mins + pev->maxs) * 0.5;
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, vecSpot );
+		WRITE_BYTE( TE_BREAKMODEL);
+
+		// position
+		WRITE_COORD( vecSpot.x );
+		WRITE_COORD( vecSpot.y );
+		WRITE_COORD( vecSpot.z );
+
+		// size
+		WRITE_COORD( pev->size.x);
+		WRITE_COORD( pev->size.y);
+		WRITE_COORD( pev->size.z);
+
+		// velocity
+		WRITE_COORD( vecVelocity.x ); 
+		WRITE_COORD( vecVelocity.y );
+		WRITE_COORD( vecVelocity.z );
+
+		// randomization
+		WRITE_BYTE( 10 ); 
+
+		// Model
+		WRITE_SHORT( pGibName );	//model id#
+
+		// # of shards
+		WRITE_BYTE( 0 );	// let client decide
+
+		// duration
+		WRITE_BYTE( 25 );// 2.5 seconds
+
+		// flags
+		WRITE_BYTE( cFlag );
+	MESSAGE_END();
+
+	float size = pev->size.x;
+	if ( size < pev->size.y )
+		size = pev->size.y;
+	if ( size < pev->size.z )
+		size = pev->size.z;
+
+	// !!! HACK  This should work!
+	// Build a box above the entity that looks like an 8 pixel high sheet
+	Vector mins; 
+	Vector maxs;
+	
+	mins = pev->absmin;
+	maxs = pev->absmax;
+	mins.z = pev->absmax.z;
+
+	maxs.z += 8;
+
+	::RadiusDamage2( vecSpot + Vector(0,0,128), pev, pev, 320, 800, CLASS_NONE, DMG_BLAST );
+	FX_Explosion( vecSpot + Vector(0,0,128), EXPLOSION_C4 );
+	EMIT_SOUND(ENT(pev), CHAN_STATIC, "weapons/mortarhit.wav", 1.0, 0.3);
+
+//	RadiusDamage( vecSpot, pev, pev, 320, CLASS_NONE, DMG_BLAST );
+
+	// BUGBUG -- can only find 256 entities on a breakable -- should be enough
+	CBaseEntity *pList[128];
+	int count = UTIL_EntitiesInBox( pList, 128, mins, maxs, FL_ONGROUND );
+	if ( count )
+	{
+		for ( int i = 0; i < count; i++ )
+		{
+			ClearBits( pList[i]->pev->flags, FL_ONGROUND );
+			pList[i]->pev->groundentity = NULL;
+		}
+	}
+
+	// Don't fire something that could fire myself
+	pev->targetname = 0;
+
+	// Fire targets on break
+	SUB_UseTargets( NULL, USE_TOGGLE, 0 );
+
+	UTIL_Remove( this );
+}
+
 void CFuncTank::Spawn( void )
 {
 	Precache();
@@ -195,6 +409,8 @@ void CFuncTank::Spawn( void )
 		m_spread = 0;
 
 	pev->oldorigin = pev->origin;
+
+	pev->takedamage = DAMAGE_YES;
 }
 
 void CFuncTank::Precache( void )
@@ -207,6 +423,13 @@ void CFuncTank::Precache( void )
 
 	if( pev->noise )
 		PRECACHE_SOUND( STRING( pev->noise ) );
+	
+	pGibName = PRECACHE_MODEL("models/metalplategibs.mdl");
+	PRECACHE_SOUND( "debris/metal1.wav" );
+	PRECACHE_SOUND( "debris/metal2.wav" );
+	PRECACHE_SOUND( "debris/metal3.wav" );
+	PRECACHE_SOUND( "debris/bustmetal1.wav" );
+	PRECACHE_SOUND( "debris/bustmetal2.wav" );
 }
 
 void CFuncTank::KeyValue( KeyValueData *pkvd )
@@ -481,7 +704,7 @@ void CFuncTank::TrackTarget( void )
 {
 	TraceResult tr;
 	edict_t *pPlayer = FIND_CLIENT_IN_PVS( edict() );
-	BOOL updateTime = FALSE;
+	BOOL updateTime = FALSE, lineOfSight;
 	Vector angles, direction, targetPosition, barrelEnd;
 	edict_t *pTarget = NULL;
 
@@ -507,7 +730,7 @@ void CFuncTank::TrackTarget( void )
 			return;
 		}
 		pTarget = FindTarget( pPlayer );
-		if( !pTarget )
+		if( !pTarget|| FBitSet( pPlayer->v.flags, FL_NOTARGET ) )
 			return;
 
 		// Calculate angle needed to aim at target
@@ -520,8 +743,10 @@ void CFuncTank::TrackTarget( void )
 
 		UTIL_TraceLine( barrelEnd, targetPosition, dont_ignore_monsters, edict(), &tr );
 
+		lineOfSight = FALSE;
 		if( tr.flFraction == 1.0f || tr.pHit == pTarget )
 		{
+			lineOfSight = TRUE;
 			CBaseEntity *pInstance = CBaseEntity::Instance(pTarget);
 			if( InRange( range ) && pInstance && pInstance->IsAlive() )
 			{

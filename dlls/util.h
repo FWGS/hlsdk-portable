@@ -308,6 +308,7 @@ extern void			UTIL_PlayerDecalTrace( TraceResult *pTrace, int playernum, int dec
 extern void			UTIL_GunshotDecalTrace( TraceResult *pTrace, int decalNumber );
 extern void			UTIL_Sparks( const Vector &position );
 extern void			UTIL_Ricochet( const Vector &position, float scale );
+extern void 		UTIL_WhiteSparks( const Vector &origin, const Vector &direction, int color, int count, int speed, int velocityRange );
 extern void			UTIL_StringToVector( float *pVector, const char *pString );
 extern void			UTIL_StringToIntArray( int *pVector, int count, const char *pString );
 extern Vector		UTIL_ClampVectorToBox( const Vector &input, const Vector &clampSize );
@@ -465,9 +466,12 @@ extern DLL_GLOBAL const Vector g_vecZero;
 #define	SF_BREAK_TOUCH			2// can be 'crashed through' by running player (plate glass)
 #define SF_BREAK_PRESSURE		4// can be broken by a player standing on it
 #define SF_BREAK_CROWBAR		256// instant break if hit with crowbar
+#define SF_BREAK_TOUCH_TIH		8// touch and damage
 
 // func_pushable (it's also func_breakable, so don't collide with those flags)
 #define SF_PUSH_BREAKABLE		128
+#define SF_BREAK_BULLECT		512// instant break if hit with crowbar
+#define SF_BREAK_BLAST			1024// only blast explode
 
 #define SF_LIGHT_START_OFF		1
 
@@ -511,6 +515,9 @@ int SENTENCEG_Lookup(const char *sample, char *sentencenum);
 void TEXTURETYPE_Init();
 char TEXTURETYPE_Find(char *name);
 float TEXTURETYPE_PlaySound(TraceResult *ptr,  Vector vecSrc, Vector vecEnd, int iBulletType);
+
+char TEXTURETYPE_Trace(TraceResult *ptr,  Vector vecSrc, Vector vecEnd);// XDM
+char SURFACETYPE_Trace(TraceResult *ptr,  Vector vecSrc, Vector vecEnd,int classtype,int damagelevel);// XDM
 
 // NOTE: use EMIT_SOUND_DYN to set the pitch of a sound. Pitch of 100
 // is no pitch shift.  Pitch > 100 up to 255 is a higher pitch, pitch < 100

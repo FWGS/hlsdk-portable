@@ -29,6 +29,8 @@
 
 #include "mobility_int.h"
 
+extern int iMouseInUse;
+
 DECLARE_MESSAGE( m_Health, Health )
 DECLARE_MESSAGE( m_Health, Damage )
 
@@ -47,7 +49,7 @@ int giDmgFlags[NUM_DMG_TYPES] =
 	DMG_NERVEGAS, 
 	DMG_RADIATION,
 	DMG_SHOCK,
-	DMG_CALTROP,
+	DMG_CONCUSSION,
 	DMG_TRANQ,
 	DMG_CONCUSS,
 	DMG_HALLUC
@@ -102,6 +104,10 @@ int CHudHealth::MsgFunc_Health( const char *pszName, int iSize, void *pbuf )
 	// TODO: update local health data
 	BEGIN_READ( pbuf, iSize );
 	int x = READ_BYTE();
+
+	m_newcross_active = READ_BYTE();
+	m_newcross_size = READ_BYTE();
+	m_newcross_ontarget = READ_BYTE();
 
 	m_iFlags |= HUD_ACTIVE;
 
@@ -183,7 +189,7 @@ int CHudHealth::Draw( float flTime )
 	int a = 0, x, y;
 	int HealthWidth;
 
-	if( ( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH ) || gEngfuncs.IsSpectateOnly() )
+	if( iMouseInUse || ( gHUD.m_iHideHUDDisplay & HIDEHUD_HEALTH ) || gEngfuncs.IsSpectateOnly() )
 		return 1;
 
 	if( !m_hSprite )
@@ -195,15 +201,15 @@ int CHudHealth::Draw( float flTime )
 		m_fFade -= ( (float)gHUD.m_flTimeDelta * 20.0f );
 		if( m_fFade <= 0 )
 		{
-			a = MIN_ALPHA;
+			a = 255;
 			m_fFade = 0;
 		}
 
 		// Fade the health number back to dim
-		a = MIN_ALPHA + ( m_fFade / FADE_TIME ) * 128;
+		a = 255;
 	}
 	else
-		a = MIN_ALPHA;
+		a = 255;
 
 	// If health is getting low, make it bright red
 	if( m_iHealth <= 15 )
@@ -222,18 +228,215 @@ int CHudHealth::Draw( float flTime )
 		x = CrossWidth / 2;
 
 		SPR_Set( gHUD.GetSprite( m_HUD_cross ), r, g, b );
-		SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( m_HUD_cross ) );
+		//SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( m_HUD_cross ) );
 
 		x = CrossWidth + HealthWidth / 2;
 
-		x = gHUD.DrawHudNumber( x, y + gHUD.m_iHudNumbersYOffset, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b );
+		// x = gHUD.DrawHudNumber( x, y + gHUD.m_iHudNumbersYOffset, DHN_3DIGITS | DHN_DRAWZERO, m_iHealth, r, g, b );
 
 		x += HealthWidth / 2;
 
 		int iHeight = gHUD.m_iFontHeight;
 		int iWidth = HealthWidth / 10;
 		UnpackRGB( r, g, b, RGB_YELLOWISH );
-		FillRGBA( x, y + gHUD.m_iHudNumbersYOffset, iWidth, iHeight, r, g, b, a );
+		//FillRGBA( x, y + gHUD.m_iHudNumbersYOffset, iWidth, iHeight, r, g, b, a );
+
+		if ( CVAR_GET_FLOAT( "crosshair" ) != 0 && m_newcross_active != 0 )
+		{
+			if ( m_newcross_size == 0 )//no transparent cross
+			{
+			}
+			if ( m_newcross_size == 1 )//small | mayor
+			{
+				iHeight =5;
+				iWidth = 1;
+				x = (ScreenWidth  / 2);
+				y= (ScreenHeight /2) -6;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+
+				iHeight = 5;
+				iWidth = 1;
+				x = (ScreenWidth  / 2);
+				y= (ScreenHeight /2) +2;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+
+				iHeight = 1;
+				iWidth = 5;
+				x = (ScreenWidth  / 2)+2 ;
+				y= (ScreenHeight /2) ;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+        
+				iHeight = 1;
+				iWidth = 5;
+				x = (ScreenWidth  / 2)-6;
+				y= (ScreenHeight /2) ;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+			}
+			if ( m_newcross_size == 2 )//medium
+			{
+				iHeight =5;
+				iWidth = 1;
+				x = (ScreenWidth  / 2);
+				y= (ScreenHeight /2) -8;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+        
+				iHeight = 5;
+				iWidth = 1;
+				x = (ScreenWidth  / 2);
+				y= (ScreenHeight /2) +4;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+
+				iHeight = 1;
+				iWidth = 5;
+				x = (ScreenWidth  / 2)+4 ;
+				y= (ScreenHeight /2) ;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+        
+				iHeight = 1;
+				iWidth = 5;
+				x = (ScreenWidth  / 2)-8;
+				y= (ScreenHeight /2) ;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+			}
+			if ( m_newcross_size == 3 )//large
+			{
+				iHeight =5;
+				iWidth = 1;
+				x = (ScreenWidth  / 2);
+				y= (ScreenHeight /2) -10;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+        
+				iHeight = 5;
+				iWidth = 1;
+				x = (ScreenWidth  / 2);
+				y= (ScreenHeight /2) +6;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+
+				iHeight = 1;
+				iWidth = 5;
+				x = (ScreenWidth  / 2)+6 ;
+				y= (ScreenHeight /2) ;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+        
+				iHeight = 1;
+				iWidth = 5;
+				x = (ScreenWidth  / 2)-10;
+				y= (ScreenHeight /2) ;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+			}
+			if ( m_newcross_size == 4 )//extra large
+			{
+				iHeight =5;
+				iWidth = 1;
+				x = (ScreenWidth  / 2);
+				y= (ScreenHeight /2) -12;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+        
+				iHeight = 5;
+				iWidth = 1;
+				x = (ScreenWidth  / 2);
+				y= (ScreenHeight /2) +8;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+
+				iHeight = 1;
+				iWidth = 5;
+				x = (ScreenWidth  / 2)+8 ;
+				y= (ScreenHeight /2) ;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+        
+				iHeight = 1;
+				iWidth = 5;
+				x = (ScreenWidth  / 2)-12;
+				y= (ScreenHeight /2) ;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+			}
+			if ( m_newcross_size >= 5 )//extra extra large
+			{
+				iHeight =5;
+				iWidth = 1;
+				x = (ScreenWidth  / 2);
+				y= (ScreenHeight /2) -14;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+        
+				iHeight = 5;
+				iWidth = 1;
+				x = (ScreenWidth  / 2);
+				y= (ScreenHeight /2) +10;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+
+				iHeight = 1;
+				iWidth = 5;
+				x = (ScreenWidth  / 2)+10 ;
+				y= (ScreenHeight /2) ;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+        
+				iHeight = 1;
+				iWidth = 5;
+				x = (ScreenWidth  / 2)-14;
+				y= (ScreenHeight /2) ;
+				if (m_newcross_ontarget == 1)//is on target? right! draw in red color!			
+					FillRGBA(x, y, iWidth, iHeight, 255, 0, 0, 255);//test	
+				else
+        		FillRGBA(x, y, iWidth, iHeight, 255, 255, 255, 255);//test
+			}
+		}
 	}
 
 	DrawDamage( flTime );

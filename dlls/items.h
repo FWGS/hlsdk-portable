@@ -27,5 +27,6 @@ public:
 	{
 		return FALSE;
 	};
+	virtual void SetObjectCollisionBox( void );
 };
 #endif // ITEMS_H

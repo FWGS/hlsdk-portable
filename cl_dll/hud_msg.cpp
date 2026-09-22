@@ -29,6 +29,14 @@ extern TEMPENTITY *pFlare;	// Vit_amiN
 
 extern float g_lastFOV;			// Vit_amiN
 
+//LRC - the fogging fog
+float g_fFogColor[3];
+float g_fStartDist;
+float g_fEndDist;
+//int g_iFinalStartDist; //for fading
+int g_iFinalEndDist;   //for fading
+float g_fFadeDuration; //negative = fading out
+
 /// USER-DEFINED SERVER MESSAGE HANDLERS
 
 int CHud::MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
@@ -81,6 +89,39 @@ void CHud::MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
 	//Probably not a good place to put this.
 	pBeam = pBeam2 = NULL;
 	pFlare = NULL;	// Vit_amiN: clear egon's beam flare
+}
+
+//LRC
+void CHud :: MsgFunc_SetFog( const char *pszName, int iSize, void *pbuf )
+{
+//	CONPRINT("MSG:SetFog");
+	BEGIN_READ( pbuf, iSize );
+
+	for ( int i = 0; i < 3; i++ )
+		 g_fFogColor[ i ] = READ_BYTE();
+
+	g_fFadeDuration = READ_SHORT();
+	g_fStartDist = READ_SHORT();
+
+	if (g_fFadeDuration > 0)
+	{
+//		// fading in
+//		g_fStartDist = READ_SHORT();
+		g_iFinalEndDist = READ_SHORT();
+//		g_fStartDist = FOG_LIMIT;
+		g_fEndDist = FOG_LIMIT;
+	}
+	else if (g_fFadeDuration < 0)
+	{
+//		// fading out
+//		g_iFinalStartDist =
+		g_iFinalEndDist = g_fEndDist = READ_SHORT();
+	}
+	else
+	{
+//		g_fStartDist = READ_SHORT();
+		g_fEndDist = READ_SHORT();
+	}
 }
 
 int CHud::MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )

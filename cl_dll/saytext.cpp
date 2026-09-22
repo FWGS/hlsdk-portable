@@ -29,7 +29,7 @@
 
 extern float *GetClientColor( int clientIndex );
 
-#define MAX_LINES	5
+#define MAX_LINES	6
 #define MAX_CHARS_PER_LINE	256  /* it can be less than this, depending on char size */
 
 // allow 20 pixels on either side of the text
@@ -56,7 +56,7 @@ int CHudSayText::Init( void )
 	InitHUDData();
 
 	m_HUD_saytext =		gEngfuncs.pfnRegisterVariable( "hud_saytext", "1", 0 );
-	m_HUD_saytext_time =	gEngfuncs.pfnRegisterVariable( "hud_saytext_time", "5", 0 );
+	m_HUD_saytext_time =	gEngfuncs.pfnRegisterVariable( "hud_saytext_time", "6", 0 );
 
 	m_iFlags |= HUD_INTERMISSION; // is always drawn during an intermission
 
@@ -101,7 +101,18 @@ int CHudSayText::Draw( float flTime )
 		return 1;
 
 	// make sure the scrolltime is within reasonable bounds,  to guard against the clock being reset
-	flScrollTime = Q_min( flScrollTime, flTime + m_HUD_saytext_time->value );
+	flScrollTime = Q_min( 3, flTime + m_HUD_saytext_time->value );
+
+	if(m_iUpdata == 1)
+	{
+			ScrollTextUp();
+			ScrollTextUp();
+			ScrollTextUp();
+			ScrollTextUp();
+			ScrollTextUp();
+			ScrollTextUp();
+			m_iUpdata = 0;
+	}
 
 	if( flScrollTime <= flTime )
 	{
@@ -109,7 +120,7 @@ int CHudSayText::Draw( float flTime )
 		{
 			flScrollTime = flTime + m_HUD_saytext_time->value;
 			// push the console up
-			ScrollTextUp();
+			//ScrollTextUp();
 		}
 		else
 		{
@@ -154,6 +165,8 @@ int CHudSayText::MsgFunc_SayText( const char *pszName, int iSize, void *pbuf )
 
 	int client_index = READ_BYTE();		// the client who spoke the message
 	SayTextPrint( READ_STRING(), iSize - 1,  client_index );
+
+	m_iUpdata = READ_BYTE();
 
 	return 1;
 }
@@ -214,7 +227,7 @@ void CHudSayText::SayTextPrint( const char *pszBuf, int iBufSize, int clientInde
 	}
 
 	m_iFlags |= HUD_ACTIVE;
-	PlaySound( "misc/talk.wav", 1 );
+	//PlaySound( "misc/talk.wav", 1 );
 
 	if( ScreenHeight >= 480 )
 		Y_START = ScreenHeight - 60;

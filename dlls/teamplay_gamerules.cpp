@@ -359,7 +359,7 @@ extern int gmsgDeathMsg;
 //=========================================================
 void CHalfLifeTeamplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor )
 {
-	if( m_DisableDeathMessages )
+	/*if( m_DisableDeathMessages )
 		return;
 
 	if( pVictim && pKiller && pKiller->flags & FL_CLIENT )
@@ -380,7 +380,7 @@ void CHalfLifeTeamplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, e
 		}
 	}
 
-	CHalfLifeMultiplay::DeathNotice( pVictim, pKiller, pevInflictor );
+	CHalfLifeMultiplay::DeathNotice( pVictim, pKiller, pevInflictor );*/
 }
 
 //=========================================================

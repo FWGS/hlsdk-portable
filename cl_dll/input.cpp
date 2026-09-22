@@ -30,6 +30,8 @@ extern "C"
 
 #include "vgui_TeamFortressViewport.h"
 
+#include "RenderManager.h"
+
 extern "C" 
 {
 	struct kbutton_s DLLEXPORT *KB_Find( const char *name );
@@ -39,6 +41,8 @@ extern "C"
 }
 
 extern int g_iAlive;
+extern int iMouseInUse;
+int g_iSelectMenuType = 0;
 
 extern int g_weaponselect;
 extern cl_enginefunc_t gEngfuncs;
@@ -386,77 +390,92 @@ int DLLEXPORT HUD_Key_Event( int down, int keynum, const char *pszCurrentBinding
 
 void IN_BreakDown( void )
 {
-	KeyDown( &in_break );
+	if( !iMouseInUse )
+		KeyDown( &in_break );
 }
 
 void IN_BreakUp( void )
 {
-	KeyUp( &in_break );
+	if( !iMouseInUse )
+		KeyUp( &in_break );
 }
 
 void IN_KLookDown( void )
 {
-	KeyDown( &in_klook );
+	if( !iMouseInUse )
+		KeyDown( &in_klook );
 }
 
 void IN_KLookUp( void )
 {
-	KeyUp( &in_klook );
+	if( !iMouseInUse )
+		KeyUp( &in_klook );
 }
 
 void IN_JLookDown( void )
 {
-	KeyDown( &in_jlook );
+	if( !iMouseInUse )
+		KeyDown( &in_jlook );
 }
 
 void IN_JLookUp( void )
 {
-	KeyUp( &in_jlook );
+	if( !iMouseInUse )
+		KeyUp( &in_jlook );
 }
 
 void IN_MLookDown( void )
 {
-	KeyDown( &in_mlook );
+	if( !iMouseInUse )
+		KeyDown( &in_mlook );
 }
 
 void IN_UpDown( void )
 {
-	KeyDown( &in_up );
+	if( !iMouseInUse )
+		KeyDown( &in_up );
 }
 
 void IN_UpUp( void )
 {
-	KeyUp( &in_up );
+	if( !iMouseInUse )
+		KeyUp( &in_up );
 }
 
 void IN_DownDown( void )
 {
-	KeyDown( &in_down );
+	if( !iMouseInUse )
+		KeyDown( &in_down );
 }
 
 void IN_DownUp( void )
 {
-	KeyUp( &in_down );
+	if( !iMouseInUse )
+		KeyUp( &in_down );
 }
 
 void IN_LeftDown( void )
 {
-	KeyDown( &in_left );
+	if( !iMouseInUse )
+		KeyDown( &in_left );
 }
 
 void IN_LeftUp( void )
 {
-	KeyUp( &in_left );
+	if( !iMouseInUse )
+		KeyUp( &in_left );
 }
 
 void IN_RightDown( void )
 {
-	KeyDown( &in_right );
+	if( !iMouseInUse )
+		KeyDown( &in_right );
 }
 
 void IN_RightUp( void )
 {
-	KeyUp( &in_right );
+	if( !iMouseInUse )
+		KeyUp( &in_right );
 }
 
 void IN_ForwardDown( void )
@@ -1153,5 +1172,12 @@ void ShutdownInput( void )
 
 void DLLEXPORT HUD_Shutdown( void )
 {
+	if (g_pRenderManager)
+	{
+		g_pRenderManager->DeleteAllSystems();
+		delete g_pRenderManager;
+		g_pRenderManager = NULL;
+	}
+
 	ShutdownInput();
 }

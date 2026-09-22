@@ -92,6 +92,16 @@ enum gauss_e
 	GAUSS_DRAW
 };
 
+enum smg_e
+{
+	SMG_LONGIDLE = 0,
+	SMG_RELOAD,
+	SMG_DEPLOY,
+	SMG_FIRE1,
+	SMG_FIRE2,
+	SMG_FIRE3,
+};
+
 void EV_HLDM_GunshotDecalTrace( pmtrace_t *pTrace, char *decalName );
 void EV_HLDM_DecalGunshot( pmtrace_t *pTrace, int iBulletType );
 int EV_HLDM_CheckTracer( int idx, float *vecSrc, float *end, float *forward, float *right, int iBulletType, int iTracerFreq, int *tracerCount );

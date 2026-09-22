@@ -500,11 +500,11 @@ CBaseEntity * EHANDLE::operator -> ()
 // give health
 int CBaseEntity::TakeHealth( float flHealth, int bitsDamageType )
 {
-	if( !pev->takedamage )
-		return 0;
+	/*if( !pev->takedamage )
+		return 0;*/
 
 	// heal
-	if( pev->health >= pev->max_health )
+	if( pev->health >= pev->max_health || pev->deadflag != DEAD_NO )
 		return 0;
 
 	pev->health += flHealth;
@@ -706,30 +706,30 @@ int CBaseEntity::IsDormant( void )
 BOOL CBaseEntity::IsInWorld( void )
 {
 	// position 
-	if( pev->origin.x >= 4096.0f )
+	if( pev->origin.x >= 8192.0f )
 		return FALSE;
-	if( pev->origin.y >= 4096.0f )
+	if( pev->origin.y >= 8192.0f )
 		return FALSE;
-	if( pev->origin.z >= 4096.0f )
+	if( pev->origin.z >= 8192.0f )
 		return FALSE;
-	if( pev->origin.x <= -4096.0f )
+	if( pev->origin.x <= -8192.0f )
 		return FALSE;
-	if( pev->origin.y <= -4096.0f )
+	if( pev->origin.y <= -8192.0f )
 		return FALSE;
-	if( pev->origin.z <= -4096.0f )
+	if( pev->origin.z <= -8192.0f )
 		return FALSE;
 	// speed
-	if( pev->velocity.x >= 2000.0f )
+	if( pev->velocity.x >= 8192.0f )
 		return FALSE;
-	if( pev->velocity.y >= 2000.0f )
+	if( pev->velocity.y >= 8192.0f )
 		return FALSE;
-	if( pev->velocity.z >= 2000.0f )
+	if( pev->velocity.z >= 8192.0f )
 		return FALSE;
-	if( pev->velocity.x <= -2000.0f )
+	if( pev->velocity.x <= -8192.0f )
 		return FALSE;
-	if( pev->velocity.y <= -2000.0f )
+	if( pev->velocity.y <= -8192.0f )
 		return FALSE;
-	if( pev->velocity.z <= -2000.0f )
+	if( pev->velocity.z <= -8192.0f )
 		return FALSE;
 
 	return TRUE;
