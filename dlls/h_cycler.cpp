@@ -44,6 +44,7 @@ public:
 
 	// Don't treat as a live target
 	virtual BOOL IsAlive( void ) { return FALSE; }
+	int BloodColor( void ) { return DONT_BLEED; }
 #if SPEAKABLE_TARGETS
 	BOOL IsAllowedToSpeak( void ) { return TRUE; }
 #endif
@@ -115,9 +116,9 @@ void CCycler::GenericCyclerSpawn( const char *szModel, Vector vecMin, Vector vec
 void CCycler::Spawn()
 {
 	InitBoneControllers();
-	pev->solid		= SOLID_SLIDEBOX;
+	pev->solid		= SOLID_NOT;
 	pev->movetype		= MOVETYPE_NONE;
-	pev->takedamage		= DAMAGE_YES;
+	pev->takedamage		= DAMAGE_NO;
 	pev->effects		= 0;
 	pev->health		= 80000;// no cycler should die
 	pev->yaw_speed		= 5;
@@ -131,7 +132,7 @@ void CCycler::Spawn()
 
 	ResetSequenceInfo();
 
-	if( pev->sequence != 0 || pev->frame != 0 )
+	if( /*pev->sequence != 0 || */pev->frame != 0 )
 	{
 		m_animate = 0;
 		pev->framerate = 0;
@@ -139,6 +140,23 @@ void CCycler::Spawn()
 	else
 	{
 		m_animate = 1;
+	}
+
+	if(pev->armortype == 1)
+	{
+		pev->effects = EF_DIMLIGHT | EF_BRIGHTFIELD;
+		UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+		pev->solid = SOLID_SLIDEBOX;
+	}
+	else if(pev->armortype == 2)
+	{
+		UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+		pev->solid = SOLID_SLIDEBOX;
+	}
+	else if(pev->armortype == 3 || pev->armortype == 4)
+	{
+		UTIL_SetSize(pev, Vector( -8, -8, 0 ), Vector(8,8,72) );
+		pev->solid = SOLID_SLIDEBOX;
 	}
 }
 
@@ -172,11 +190,186 @@ void CCycler::Think( void )
 //
 void CCycler::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	m_animate = !m_animate;
+	/*m_animate = !m_animate;
 	if( m_animate )
 		pev->framerate = 1.0f;
 	else
-		pev->framerate = 0.0f;
+		pev->framerate = 0.0f;*/
+	
+	if(pev->armortype == 1 && pev->body == 0)
+	{
+
+		if( pActivator != NULL)
+		{
+			if ( pActivator->IsPlayer() )
+				return;
+		}
+
+		pev->body = 1;
+
+		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+		WRITE_BYTE( TE_LARGEFUNNEL );
+		WRITE_COORD( pev->origin.x );
+		WRITE_COORD( pev->origin.y );
+		WRITE_COORD( pev->origin.z );
+		WRITE_SHORT( g_sModelIndexFlareGlow );
+		WRITE_SHORT( 1 );
+		MESSAGE_END();
+
+		CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+		if(pEntity->pev->deadflag == DEAD_NO)
+		{
+			pEntity->pev->health = pEntity->pev->max_health;
+			FX_Explosion( pEntity->Center(), 45);
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pEntity->pev);
+
+			if(pPlayer->m_fNextClearTextTime < gpGlobals->time)
+			{
+				pPlayer->m_fNextClearTextTime = gpGlobals->time + 6.0;		
+			}
+			else
+			{
+				pPlayer->m_fNextClearTextTime += 4.0;			
+			}
+
+			char text[256];
+			sprintf( text, "- All recover health!\n");
+			UTIL_SayTextAll( text,this );
+
+			if (pPlayer->m_team_npc1 != NULL && pPlayer->m_team_npc1->pev->deadflag == DEAD_NO)
+			{
+				pPlayer->m_team_npc1->pev->health = pPlayer->m_team_npc1->pev->max_health;
+				FX_Explosion( pPlayer->m_team_npc1->Center(), 45);
+			}
+			
+			if (pPlayer->m_team_npc2 != NULL && pPlayer->m_team_npc2->pev->deadflag == DEAD_NO)
+			{
+				pPlayer->m_team_npc2->pev->health = pPlayer->m_team_npc2->pev->max_health;
+				FX_Explosion( pPlayer->m_team_npc2->Center(), 45);
+			}
+			
+			if (pPlayer->m_team_npc3 != NULL && pPlayer->m_team_npc3->pev->deadflag == DEAD_NO)
+			{
+				pPlayer->m_team_npc3->pev->health = pPlayer->m_team_npc3->pev->max_health;
+				FX_Explosion( pPlayer->m_team_npc3->Center(), 45);
+			}
+			
+			if (pPlayer->m_team_npc4 != NULL && pPlayer->m_team_npc4->pev->deadflag == DEAD_NO)
+			{
+				pPlayer->m_team_npc4->pev->health = pPlayer->m_team_npc4->pev->max_health;
+				FX_Explosion( pPlayer->m_team_npc4->Center(), 45);
+			}
+		}
+
+		pev->effects = 0;
+	}
+
+	if(pev->armortype == 2)
+	{
+		if( pActivator == NULL)
+			return;
+	
+		if ( pActivator->IsPlayer() )
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pActivator->pev);
+			if(pPlayer)
+			{
+				if(pev->body == 1)
+				{
+					if(pPlayer->m_fValve)
+					{
+						pPlayer->m_fValve = FALSE;
+						pPlayer->MenuItem_remove(14);
+						pev->body = 0;
+						EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM);
+					}
+				}
+				else if(pev->body == 0)
+				{
+					pPlayer->GiveNamedItem( "weapon_valvesword" );
+					FireTargets( "wdoor_get_valvesword", this, this, USE_TOGGLE, 0 );
+					UTIL_Remove( this );
+					return;
+				}
+			}
+		}
+	}
+
+	if(pev->armortype == 3)
+	{
+		if(pev->impulse >= 1)
+		{
+			if ( pev->dmgtime < gpGlobals->time )
+			{
+				pev->dmgtime = gpGlobals->time + 6.0;
+				if(pev->impulse >= 1)
+				{
+					char text[256];
+					CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+					if(pEntity->pev->deadflag == DEAD_NO)
+					{
+						CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pEntity->pev);
+								
+						if(pev->impulse == 1)
+						{
+							
+							sprintf( text, "???: This is the bonus level room. You can press the E button to look around or enter the painting to take on the challenges.\n");
+					
+						}
+						else if(pev->impulse == 2)
+						{
+							sprintf( text, "Plant: The vending machine for drinks is out of order.\n");
+						}
+						else if(pev->impulse == 3)
+						{
+							sprintf( text, "Plant: The snack vending machine is out of order.\n");
+						}
+						else if(pev->impulse == 4)
+						{
+							sprintf( text, "Book: With the invisibility skill on, equipping the Holy Sword and charging can cause critical damage.\n");
+						}
+						else if(pev->impulse == 5)
+						{
+							sprintf( text, "Book: After clearing the game once, the fist can be used to perform a special attack in the air to climb walls!\n");
+							
+						}
+						else if(pev->impulse == 6)
+						{
+								
+							sprintf( text, "Book: When attacking enemies with melee weapons during the high-speed long jump, greater damage will be caused!\n");
+							
+						}
+						else if(pev->impulse == 7)
+						{
+							sprintf( text, "Book: I can't tell you anything.\n");
+						
+						}
+						pPlayer->m_fNextClearTextTime = gpGlobals->time + 6.0;
+						UTIL_SayTextAll( text,this );
+					}
+				}
+			}
+		}
+	}
+
+	if(pev->armortype == 4)
+	{
+		if ( pev->dmgtime < gpGlobals->time )
+		{
+			pev->dmgtime = gpGlobals->time + 4.0;
+			if( !FStringNull(pev->message) )
+			{
+				CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+				if(pEntity->pev->deadflag == DEAD_NO)
+				{
+					CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pEntity->pev);
+
+					pPlayer->m_fNextClearTextTime = gpGlobals->time + 4.0;
+					UTIL_SayTextAll( STRING(pev->message),this );
+				}
+			}
+		}
+	}
 }
 
 //
@@ -185,7 +378,7 @@ void CCycler::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useTy
 //void CCycler::Pain( float flDamage )
 int CCycler::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
-	if( m_animate )
+	/*if( m_animate )
 	{
 		pev->sequence++;
 
@@ -204,7 +397,7 @@ int CCycler::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float 
 		StudioFrameAdvance( 0.1f );
 		pev->framerate = 0;
 		ALERT( at_console, "sequence: %d, frame %.0f\n", pev->sequence, (double)pev->frame );
-	}
+	}*/
 
 	return 0;
 }
@@ -247,7 +440,7 @@ IMPLEMENT_SAVERESTORE( CCyclerSprite, CBaseEntity )
 
 void CCyclerSprite::Spawn( void )
 {
-	pev->solid		= SOLID_SLIDEBOX;
+	pev->solid		= SOLID_NOT;
 	pev->movetype		= MOVETYPE_NONE;
 	pev->takedamage		= DAMAGE_YES;
 	pev->effects		= 0;
@@ -313,7 +506,7 @@ LINK_ENTITY_TO_CLASS( cycler_weapon, CWeaponCycler )
 
 void CWeaponCycler::Spawn()
 {
-	pev->solid = SOLID_SLIDEBOX;
+	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_NONE;
 
 	PRECACHE_MODEL( STRING( pev->model ) );

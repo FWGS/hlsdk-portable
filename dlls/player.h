@@ -19,7 +19,7 @@
 #include "pm_materials.h"
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
-#define PLAYER_MAX_SAFE_FALL_SPEED	580// approx 20 feet
+#define PLAYER_MAX_SAFE_FALL_SPEED	600// approx 20 feet
 #define DAMAGE_FOR_FALL_SPEED		(float) 100 / ( PLAYER_FATAL_FALL_SPEED - PLAYER_MAX_SAFE_FALL_SPEED )// damage per unit per second.
 #define PLAYER_MIN_BOUNCE_SPEED		200
 #define PLAYER_FALL_PUNCH_THRESHHOLD (float)350 // won't punch player's screen/make scrape noise unless player falling at least this fast.
@@ -58,6 +58,9 @@
 
 #define	SOUND_FLASHLIGHT_ON		"items/flashlight1.wav"
 #define	SOUND_FLASHLIGHT_OFF	"items/flashlight1.wav"
+
+#define	SOUND_NIGHTVIEW_ON		"items/nightview1.wav"
+#define	SOUND_NIGHTVIEW_OFF		"items/nightview1.wav"
 
 #define TEAM_NAME_LENGTH	16
 
@@ -128,6 +131,8 @@ public:
 	unsigned int		m_afPhysicsFlags;	// physics flags - set when 'normal' physics should be revisited or overriden
 	float				m_fNextSuicideTime; // the time after which the player can next use the suicide command
 
+	float				m_fNextClearTextTime;
+
 	// these are time-sensitive things that we keep track of
 	float				m_flTimeStepSound;	// when the last stepping sound was made
 	float				m_flTimeWeaponIdle; // when to play another weapon idle animation.
@@ -153,6 +158,11 @@ public:
 	int					m_idrowndmg;			// track drowning damage taken
 	int					m_idrownrestored;		// track drowning damage restored
 
+	float				m_IntoWaterTime;
+	float				m_RecoverTime;
+	float				m_ClimbWallTime;
+	float				m_MonsterCatchTime;
+
 	int					m_bitsHUDDamage;		// Damage bits for the current fame. These get sent to 
 										// the hude via the DAMAGE message
 	BOOL				m_fInitHUD;				// True when deferred HUD restart msg needs to be sent
@@ -162,9 +172,49 @@ public:
 
 	EHANDLE				m_pTank;				// the tank which the player is currently controlling,  NULL if no tank
 	float				m_fDeadTime;			// the time at which the player died  (used in PlayerDeathThink())
+	float				m_fGameOverTime;
 
 	BOOL			m_fNoPlayerSound;	// a debugging feature. Player makes no sound if this is true. 
 	BOOL			m_fLongJump; // does this player have the longjump module?
+
+	BOOL			m_fMask; // ����ַ����������������
+
+	EHANDLE			m_fMoveItem;	//�����
+	EHANDLE			m_fContPoint;
+	int				m_fContPoint_type;
+
+	BOOL			m_fControlKey;	//������
+	int				m_fGlodenKey;	//���Կ��
+	BOOL			m_fBloodlyKey;	//ѪɫԿ��
+	BOOL			m_fGenerenKey;	//ͨ�Կ��
+	BOOL			m_fSecurityKey;	//��ȫԿ��
+	BOOL			m_fGreenCard;	//�ɫ�ſ�
+	BOOL			m_fSecurityCard;//��ȫ�ſ�
+	BOOL			m_fValve;//���
+
+	BOOL			m_fequip1;
+	BOOL			m_fequip2;
+	BOOL			m_fequip3;
+	BOOL			m_fequip4;
+	BOOL			m_fequip5;
+	BOOL			m_fequip6;
+
+	BOOL			m_fSecondWorld;	//���Ŀģʽ
+
+	BOOL			m_hasflashlight;	//����
+
+	BOOL			m_fPlayerHideMode;
+
+	BOOL			m_fPlayerUseHolySword;
+	Vector			m_sword_aim_origin;
+
+	edict_t				*m_wdoor_mynpc;
+
+	int				m_fDeadRespawn;
+	Vector			m_old_Respawn_origin;
+
+	BOOL			m_fSelectMode;
+	int				m_fSelectNumber;
 
 	float       m_tSneaking;
 	int			m_iUpdateTime;		// stores the number of frame ticks before sending HUD update messages
@@ -175,6 +225,17 @@ public:
 	int			m_iFOV;			// field of view
 	int			m_iClientFOV;	// client's known FOV
 
+	int			m_iClient_Gameover;	// the health currently known by the client.  If this changes, send a new
+	int			m_iClient_NVG;	// the health currently known by the client.  If this changes, send a new
+
+	int			m_iClient_oxyan;	// the health currently known by the client.  If this changes, send a new
+
+	int			m_flash_mode;
+	int			m_iUseFlag;
+	
+	int			m_iClient_mynpc;
+	int			m_guard_mynpc;
+
 	// usable player items 
 	CBasePlayerItem	*m_rgpPlayerItems[MAX_ITEM_TYPES];
 	CBasePlayerItem *m_pActiveItem;
@@ -184,6 +245,243 @@ public:
 	// shared ammo slots
 	int	m_rgAmmo[MAX_AMMO_SLOTS];
 	int	m_rgAmmoLast[MAX_AMMO_SLOTS];
+
+	//===================================
+	int                  m_newcross_active;
+	int                  m_newcross_size;
+	int                  m_newcross_ontarget;
+
+   	int                  m_enemy_kills;
+	int                  m_ending_frags;
+	int                  m_player_diamonds;
+	int                  m_game_rate;
+	float                m_player_time;
+	float                m_player_time_now;
+
+	//��Ҽ�����
+	int                  m_kadoma_exp;
+	int                  m_kadoma_level;
+	int                  m_kadoma_skill;
+	
+	int				 m_skill_locked;	 // ��
+	int				 m_skill_punch;		 // ��ɱ�
+	int				 m_skill_longjump;   // ���
+	int				 m_skill_defguard;	 // ���
+	int				 m_skill_valvesword; // ʥ���
+	int				 m_skill_miss;		 // ���
+	int				 m_skill_respawn;    // ��
+	int				 m_skill_darkhide;   // �����
+	int				 m_skill_deathmatch; // ������
+	int				 m_skill_goddam;	 // �֮̾Ϣ
+	int				 m_skill_wrongdoor;	 // ������
+	int				 m_skill_reload;	 // �������
+
+	float                m_skill_respawn_time;
+
+	BOOL				 m_skill_darkhide_on;  // ���ģʽ���
+	BOOL				 m_level_up_switch;	   // ����ʾ
+
+	float m_blindUntilTime;
+	float m_blindStartTime;
+	float m_blindHoldTime;
+	float m_blindFadeTime;
+	float m_blindAlpha;
+
+	float                m_flNextSoundTime1;//���
+	float				 m_flNPCguardTime;//���ʹ�
+	float				 m_fldarkhideTime;//���ʹ�
+
+	int					 m_new_spawner;
+
+	int					 m_mode_int1;
+	int					 m_mode_int2;
+	int					 m_mode_int3;
+	float				 m_mode_float1;
+	float				 m_mode_float2;
+	Vector				 m_mode_origin;
+
+   	BOOL                 m_player_died;
+
+    float                m_needlekilled_time;
+	float                m_wrongdoor_time;
+	float                m_wrongdoor_cover_time;
+	
+	float                m_needleuse_time;
+	float				 m_swordrecover_time;
+
+	int					 m_trainstuck;
+	int					 m_title;
+	int					 m_trainning;
+
+	int					 m_flAxeCharge;
+
+	int					 m_needleheal;
+	int					 m_needleheal2;
+
+	int					m_grenadeboomidle;
+	float				m_grenadeboomtime;
+
+	int					m_grenadeboomidle2;
+	float				m_grenadeboomtime2;
+
+	Vector				m_vecClimb;
+	int                 m_climbspark;
+	int					m_iNVG;
+
+	Vector				m_stuck_origin;
+	int					m_stuck_inter;
+
+	float                m_flVelocityModifier;
+	float                m_flVelocityModifier2;
+	
+	int 				m_deadtakedmgkill;
+
+	int			    	m_music_save;
+
+	int 					m_skill_maxarmor;
+	int						m_greenpoison;
+	int				 		m_godposion;
+	int				     	m_darkposion;
+
+	int                 m_hate_player;
+
+	int                 m_load_check;
+	int                 m_save_check;
+	int                 m_save_allow;
+
+	int                 m_Fast_RTP_Show;
+
+    int                 m_barnacle_RTP;
+	int                 m_barnacle_RTP_relase;
+	int                 m_barnacle_RTP_bar;
+	int                 m_barnacle_RTP_button;
+	EHANDLE				m_barnacle_catchme;
+	int                 m_barnacle_Level;
+
+	float               m_barnacle_god_time;
+	float               m_barnacle_draw_time;
+
+	float               m_concussion_time;
+
+	int                 m_air_oxyan;
+	int                 m_air_oxyan_max;
+	float               m_air_oxyan_stop_time;
+	int                 m_air_show;
+	float               m_god_time;
+
+	float			    m_waterstepTime;
+	float               m_flDeadTime;
+	float               m_gameoveralpha;
+
+	int                 m_in_vehicle;
+
+	EHANDLE				m_boss_find;
+	int                 m_boss_pov_time;
+	int                 m_boss_on;
+	int                 m_boss_type;
+
+	Vector				m_old_teleprort_origin;
+	int                 m_teleprort_in_xen;
+	//====================================
+	//WDoor RPG
+	int m_rpg_menu_on;
+	int m_rpg_menu_select;
+	int m_rpg_menu_select2;
+	int m_rpg_menu_select_alpha;
+//	int m_rpg_menu_origin;
+
+	int m_rpg_menu_item_e;
+	int m_rpg_menu_item_t;
+	int m_rpg_menu_item_s;
+	int m_rpg_menu_item1;
+	int m_rpg_menu_item2;
+	int m_rpg_menu_item3;
+	int m_rpg_menu_item4;
+	int m_rpg_menu_item5;
+	int m_rpg_menu_item6;
+	int m_rpg_menu_item7;
+	int m_rpg_menu_item8;
+	int m_rpg_menu_item9;
+	int m_rpg_menu_item10;
+	int m_rpg_menu_item11;
+	int m_rpg_menu_item12;
+	int m_rpg_menu_skill1;
+	int m_rpg_menu_skill2;
+	int m_rpg_menu_skill3;
+	int m_rpg_menu_skill4;
+	int m_rpg_menu_skill5;
+	int m_rpg_menu_skill6;
+	int m_rpg_menu_skill7;
+	int m_rpg_menu_skill8;
+	int m_rpg_menu_skill9;
+	int m_rpg_menu_skill10;
+	int m_rpg_menu_skill11;
+	int m_rpg_menu_skill12;
+	int m_rpg_menu_skill_chater;
+
+	EHANDLE				m_team_npc1;
+	EHANDLE				m_team_npc2;
+	EHANDLE				m_team_npc3;
+	EHANDLE				m_team_npc4;
+	EHANDLE				m_team_npc5;
+	EHANDLE				m_team_npc6;
+	EHANDLE				m_team_npc7;
+	EHANDLE				m_team_npc8;
+	EHANDLE				m_team_npc9;
+	EHANDLE				m_team_npc10;
+	EHANDLE				m_team_npc11;
+	EHANDLE				m_team_npc12;
+
+	EHANDLE				m_team_prot;
+	EHANDLE				m_player_camera;
+//Wrong Door RPG
+
+	int m_rpg_menu_actor1;
+
+	int m_rpg_menu_actor2;
+	float m_rpg_menu_hp2;
+	float m_rpg_menu_maxhp2;
+	int m_rpg_menu_level2;
+	int m_rpg_menu_exp2;
+	int m_rpg_menu_maxexp2;
+	int m_rpg_menu_status2;
+
+	int m_rpg_menu_actor3;
+	float m_rpg_menu_hp3;
+	float m_rpg_menu_maxhp3;
+	int m_rpg_menu_level3;
+	int m_rpg_menu_exp3;
+	int m_rpg_menu_maxexp3;
+	int m_rpg_menu_status3;
+
+	int m_rpg_menu_actor4;
+	float m_rpg_menu_hp4;
+	float m_rpg_menu_maxhp4;
+	int m_rpg_menu_level4;
+	int m_rpg_menu_exp4;
+	int m_rpg_menu_maxexp4;
+	int m_rpg_menu_status4;
+
+	int m_rpg_menu_actor5;
+	float m_rpg_menu_hp5;
+	float m_rpg_menu_maxhp5;
+	int m_rpg_menu_level5;
+	int m_rpg_menu_exp5;
+	int m_rpg_menu_maxexp5;
+	int m_rpg_menu_status5;
+
+	//================================
+	int m_rpg_password_on;
+	int m_rpg_password_select;
+	int m_rpg_password_light1;
+	int m_rpg_password_light2;
+	int m_rpg_password_light3;
+	int m_rpg_password_light4;
+	int m_rpg_password_light5;
+	int m_rpg_password_light6;
+	int m_rpg_password_light7;
+	int m_rpg_password_light8;
+	int m_rpg_password_light9;
 
 	Vector				m_vecAutoAim;
 	BOOL				m_fOnTarget;
@@ -198,7 +496,13 @@ public:
 	char m_szTeamName[TEAM_NAME_LENGTH];
 
 	virtual void Spawn( void );
-	void Pain( void );
+	//void Pain( void );
+	void BOSS_Find( void );
+
+	int Game_Save_SecondData(  );
+	int Game_Load_SecondData(  );
+
+	void Blind(float flUntilTime, float flHoldTime, float flFadeTime, int iAlpha);
 
 	//virtual void Think( void );
 	virtual void Jump( void );
@@ -222,6 +526,36 @@ public:
 															// Spectators should return TRUE for this
 	virtual const char *TeamID( void );
 
+	void		ShowVGUIMenu(int iMenuID); // VGUI 
+
+	void 		Clear_SayText( void );
+
+	//Wdoor RPG
+	void		TeamMate_add( CBaseMonster *pAllynpc );
+	void		TeamMate_expadd( CBaseMonster *pAllynpc , CBaseMonster *pKillnpc);
+	void		TeamMate_remove( CBaseMonster *pAllynpc );
+	void		TeamMate_GetSkill( CBaseMonster *pMonster );
+	void		TeamMate_GetNagamatagi( void );
+	void		TeamMate_Nagamatagi_Allclear( int mode );
+	void		TeamMate_Nagamatagi_Teleport( int mode );
+	void		TeamMate_NPC_add( CBaseMonster *pMonster );
+	void		TeamMate_Nagamatagi_RespawnStone( int mode );
+	void		TeamMate_Nagamatagi_Switch( int ally1,int ally2 );
+	void		TeamMate_Nagamatagi_Switch_Auto( CBaseMonster *pMonster );
+	BOOL		HasTeamMate_CanAdd( CBaseMonster *pAllynpc );
+
+	void		MenuItem_add( int iMenu_Item );
+	void		MenuItem_use( int iMenu_Item);
+	void		MenuItem_drop( int iMenu_Item);
+	void		MenuItem_equip( int iMenu_Item);
+	void		MenuItem_remove( int iMenu_Item_ID );
+
+	void		PassWordBordUse( int use );
+
+	void		GetGame_Playcvar( void );
+
+	BOOL		HasMenuItem_Full( void );
+
 	virtual int		Save( CSave &save );
 	virtual int		Restore( CRestore &restore );
 	void RenewItems(void);
@@ -241,6 +575,10 @@ public:
 	BOOL			FlashlightIsOn( void );
 	void			FlashlightTurnOn( void );
 	void			FlashlightTurnOff( void );
+
+	BOOL			NightViewIsOn( void );
+	void			NightViewTurnOn( void );
+	void			NightViewTurnOff( void );
 
 	void UpdatePlayerSound ( void );
 	void DeathSound ( void );
@@ -329,6 +667,11 @@ public:
 	int m_iAutoWepSwitch;
 
 	Vector m_vecLastViewAngles;
+
+	// rain tutorial
+//	int	Rain_dripsPerSecond, Rain_ideal_dripsPerSecond, Rain_needsUpdate;
+//	float	Rain_randX, Rain_randY, Rain_windX, Rain_windY, Rain_ideal_windX, Rain_ideal_windY, Rain_ideal_randX, Rain_ideal_randY, Rain_endFade, Rain_nextFadeUpdate;
+
 };
 
 #define AUTOAIM_2DEGREES  0.0348994967025

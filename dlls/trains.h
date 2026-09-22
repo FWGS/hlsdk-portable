@@ -136,6 +136,7 @@ public:
 	virtual int Classify();
 	virtual void OverrideReset();
 	virtual BOOL OnControls( entvars_t *pev );
+	virtual BOOL OnControls2( entvars_t *pev );
 	virtual void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 	virtual void Blocked( CBaseEntity *pOther );
 
@@ -152,13 +153,14 @@ public:
 
 	void SetTrack( CPathTrack *track ) { m_ppath = track->Nearest( pev->origin ); }
 	void SetControls( entvars_t *pevControls );
+	void SetControls2( entvars_t *pevControls );
 
 	void StopSound();
 	void UpdateSound();
 
 public:
 	static CFuncVehicle *Instance( edict_t *pent );
-	static TYPEDESCRIPTION m_SaveData[12];
+	static TYPEDESCRIPTION m_SaveData[];
 
 	CPathTrack *m_ppath;
 	float m_length;
@@ -169,6 +171,8 @@ public:
 	float m_startSpeed;
 	Vector m_controlMins;
 	Vector m_controlMaxs;
+	Vector m_controlMins2;
+	Vector m_controlMaxs2;
 	int m_soundPlaying;
 	int m_sounds;
 	int m_acceleration;

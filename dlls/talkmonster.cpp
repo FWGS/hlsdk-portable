@@ -17,6 +17,7 @@
 #include	"util.h"
 #include	"cbase.h"
 #include	"monsters.h"
+#include	"player.h"
 #include	"schedule.h"
 #include	"talkmonster.h"
 #include	"defaultai.h"
@@ -55,7 +56,12 @@ const char *CTalkMonster::m_szFriends[TLK_CFRIENDS] =
 {
 	"monster_barney",
 	"monster_scientist",
-	"monster_sitting_scientist",
+	"monster_otis",
+	"monster_gus",
+	"monster_cleansuit_scientist",
+	"monster_nurse",
+	"monster_helmet",
+	"monster_barney_shield",
 };
 
 //=========================================================
@@ -238,8 +244,10 @@ Schedule_t slMoveAwayFollow[] =
 	{
 		tlMoveAwayFollow,
 		ARRAYSIZE( tlMoveAwayFollow ),
-		0,
-		0,
+		bits_COND_LIGHT_DAMAGE	|
+		bits_COND_HEAVY_DAMAGE	|
+		bits_COND_NEW_ENEMY,
+		bits_COND_SEE_ENEMY,
 		"MoveAwayFollow"
 	},
 };
@@ -428,7 +436,7 @@ void CTalkMonster::StartTask( Task_t *pTask )
 		TaskComplete();
 		break;
 	case TASK_WALK_PATH_FOR_UNITS:
-		m_movementActivity = ACT_WALK;
+		m_movementActivity = ACT_RUN;
 		break;
 	case TASK_MOVE_AWAY_PATH:
 		{
@@ -438,16 +446,16 @@ void CTalkMonster::StartTask( Task_t *pTask )
 
 			UTIL_MakeVectorsPrivate( dir, move, NULL, NULL );
 			dir = pev->origin + move * pTask->flData;
-			if( MoveToLocation( ACT_WALK, 2, dir ) )
+			if( MoveToLocation( ACT_RUN, 2, dir ) )
 			{
 				TaskComplete();
 			}
-			else if( FindCover( pev->origin, pev->view_ofs, 0, CoverRadius() ) )
+			/*else if( FindCover( pev->origin, pev->view_ofs, 0, CoverRadius() ) )
 			{
 				// then try for plain ole cover
 				m_flMoveWaitFinished = gpGlobals->time + 2.0f;
 				TaskComplete();
-			}
+			}*/
 			else
 			{
 				// nowhere to go?
@@ -599,11 +607,30 @@ void CTalkMonster::RunTask( Task_t *pTask )
 
 void CTalkMonster::Killed( entvars_t *pevAttacker, int iGib )
 {
-	// If a client killed me (unless I was already Barnacle'd), make everyone else mad/afraid of him
-	if( ( pevAttacker->flags & FL_CLIENT) && m_MonsterState != MONSTERSTATE_PRONE )
+	if(m_iTriggerCondition == 7456 && m_die == 0)
 	{
-		AlertFriends();
-		LimitFollowers( CBaseEntity::Instance( pevAttacker ), 0 );
+		CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "cshl623_prevent" );
+		if ( pEntity )
+		{
+			pEntity->pev->frags += 1;
+		}
+	}
+
+	if(Classify() == CLASS_PLAYER_ALLY || Classify() == CLASS_HUMAN_PASSIVE)
+	{
+
+		// If a client killed me (unless I was already Barnacle'd), make everyone else mad/afraid of him
+		if( ( pevAttacker->flags & FL_CLIENT) && m_MonsterState != MONSTERSTATE_PRONE )
+		{
+			if(m_die == 0)
+			{
+				CBaseEntity *pEntity = GetClassPtr((CBaseEntity *)pevAttacker);
+				if(pEntity)
+				{
+					Alert_Clients(pEntity);
+				}
+			}
+		}
 	}
 
 	m_hTargetEnt = 0;
@@ -659,7 +686,7 @@ void CTalkMonster::AlertFriends( void )
 			if( pMonster->IsAlive() )
 			{
 				// don't provoke a friend that's playing a death animation. They're a goner
-				pMonster->m_afMemory |= bits_MEMORY_PROVOKED;
+				pMonster->m_lovehate -= 40;
 			}
 		}
 	}
@@ -715,7 +742,7 @@ void CTalkMonster::LimitFollowers( CBaseEntity *pPlayer, int maxFollowers )
 float CTalkMonster::TargetDistance( void )
 {
 	// If we lose the player, or he dies, return a really large distance
-	if( m_hTargetEnt == 0 || !m_hTargetEnt->IsAlive() )
+	if( m_hTargetEnt == 0 || !m_hTargetEnt->IsAlive() || m_lovehate <= 0 )
 		return 1e6;
 
 	return ( m_hTargetEnt->pev->origin - pev->origin ).Length();
@@ -798,7 +825,7 @@ CBaseEntity *CTalkMonster::FindNearestFriend( BOOL fPlayer )
 			CBaseMonster *pMonster = pFriend->MyMonsterPointer();
 
 			// If not a monster for some reason, or in a script, or prone
-			if( !pMonster || pMonster->m_MonsterState == MONSTERSTATE_SCRIPT || pMonster->m_MonsterState == MONSTERSTATE_PRONE )
+			if( !pMonster || pMonster->m_MonsterState == MONSTERSTATE_SCRIPT || pMonster->m_MonsterState == MONSTERSTATE_PRONE || pMonster->m_selfmode )
 				continue;
 
 			vecCheck = pFriend->pev->origin;
@@ -834,21 +861,40 @@ void CTalkMonster::Touch( CBaseEntity *pOther )
 	// Did the player touch me?
 	if( pOther->IsPlayer() )
 	{
+		if(m_lovehate == 810)
+			return;
+
 		// Ignore if pissed at player
-		if( m_afMemory & bits_MEMORY_PROVOKED )
+		if( m_lovehate <= 0 || m_selfmode == TRUE )
 			return;
 
-		// Stay put during speech
-		if( IsTalking() )
+		if( FBitSet( pev->spawnflags, SF_MONSTER_PREDISASTER ) )
 			return;
 
-		// Heuristic for determining if the player is pushing me away
-		float speed = fabs( pOther->pev->velocity.x ) + fabs( pOther->pev->velocity.y );
-		if( speed > 50.0f )
+		
+		if(m_crouchmode == 1)
 		{
-			SetConditions( bits_COND_CLIENT_PUSH );
-			if ( m_MonsterState != MONSTERSTATE_SCRIPT )
-				MakeIdealYaw( pOther->pev->origin );
+			/*
+			Vector vecSrc, vecDest;
+			vecDest = (pev->origin - pOther->pev->origin);
+			vecDest.z = pev->origin.z - pev->origin.z;
+			vecDest = vecDest.Normalize() * 50;
+			pev->velocity = pev->velocity + vecDest;
+			vecSrc = pev->origin;
+			vecDest = vecSrc + (pev->velocity.Normalize() * 1000);
+			MakeIdealYaw( pOther->pev->origin );
+			*/
+		}
+		else
+		{
+			// Heuristic for determining if the player is pushing me away
+			float speed = fabs( pOther->pev->velocity.x ) + fabs( pOther->pev->velocity.y );
+			if( speed > 50.0f )
+			{
+				SetConditions( bits_COND_CLIENT_PUSH );
+				if ( m_MonsterState != MONSTERSTATE_SCRIPT )
+					MakeIdealYaw( pOther->pev->origin );
+			}
 		}
 	}
 }
@@ -859,6 +905,8 @@ void CTalkMonster::Touch( CBaseEntity *pOther )
 //=========================================================
 void CTalkMonster::IdleRespond( void )
 {
+	if( pev->spawnflags & SF_MONSTER_GAG )
+		return;
 	//int pitch = GetVoicePitch();
 
 	// play response
@@ -886,8 +934,14 @@ int CTalkMonster::FOkToSpeak( void )
 	if( pev->spawnflags & SF_MONSTER_GAG )
 		return FALSE;
 
-	if( m_MonsterState == MONSTERSTATE_PRONE )
+	if ( m_selfmode == TRUE )
 		return FALSE;
+
+	if( m_lovehate == 810 || pev->team == 1 )
+		return FALSE;
+
+	/*if( m_MonsterState == MONSTERSTATE_PRONE )
+		return FALSE;*/
 
 	// if player is not in pvs, don't speak
 	if( !IsAlive() || FNullEnt(FIND_CLIENT_IN_PVS( edict() ) ) )
@@ -985,6 +1039,9 @@ int CTalkMonster::FIdleSpeak( void )
 	const char *szIdleGroup;
 	const char *szQuestionGroup;
 	float duration;
+
+	if( IsFollowing() )
+		return FALSE;
 
 	if( !FOkToSpeak() )
 		return FALSE;
@@ -1146,18 +1203,33 @@ void CTalkMonster::SetAnswerQuestion( CTalkMonster *pSpeaker )
 
 int CTalkMonster::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
-	if( IsAlive() )
+	if( IsAlive() && pev->takedamage )
 	{
 		// if player damaged this entity, have other friends talk about it
 		if( pevAttacker && m_MonsterState != MONSTERSTATE_PRONE && FBitSet( pevAttacker->flags, FL_CLIENT ) )
 		{
-			CBaseEntity *pFriend = FindNearestFriend( FALSE );
-
-			if( pFriend && pFriend->IsAlive() )
+			if(m_lovehate == 810)
 			{
-				// only if not dead or dying!
-				CTalkMonster *pTalkMonster = (CTalkMonster *)pFriend;
-				pTalkMonster->ChangeSchedule( slIdleStopShooting );
+				m_lovehate = 0;
+				CBaseEntity *pEntity = GetClassPtr((CBaseEntity *)pevAttacker);
+				if(pEntity)
+				{
+					Alert_Clients(pEntity);
+				}
+			}
+
+			if(pev->team == 0 && m_lovehate > 0 && m_rpgms_inteam == 0)
+			{
+		
+				CBaseEntity *pFriend = FindNearestFriend( FALSE );
+
+				if( pFriend && pFriend->IsAlive() )
+				{
+					// only if not dead or dying!
+					CTalkMonster *pTalkMonster = (CTalkMonster *)pFriend;
+					pTalkMonster->ChangeSchedule( slIdleStopShooting );
+						
+				}
 			}
 		}
 	}
@@ -1184,28 +1256,32 @@ Schedule_t *CTalkMonster::GetScheduleOfType( int Type )
 	case SCHED_IDLE_STAND:
 		{	
 			// if never seen player, try to greet him
-			if( !FBitSet( m_bitsSaid, bit_saidHelloPlayer ) )
+			if( !FBitSet( m_bitsSaid, bit_saidHelloPlayer ) && m_lovehate != 810 )
 			{
 				return slIdleHello;
 			}
 
-			// sustained light wounds?
-			if( !FBitSet( m_bitsSaid, bit_saidWoundLight ) && ( pev->health <= ( pev->max_health * 0.75f ) ) )
+			if ( !(pev->spawnflags & SF_MONSTER_GAG) )
 			{
-				//SENTENCEG_PlayRndSz( ENT( pev ), m_szGrp[TLK_WOUND], 1.0, ATTN_IDLE, 0, GetVoicePitch() );
-				//CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 2.8f, 3.2f );
-				PlaySentence( m_szGrp[TLK_WOUND], RANDOM_FLOAT( 2.8f, 3.2f ), VOL_NORM, ATTN_IDLE );
-				SetBits( m_bitsSaid, bit_saidWoundLight );
-				return slIdleStand;
-			}
-			// sustained heavy wounds?
-			else if( !FBitSet( m_bitsSaid, bit_saidWoundHeavy ) && ( pev->health <= ( pev->max_health * 0.5f ) ) )
-			{
-				//SENTENCEG_PlayRndSz( ENT( pev ), m_szGrp[TLK_MORTAL], 1.0, ATTN_IDLE, 0, GetVoicePitch() );
-				//CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 2.8f, 3.2f );
-				PlaySentence( m_szGrp[TLK_MORTAL], RANDOM_FLOAT( 2.8f, 3.2f ), VOL_NORM, ATTN_IDLE );
-				SetBits( m_bitsSaid, bit_saidWoundHeavy );
-				return slIdleStand;
+
+				// sustained light wounds?
+				if( !FBitSet( m_bitsSaid, bit_saidWoundLight ) && ( pev->health <= ( pev->max_health * 0.75f ) ) )
+				{
+					//SENTENCEG_PlayRndSz( ENT( pev ), m_szGrp[TLK_WOUND], 1.0, ATTN_IDLE, 0, GetVoicePitch() );
+					//CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 2.8f, 3.2f );
+					PlaySentence( m_szGrp[TLK_WOUND], RANDOM_FLOAT( 2.8f, 3.2f ), VOL_NORM, ATTN_IDLE );
+					SetBits( m_bitsSaid, bit_saidWoundLight );
+					return slIdleStand;
+				}
+				// sustained heavy wounds?
+				else if( !FBitSet( m_bitsSaid, bit_saidWoundHeavy ) && ( pev->health <= ( pev->max_health * 0.5f ) ) )
+				{
+					//SENTENCEG_PlayRndSz( ENT( pev ), m_szGrp[TLK_MORTAL], 1.0, ATTN_IDLE, 0, GetVoicePitch() );
+					//CTalkMonster::g_talkWaitTime = gpGlobals->time + RANDOM_FLOAT( 2.8f, 3.2f );
+					PlaySentence( m_szGrp[TLK_MORTAL], RANDOM_FLOAT( 2.8f, 3.2f ), VOL_NORM, ATTN_IDLE );
+					SetBits( m_bitsSaid, bit_saidWoundHeavy );
+					return slIdleStand;
+				}
 			}
 
 			// talk about world
@@ -1215,7 +1291,7 @@ Schedule_t *CTalkMonster::GetScheduleOfType( int Type )
 				return slIdleSpeak;
 			}
 			
-			if( !IsTalking() && HasConditions( bits_COND_SEE_CLIENT ) && RANDOM_LONG( 0, 6 ) == 0 )
+			if( !IsTalking() && HasConditions( bits_COND_SEE_CLIENT ) && RANDOM_LONG( 0, 10 ) == 0 )
 			{
 				edict_t *pPlayer = g_engfuncs.pfnPEntityOfEntIndex( 1 );
 
@@ -1309,13 +1385,25 @@ int CTalkMonster::IRelationship( CBaseEntity *pTarget )
 
 void CTalkMonster::StopFollowing( BOOL clearSchedule )
 {
+	if(m_follow_mode == 2)
+		return;
+
 	if( IsFollowing() )
 	{
-		if( !( m_afMemory & bits_MEMORY_PROVOKED ) )
+		if( m_lovehate > 0 )
 		{
 			PlaySentence( m_szGrp[TLK_UNUSE], RANDOM_FLOAT( 2.8f, 3.2f ), VOL_NORM, ATTN_IDLE );
 			m_hTalkTarget = m_hTargetEnt;
 		}
+
+
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)m_hTargetEnt->pev);
+		if(pPlayer)
+		{
+			pPlayer->TeamMate_remove(this);
+		}
+
+		m_hTargetEnt = NULL;
 
 		if( m_movementGoal == MOVEGOAL_TARGETENT )
 			RouteClear(); // Stop him from walking toward the player
@@ -1332,14 +1420,46 @@ void CTalkMonster::StartFollowing( CBaseEntity *pLeader )
 	if( m_pCine )
 		m_pCine->CancelScript();
 
-	if( m_hEnemy != 0 )
+	if( m_hEnemy != 0 && HasConditions ( bits_COND_SEE_ENEMY ))
 		m_IdealMonsterState = MONSTERSTATE_ALERT;
+	else
+	{	
+		m_IdealMonsterState	= MONSTERSTATE_IDLE;
+	}
 
-	m_hTargetEnt = pLeader;
-	PlaySentence( m_szGrp[TLK_USE], RANDOM_FLOAT( 2.8f, 3.2f ), VOL_NORM, ATTN_IDLE );
-	m_hTalkTarget = m_hTargetEnt;
-	ClearConditions( bits_COND_CLIENT_PUSH );
-	ClearSchedule();
+	if(m_hEnemy != NULL)
+	{
+		m_hEnemy = NULL;
+		m_hOldEnemy[0] = NULL;
+		m_hOldEnemy[1] = NULL;
+		m_hOldEnemy[2] = NULL;
+		m_hOldEnemy[3] = NULL;
+	}
+
+	if(m_rpgms_type >= 1)
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pLeader->pev);
+		if(pPlayer)
+		{
+			if(pPlayer->HasTeamMate_CanAdd(this))
+			{
+				pPlayer->TeamMate_add(this);
+				m_hTargetEnt = pLeader;
+				PlaySentence( m_szGrp[TLK_USE], RANDOM_FLOAT(2.8, 3.2), VOL_NORM, ATTN_IDLE );
+				m_hTalkTarget = m_hTargetEnt;
+				ClearConditions( bits_COND_CLIENT_PUSH );
+				ClearSchedule();
+			}
+			else if(pPlayer->m_team_npc1 == this || pPlayer->m_team_npc2 == this || pPlayer->m_team_npc3 == this || pPlayer->m_team_npc4 == this)
+			{
+				m_hTargetEnt = pLeader;
+				PlaySentence( m_szGrp[TLK_USE], RANDOM_FLOAT( 2.8f, 3.2f ), VOL_NORM, ATTN_IDLE );
+				m_hTalkTarget = m_hTargetEnt;
+				ClearConditions( bits_COND_CLIENT_PUSH );
+				ClearSchedule();
+			}
+		}
+	}
 }
 
 BOOL CTalkMonster::CanFollow( void )
@@ -1355,37 +1475,56 @@ BOOL CTalkMonster::CanFollow( void )
 	if( !IsAlive() )
 		return FALSE;
 
+	
+	if( m_lovehate <= 0 || m_lovehate == 810 || (m_selfmode == TRUE && m_longming == 1) )
+		return FALSE;
+
+
 	return !IsFollowing();
 }
 
 void CTalkMonster::FollowerUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	// Don't allow use during a scripted_sentence
-	if( m_useTime > gpGlobals->time )
+	if( m_useTime > gpGlobals->time || pev->deadflag != DEAD_NO || m_selfmode == TRUE || pev->team == 1 )
 		return;
 
 	if( pCaller != NULL && pCaller->IsPlayer() )
 	{
-		// Pre-disaster followers can't be used
-		if( pev->spawnflags & SF_MONSTER_PREDISASTER )
+		if(m_lovehate == 810)
 		{
-			DeclineFollowing();
-		}
-		else if( CanFollow() )
-		{
-			LimitFollowers( pCaller, 1 );
-
-			if( m_afMemory & bits_MEMORY_PROVOKED )
-				ALERT( at_console, "I'm not following you, you evil person!\n" );
-			else
-			{
-				StartFollowing( pCaller );
-				SetBits( m_bitsSaid, bit_saidHelloPlayer );	// Don't say hi after you've started following
-			}
 		}
 		else
 		{
-			StopFollowing( TRUE );
+			// Pre-disaster followers can't be used
+			if( pev->spawnflags & SF_MONSTER_PREDISASTER )
+			{
+				DeclineFollowing();
+			}
+			else if( CanFollow() )
+			{
+				//LimitFollowers( pCaller, 1 );
+
+			
+				StartFollowing( pCaller );
+				SetBits( m_bitsSaid, bit_saidHelloPlayer );	// Don't say hi after you've started following
+			}
+			else
+			{
+
+				if(m_hEnemy != NULL)
+				{
+					m_hEnemy = NULL;
+					m_hOldEnemy[0] = NULL;
+					m_hOldEnemy[1] = NULL;
+					m_hOldEnemy[2] = NULL;
+					m_hOldEnemy[3] = NULL;
+				}
+				else
+				{
+					StopFollowing( TRUE );
+				}
+			}
 		}
 	}
 }

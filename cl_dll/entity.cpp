@@ -19,12 +19,22 @@
 #include "pm_defs.h"
 #include "pmtrace.h"	
 #include "pm_shared.h"
+#include "game_fx.h"
+#include "com_model.h"
+#include "RenderManager.h"
+#include "RenderSystem.h"
+#include "ParticleSystem.h"
+#include "PSBlastCone.h"
+#include "PSGravityPart.h"
+#include "RSSprite.h"
+#include "PSBubbles.h"
 
 void Game_AddObjects( void );
 
 extern vec3_t v_origin;
 
 int g_iAlive = 1;
+double g_cl_gravity;// XDM3035: value is same as sv_gravity (800)
 
 extern "C"
 {
@@ -532,6 +542,65 @@ void DLLEXPORT HUD_CreateEntities( void )
 	GetClientVoiceMgr()->CreateEntities();
 }
 
+//================//
+//Gun Barrel smoke//
+//================//
+void EV_GunSmoke2(vec3_t origin, int iSmokeType)
+{
+	switch (iSmokeType)
+	{
+	case GUNSMOKE_WHITE_SMALLEST:
+		if ( gEngfuncs.PM_PointContents(origin, NULL ) != CONTENTS_WATER)
+			g_pRenderManager->AddSystem(new CPSBlastCone(2, 18, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), 2, 5, 255,255,255, 0.2, -0.08, gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_white.spr"), FALSE, PARTICLE_WHITE_0, kRenderTransAdd, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+		else
+			g_pRenderManager->AddSystem(new CPSBubbles(20, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), gEngfuncs.pfnRandomFloat(80,120), gEngfuncs.pfnRandomFloat(1,3), gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_white.spr"), PARTICLE_WHITE_11, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+	break;
+	case GUNSMOKE_WHITE_SMALL:
+		if ( gEngfuncs.PM_PointContents(origin, NULL ) != CONTENTS_WATER)
+			g_pRenderManager->AddSystem(new CPSBlastCone(5, 15, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), 2, 10, 255,255,255, 0.2, -0.08, gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_white.spr"), FALSE, PARTICLE_WHITE_2, kRenderTransAdd, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+		else
+			g_pRenderManager->AddSystem(new CPSBubbles(20, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), gEngfuncs.pfnRandomFloat(60,120), gEngfuncs.pfnRandomFloat(2,4), gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_white.spr"), PARTICLE_WHITE_11, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+	break;
+	case GUNSMOKE_WHITE_MEDIUM:
+		if ( gEngfuncs.PM_PointContents(origin, NULL ) != CONTENTS_WATER)
+			g_pRenderManager->AddSystem(new CPSBlastCone(5, 25, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), 2, 15, 255,255,255, 0.25, -0.09, gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_white.spr"), FALSE, PARTICLE_WHITE_4, kRenderTransAdd, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+		else
+			g_pRenderManager->AddSystem(new CPSBubbles(25, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), gEngfuncs.pfnRandomFloat(80,120), gEngfuncs.pfnRandomFloat(2,5), gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_white.spr"), PARTICLE_WHITE_11, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+	break;
+	case GUNSMOKE_WHITE_LARGE:
+		if ( gEngfuncs.PM_PointContents(origin, NULL ) != CONTENTS_WATER)
+			g_pRenderManager->AddSystem(new CPSBlastCone(5, 30, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), 2, 20, 255,255,255, 0.3, -0.09, gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_white.spr"), FALSE, PARTICLE_WHITE_6, kRenderTransAdd, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+		else
+			g_pRenderManager->AddSystem(new CPSBubbles(30, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), gEngfuncs.pfnRandomFloat(80,120), gEngfuncs.pfnRandomFloat(3,6), gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_white.spr"), PARTICLE_WHITE_11, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+	break;
+
+	case GUNSMOKE_BLACK_SMALLEST:
+		if ( gEngfuncs.PM_PointContents(origin, NULL ) != CONTENTS_WATER)
+			g_pRenderManager->AddSystem(new CPSBlastCone(5, 15, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), 2, 5, 0,0,0, 0.1, -0.05, gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_black.spr"), FALSE, PARTICLE_BLACK_0, kRenderTransAlpha, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+		else
+			g_pRenderManager->AddSystem(new CPSBubbles(20, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), gEngfuncs.pfnRandomFloat(80,120), gEngfuncs.pfnRandomFloat(1,3), gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_white.spr"), PARTICLE_WHITE_11, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+	break;
+	case GUNSMOKE_BLACK_SMALL:
+		if ( gEngfuncs.PM_PointContents(origin, NULL ) != CONTENTS_WATER)
+			g_pRenderManager->AddSystem(new CPSBlastCone(5, 20, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), 2, 10, 0,0,0, 0.1, -0.05, gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_black.spr"), FALSE, PARTICLE_BLACK_2, kRenderTransAlpha, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+		else
+			g_pRenderManager->AddSystem(new CPSBubbles(20, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), gEngfuncs.pfnRandomFloat(80,120), gEngfuncs.pfnRandomFloat(2,4), gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_white.spr"), PARTICLE_WHITE_11, 0.3), 0, -1);
+	break;
+	case GUNSMOKE_BLACK_MEDIUM:
+		if ( gEngfuncs.PM_PointContents(origin, NULL ) != CONTENTS_WATER)
+			g_pRenderManager->AddSystem(new CPSBlastCone(5, 25, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), 2, 15, 0,0,0, 0.15, -0.05, gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_black.spr"), FALSE, PARTICLE_BLACK_4, kRenderTransAlpha, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+		else
+			g_pRenderManager->AddSystem(new CPSBubbles(25, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), gEngfuncs.pfnRandomFloat(80,120), gEngfuncs.pfnRandomFloat(2,5), gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_white.spr"), PARTICLE_WHITE_11, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+	break;
+	case GUNSMOKE_BLACK_LARGE:
+		if ( gEngfuncs.PM_PointContents(origin, NULL ) != CONTENTS_WATER)
+			g_pRenderManager->AddSystem(new CPSBlastCone(5, 30, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), 2, 20, 0,0,0, 0.2, -0.05, gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_black.spr"), FALSE, PARTICLE_BLACK_6, kRenderTransAlpha, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+		else
+			g_pRenderManager->AddSystem(new CPSBubbles(30, origin, Vector(0,0,1), Vector(0.2,0.2,0.5), gEngfuncs.pfnRandomFloat(80,120), gEngfuncs.pfnRandomFloat(3,6), gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_white.spr"), PARTICLE_WHITE_11, 0.3), RENDERSYSTEM_FLAG_SIMULTANEOUS, -1);
+	break;
+	}
+}
+
 /*
 =========================
 HUD_StudioEvent
@@ -540,22 +609,101 @@ The entity's studio model description indicated an event was
 fired during this frame, handle the event by it's tag ( e.g., muzzleflash, sound )
 =========================
 */
+#define FRAMERATE		20//10
+#define RENDER_VALUE	50
+#define SCALE_VALUE		0.5
+#define COLOR_VALUE		30//25
+#define FADESPEED		2//1
+
 void DLLEXPORT HUD_StudioEvent( const struct mstudioevent_s *event, const struct cl_entity_s *entity )
 {
+	void VectorAngles( const float *forward, float *angles );
+
+
+	//TO DO: make 3d Muzzeflashes? How do I can attach some model by 0.1 seconds? 
+	int iSmoke = CVAR_GET_FLOAT("cl_gunsmoke");
+
+	TEMPENTITY *pMuzz1TempEnt;
+	TEMPENTITY *pMuzz2TempEnt;
+	TEMPENTITY *pMuzz3TempEnt;
+
+	int  iMuzz1 = gEngfuncs.pEventAPI->EV_FindModelIndex ("sprites/muzz1.spr");
+	int  iMuzz2 = gEngfuncs.pEventAPI->EV_FindModelIndex ("sprites/muzz2.spr");
+	int  iMuzz3 = gEngfuncs.pEventAPI->EV_FindModelIndex ("sprites/muzz3.spr");
+
+	vec3_t up, right, forward, angles;
+
+	cl_entity_t *ent = gEngfuncs.GetEntityByIndex( entity->index );
+
+    angles =  ent->curstate.angles;
+
+    AngleVectors( entity->angles, forward, up, right );
+
 	switch( event->event )
 	{
 	case 5001:
 		gEngfuncs.pEfxAPI->R_MuzzleFlash( (float *)&entity->attachment[0], atoi( event->options ) );
+		DynamicLight((float *)&entity->attachment[0], 100, 250,200,150, 0.1, 0.0);
+			if ( iSmoke != 0 )
+			{
+				EV_GunSmoke2((float*)&entity->attachment[0], GUNSMOKE_WHITE_SMALLEST);
+			}
 		break;
+
+	case 5000:
+		{
+			float R, G, B, Radius;
+			sscanf(event->options, "%f %f %f %f", &R, &G, &B, &Radius );
+			DynamicLight((float *)&entity->attachment[0], Radius, R,G,B, 0.1, 0.0);
+		}
+		break;
+
 	case 5011:
 		gEngfuncs.pEfxAPI->R_MuzzleFlash( (float *)&entity->attachment[1], atoi( event->options ) );
+		DynamicLight((float *)&entity->attachment[1], 100, 250,200,150, 0.1, 0.0);
+		if ( iSmoke != 0 )
+		{
+			EV_GunSmoke2((float*)&entity->attachment[1], GUNSMOKE_WHITE_SMALLEST);
+		}
 		break;
+
+		case 5012: //muzzle flashes (attach 0)
+		{//Params: 1.Sprite (0-4), 2.Frame, 3.Scale
+			int Spr, Frame;
+			float Scale;
+			sscanf(event->options, "%i %i %f", &Spr, &Frame, &Scale );
+	
+		        switch (Spr)
+		        {
+		                case 0 : Spr = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_red.spr"); break;
+		                case 1 : Spr = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_green.spr"); break;
+		                case 2 : Spr = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_blue.spr"); break;
+		                case 3 : Spr = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_violet.spr"); break;
+		                case 4 : Spr = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_white.spr"); break;
+				default: Spr = gEngfuncs.pEventAPI->EV_FindModelIndex("sprites/particles_red.spr"); break;
+		        }
+			g_pRenderManager->AddSystem(new CRSSprite((float*)&entity->attachment[0], Vector(0,0,0), Spr, Frame, kRenderTransAdd, 255,255,255, 0.8, -1.0, Scale, -(Scale*2), 0.0, 0.05), 0, -1);
+			break;
+		}
+
 	case 5021:
 		gEngfuncs.pEfxAPI->R_MuzzleFlash( (float *)&entity->attachment[2], atoi( event->options ) );
+		DynamicLight((float *)&entity->attachment[2], 100, 250,200,150, 0.1, 0.0);
+		if ( iSmoke != 0 )
+		{
+			EV_GunSmoke2((float*)&entity->attachment[2], GUNSMOKE_WHITE_SMALLEST);
+		}
 		break;
+
 	case 5031:
 		gEngfuncs.pEfxAPI->R_MuzzleFlash( (float *)&entity->attachment[3], atoi( event->options ) );
+		DynamicLight((float *)&entity->attachment[3], 100, 250,200,150, 0.1, 0.0);
+			if ( iSmoke != 0 )
+			{
+				EV_GunSmoke2((float*)&entity->attachment[3], GUNSMOKE_WHITE_SMALLEST);
+			}	
 		break;
+
 	case 5002:
 		gEngfuncs.pEfxAPI->R_SparkEffect( (float *)&entity->attachment[0], atoi( event->options ), -100, 100 );
 		break;
@@ -563,6 +711,318 @@ void DLLEXPORT HUD_StudioEvent( const struct mstudioevent_s *event, const struct
 	case 5004:		
 		gEngfuncs.pfnPlaySoundByNameAtLocation( (char *)event->options, 1.0, (float *)&entity->attachment[0] );
 		break;
+
+	case 5005:
+		{
+			float R, G, B, Radius;
+			sscanf(event->options, "%f %f %f %f", &R, &G, &B, &Radius );
+			DynamicLight((float *)&entity->attachment[0], Radius, R,G,B, 0.1, 0.0);
+		}
+		break;
+
+	case 5006:
+		{
+			float R, G, B, Radius;
+			sscanf(event->options, "%f %f %f %f", &R, &G, &B, &Radius );
+			DynamicLight((float*)&entity->attachment[1], Radius, R,G,B, 0.1, 0.0);
+		}
+		break;
+
+	case 5007:
+		{
+			float R, G, B, Radius;
+			sscanf(event->options, "%f %f %f %f", &R, &G, &B, &Radius );
+			DynamicLight((float*)&entity->attachment[2], Radius, R,G,B, 0.1, 0.0);
+		}
+		break;
+
+	case 5008:
+		{
+			float R, G, B, Radius;
+			sscanf(event->options, "%f %f %f %f", &R, &G, &B, &Radius );
+			DynamicLight((float*)&entity->attachment[3], Radius, R,G,B, 0.1, 0.0);
+		}
+		break;
+
+	case 5149:
+		{
+
+			//DynamicLight((float *)&entity->attachment[0], 120, 200,100,250, 0.1, 0.0);
+
+			pMuzz1TempEnt = gEngfuncs.pEfxAPI->R_TempSprite( (float *)&entity->attachment[0],  forward * gEngfuncs.pfnRandomLong(-10,10) + right * gEngfuncs.pfnRandomLong(-10,10) + up * gEngfuncs.pfnRandomLong(-10,10),
+				0.5,//scale
+				iMuzz1,
+				kRenderTransAdd,
+				kRenderFxNone,
+				1,//alpha?
+				0.05,//life
+				FTENT_SPRANIMATE| FTENT_FADEOUT);
+
+			if(pMuzz1TempEnt)
+			{ 
+				pMuzz1TempEnt->fadeSpeed = 10;
+				pMuzz1TempEnt->entity.curstate.framerate = 10;//20
+				pMuzz1TempEnt->entity.curstate.renderamt = 222;
+				pMuzz1TempEnt->entity.curstate.rendercolor.r = 200;
+				pMuzz1TempEnt->entity.curstate.rendercolor.g = 100;
+				pMuzz1TempEnt->entity.curstate.rendercolor.b = 250;
+			}
+			//				2 MUZZLE FLASH
+			pMuzz2TempEnt = gEngfuncs.pEfxAPI->R_TempSprite( (float *)&entity->attachment[0], forward * gEngfuncs.pfnRandomLong(-15,15) + right * gEngfuncs.pfnRandomLong(-15,15) + up * gEngfuncs.pfnRandomLong(-15,15),
+				0.3,
+				iMuzz1,
+				kRenderTransAdd,
+				kRenderFxNone,
+				1,//alpha?
+				0.05,//life
+				FTENT_SPRANIMATE| FTENT_FADEOUT);
+
+			if(pMuzz2TempEnt)
+			{ 
+				pMuzz2TempEnt->fadeSpeed = 10;
+				pMuzz2TempEnt->entity.curstate.framerate = 10;//20
+				pMuzz2TempEnt->entity.curstate.renderamt = 222;
+				pMuzz2TempEnt->entity.curstate.rendercolor.r = 200;
+				pMuzz2TempEnt->entity.curstate.rendercolor.g = 100;
+				pMuzz2TempEnt->entity.curstate.rendercolor.b = 250;
+			}
+
+		}
+		break;
+
+	case 5150:
+		{
+			EV_GunSmoke2((float*)&entity->attachment[3], GUNSMOKE_WHITE_SMALLEST);
+
+			pMuzz1TempEnt = gEngfuncs.pEfxAPI->R_TempSprite( (float *)&entity->attachment[0],  forward * gEngfuncs.pfnRandomLong(-10,10) + right * gEngfuncs.pfnRandomLong(-10,10) + up * gEngfuncs.pfnRandomLong(-10,10),
+				0.3,//scale
+				iMuzz1,
+				kRenderTransAdd,
+				kRenderFxNone,
+				1,//alpha?
+				0.05,//life
+				FTENT_SPRANIMATE| FTENT_FADEOUT);
+
+			if(pMuzz1TempEnt)
+			{ 
+				pMuzz1TempEnt->fadeSpeed = 10;
+				pMuzz1TempEnt->entity.curstate.framerate = 10;//20
+				pMuzz1TempEnt->entity.curstate.renderamt = 222;
+				pMuzz1TempEnt->entity.curstate.rendercolor.r = 250;
+				pMuzz1TempEnt->entity.curstate.rendercolor.g = 150;
+				pMuzz1TempEnt->entity.curstate.rendercolor.b = 100;
+			}
+			//				2 MUZZLE FLASH
+			pMuzz2TempEnt = gEngfuncs.pEfxAPI->R_TempSprite( (float *)&entity->attachment[0], forward * gEngfuncs.pfnRandomLong(-15,15) + right * gEngfuncs.pfnRandomLong(-15,15) + up * gEngfuncs.pfnRandomLong(-15,15),
+				0.2,
+				iMuzz1,
+				kRenderTransAdd,
+				kRenderFxNone,
+				1,//alpha?
+				0.05,//life
+				FTENT_SPRANIMATE| FTENT_FADEOUT);
+
+			if(pMuzz2TempEnt)
+			{ 
+				pMuzz2TempEnt->fadeSpeed = 10;
+				pMuzz2TempEnt->entity.curstate.framerate = 10;//20
+				pMuzz2TempEnt->entity.curstate.renderamt = 222;
+				pMuzz2TempEnt->entity.curstate.rendercolor.r = 250;
+				pMuzz2TempEnt->entity.curstate.rendercolor.g = 150;
+				pMuzz2TempEnt->entity.curstate.rendercolor.b = 100;
+			}
+
+		}
+		break;
+
+	case 5151:
+		{
+			EV_GunSmoke2((float*)&entity->attachment[0], GUNSMOKE_WHITE_MEDIUM);
+		}
+		break;
+
+	case 5187:
+		{
+
+			DynamicLight((float *)&entity->attachment[0], 90, 180,90,240, 0.1, 0.0);
+
+			pMuzz1TempEnt = gEngfuncs.pEfxAPI->R_TempSprite( (float *)&entity->attachment[0],  forward * 12 + right * gEngfuncs.pfnRandomLong(-3,3) + up * gEngfuncs.pfnRandomLong(-3,3),
+				0.5,//scale
+				iMuzz2,
+				kRenderTransAdd,
+				kRenderFxNone,
+				1,//alpha?
+				0.05,//life
+				FTENT_SPRANIMATE| FTENT_FADEOUT);
+
+			if(pMuzz1TempEnt)
+			{ 
+				pMuzz1TempEnt->fadeSpeed = 15;
+				pMuzz1TempEnt->entity.curstate.framerate = 20;//20
+				pMuzz1TempEnt->entity.curstate.renderamt = 240;
+				pMuzz1TempEnt->entity.curstate.rendercolor.r = 180;
+				pMuzz1TempEnt->entity.curstate.rendercolor.g = 90;
+				pMuzz1TempEnt->entity.curstate.rendercolor.b = 240;
+			}
+
+		}
+		break;
+
+	case 5009:
+		{
+			//**********************************
+			//**** MUZZLE FLASHES CODE *********
+			//**********************************
+			DynamicLight((float *)&entity->attachment[0], 120, 200,200,250, 0.1, 0.0);
+			if ( iSmoke != 0 )
+			{
+				EV_GunSmoke2((float*)&entity->attachment[0], GUNSMOKE_WHITE_MEDIUM);
+			}
+			//				1 MUZZLE FLASH
+			pMuzz1TempEnt = gEngfuncs.pEfxAPI->R_TempSprite( (float *)&entity->attachment[0],  forward * 5 + right * 0 + up * 0,
+				0.15,//scale
+				iMuzz1,
+				kRenderTransAdd,
+				kRenderFxNone,
+				1,//alpha?
+				0.1,//life
+				FTENT_SPRANIMATE| FTENT_FADEOUT);
+
+			if(pMuzz1TempEnt)
+			{ 
+				pMuzz1TempEnt->fadeSpeed = 10;
+				pMuzz1TempEnt->entity.curstate.framerate = 10;//20
+				pMuzz1TempEnt->entity.curstate.renderamt = 222;
+				pMuzz1TempEnt->entity.curstate.rendercolor.r = 155;
+				pMuzz1TempEnt->entity.curstate.rendercolor.g = 155;
+				pMuzz1TempEnt->entity.curstate.rendercolor.b = 255;
+			}
+			//				2 MUZZLE FLASH
+			pMuzz2TempEnt = gEngfuncs.pEfxAPI->R_TempSprite( (float *)&entity->attachment[0], forward * 10 + right * 0 + up * 0,
+				0.10,
+				iMuzz1,
+				kRenderTransAdd,
+				kRenderFxNone,
+				1,//alpha?
+				0.1,//life
+				FTENT_SPRANIMATE| FTENT_FADEOUT);
+
+			if(pMuzz2TempEnt)
+			{ 
+				pMuzz2TempEnt->fadeSpeed = 10;
+				pMuzz2TempEnt->entity.curstate.framerate = 10;//20
+				pMuzz2TempEnt->entity.curstate.renderamt = 222;
+				pMuzz2TempEnt->entity.curstate.rendercolor.r = 155;
+				pMuzz2TempEnt->entity.curstate.rendercolor.g = 155;
+				pMuzz2TempEnt->entity.curstate.rendercolor.b = 255;
+			}
+			//				3 MUZZLE FLASH
+			pMuzz3TempEnt = gEngfuncs.pEfxAPI->R_TempSprite( (float *)&entity->attachment[0], forward * 15 + right * 0 + up * 0,
+				0.05,
+				iMuzz3,
+				kRenderTransAdd,
+				kRenderFxNone,
+				1,//alpha?
+				0.1,//life
+				FTENT_SPRANIMATE| FTENT_FADEOUT);
+
+			if(pMuzz3TempEnt)
+			{ 
+				pMuzz3TempEnt->fadeSpeed = 10;
+				pMuzz3TempEnt->entity.curstate.framerate = 10;//20
+				pMuzz3TempEnt->entity.curstate.renderamt = 222;
+				pMuzz3TempEnt->entity.curstate.rendercolor.r = 155;
+				pMuzz3TempEnt->entity.curstate.rendercolor.g = 155;
+				pMuzz3TempEnt->entity.curstate.rendercolor.b = 255;
+			}
+			//**********************************
+			//**** MUZZLE FLASHES CODE *********
+			//**********************************
+
+		}
+		break;
+
+	case 5010:
+		{
+			//**********************************
+			//**** MUZZLE FLASHES CODE *********
+			//**********************************
+
+			//				1 MUZZLE FLASH
+			pMuzz1TempEnt = gEngfuncs.pEfxAPI->R_TempSprite( (float *)&entity->attachment[1],  forward * 5 + right * 0 + up * 0,
+				0.15,//scale
+				iMuzz1,
+				kRenderTransAdd,
+				kRenderFxNone,
+				1,//alpha?
+				0.1,//life
+				FTENT_SPRANIMATE| FTENT_FADEOUT);
+
+			if(pMuzz1TempEnt)
+			{ 
+				pMuzz1TempEnt->fadeSpeed = 10;
+				pMuzz1TempEnt->entity.curstate.framerate = 10;//20
+				pMuzz1TempEnt->entity.curstate.renderamt = 222;
+				pMuzz1TempEnt->entity.curstate.rendercolor.r = 155;
+				pMuzz1TempEnt->entity.curstate.rendercolor.g = 155;
+				pMuzz1TempEnt->entity.curstate.rendercolor.b = 155;
+			}
+			//				2 MUZZLE FLASH
+			pMuzz2TempEnt = gEngfuncs.pEfxAPI->R_TempSprite( (float *)&entity->attachment[1], forward * 10 + right * 0 + up * 0,
+				0.10,
+				iMuzz1,
+				kRenderTransAdd,
+				kRenderFxNone,
+				1,//alpha?
+				0.1,//life
+				FTENT_SPRANIMATE| FTENT_FADEOUT);
+
+			if(pMuzz2TempEnt)
+			{ 
+				pMuzz2TempEnt->fadeSpeed = 10;
+				pMuzz2TempEnt->entity.curstate.framerate = 10;//20
+				pMuzz2TempEnt->entity.curstate.renderamt = 222;
+				pMuzz2TempEnt->entity.curstate.rendercolor.r = 155;
+				pMuzz2TempEnt->entity.curstate.rendercolor.g = 155;
+				pMuzz2TempEnt->entity.curstate.rendercolor.b = 155;
+			}
+			//				3 MUZZLE FLASH
+			pMuzz3TempEnt = gEngfuncs.pEfxAPI->R_TempSprite( (float *)&entity->attachment[1], forward * 15 + right * 0 + up * 0,
+				0.05,
+				iMuzz3,
+				kRenderTransAdd,
+				kRenderFxNone,
+				1,//alpha?
+				0.1,//life
+				FTENT_SPRANIMATE| FTENT_FADEOUT);
+
+			if(pMuzz3TempEnt)
+			{ 
+				pMuzz3TempEnt->fadeSpeed = 10;
+				pMuzz3TempEnt->entity.curstate.framerate = 10;//20
+				pMuzz3TempEnt->entity.curstate.renderamt = 222;
+				pMuzz3TempEnt->entity.curstate.rendercolor.r = 155;
+				pMuzz3TempEnt->entity.curstate.rendercolor.g = 155;
+				pMuzz3TempEnt->entity.curstate.rendercolor.b = 155;
+			}
+			//**********************************
+			//**** MUZZLE FLASHES CODE *********
+			//**********************************
+
+		}
+		break;
+
+	case 5014:
+		{
+			cl_entity_t *view = gEngfuncs.GetViewModel();
+			 view->curstate.skin = atoi(event->options);
+		}
+		break;
+
+	case 5015: 
+		gEngfuncs.pEfxAPI->R_Implosion( (float *)&entity->attachment[0], 50, 10, 0.2 );
+		break;
+
 	default:
 		break;
 	}
@@ -588,6 +1048,7 @@ void DLLEXPORT HUD_TempEntUpdate (
 	int			i;
 	TEMPENTITY	*pTemp, *pnext, *pprev;
 	float		/*freq,*/ gravity, gravitySlow, life, fastFreq;
+	g_cl_gravity = cl_gravity;// XDM3035
 
 	// Nothing to simulate
 	if( !*ppTempEntActive )	
@@ -958,4 +1419,24 @@ cl_entity_t DLLEXPORT *HUD_GetUserEntity( int index )
 #else
 	return NULL;
 #endif
+}
+
+//Fixes Server and Client ent.indexes! Ghoul [BB], XASH
+cl_entity_t *UTIL_GetClientEntityWithServerIndex( int sv_index )
+{
+	cl_entity_t *e;
+
+	for (int ic=1;ic<MAX_EDICTS;ic++)
+	{
+		e = gEngfuncs.GetEntityByIndex( ic );
+		if (!e)
+			break;
+
+		if (!e->model)
+			continue;
+
+		if (e->curstate.colormap == sv_index)
+			return e;
+	}
+	return NULL;
 }

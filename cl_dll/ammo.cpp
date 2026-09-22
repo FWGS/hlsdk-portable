@@ -29,6 +29,8 @@
 #include "ammohistory.h"
 #include "vgui_TeamFortressViewport.h"
 
+extern int iMouseInUse;
+
 WEAPON *gpActiveSel;	// NULL means off, 1 means just the menu bar, otherwise
 						// this points to the active weapon menu item
 WEAPON *gpLastSel;		// Last weapon menu selection 
@@ -420,7 +422,7 @@ void WeaponsResource::SelectSlot( int iSlot, int fAdvance, int iDirection )
 		return;
 	}
 
-	if( iSlot > MAX_WEAPON_SLOTS )
+	if( iMouseInUse || iSlot > MAX_WEAPON_SLOTS )
 		return;
 
 	if( gHUD.m_fPlayerDead || gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) )
@@ -488,7 +490,8 @@ int CHudAmmo::MsgFunc_AmmoX( const char *pszName, int iSize, void *pbuf )
 	BEGIN_READ( pbuf, iSize );
 
 	int iIndex = READ_BYTE();
-	int iCount = READ_BYTE();
+	int iCount = READ_SHORT();
+	//int iCount = READ_BYTE();
 
 	gWR.SetAmmo( iIndex, abs( iCount ) );
 
@@ -538,7 +541,7 @@ int CHudAmmo::MsgFunc_HideWeapon( const char *pszName, int iSize, void *pbuf )
 	if( gEngfuncs.IsSpectateOnly() )
 		return 1;
 
-	if( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) )
+	if( iMouseInUse || gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) )
 	{
 		wrect_t nullrc = {0,};
 		gpActiveSel = NULL;
@@ -583,7 +586,7 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 		return 0;
 	}
 
-	if( g_iUser1 != OBS_IN_EYE )
+	/*if( g_iUser1 != OBS_IN_EYE )
 	{
 		// Is player dead???
 		if( ( iId == -1 ) && ( iClip == -1 ) )
@@ -593,7 +596,7 @@ int CHudAmmo::MsgFunc_CurWeapon( const char *pszName, int iSize, void *pbuf )
 			return 1;
 		}
 		gHUD.m_fPlayerDead = FALSE;
-	}
+	}*/
 
 	WEAPON *pWeapon = gWR.GetWeapon( iId );
 
@@ -698,51 +701,80 @@ void CHudAmmo::SlotInput( int iSlot )
 
 void CHudAmmo::UserCmd_Slot1( void )
 {
+	if( iMouseInUse )
+		return;
+
 	SlotInput( 0 );
 }
 
 void CHudAmmo::UserCmd_Slot2( void )
 {
+	if( iMouseInUse )
+		return;
 	SlotInput( 1 );
 }
 
 void CHudAmmo::UserCmd_Slot3( void )
 {
+	if( iMouseInUse )
+		return;
+
 	SlotInput( 2 );
 }
 
 void CHudAmmo::UserCmd_Slot4( void )
 {
+	if( iMouseInUse )
+		return;
+
 	SlotInput( 3 );
 }
 
 void CHudAmmo::UserCmd_Slot5( void )
 {
+	if( iMouseInUse )
+		return;
+
 	SlotInput( 4 );
 }
 
 void CHudAmmo::UserCmd_Slot6( void )
 {
+	if( iMouseInUse )
+		return;
+
 	SlotInput( 5 );
 }
 
 void CHudAmmo::UserCmd_Slot7( void )
 {
+	if( iMouseInUse )
+		return;
+
 	SlotInput( 6 );
 }
 
 void CHudAmmo::UserCmd_Slot8( void )
 {
+	if( iMouseInUse )
+		return;
+
 	SlotInput( 7 );
 }
 
 void CHudAmmo::UserCmd_Slot9( void )
 {
+	if( iMouseInUse )
+		return;
+		
 	SlotInput( 8 );
 }
 
 void CHudAmmo::UserCmd_Slot10( void )
 {
+	if( iMouseInUse )
+		return;
+
 	SlotInput( 9 );
 }
 
@@ -762,7 +794,7 @@ void CHudAmmo::UserCmd_Close( void )
 // Selects the next item in the weapon menu
 void CHudAmmo::UserCmd_NextWeapon( void )
 {
-	if( gHUD.m_fPlayerDead || ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
+	if( iMouseInUse || gHUD.m_fPlayerDead || ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
 		return;
 
 	if( !gpActiveSel || gpActiveSel == (WEAPON*)1 )
@@ -803,7 +835,7 @@ void CHudAmmo::UserCmd_NextWeapon( void )
 // Selects the previous item in the menu
 void CHudAmmo::UserCmd_PrevWeapon( void )
 {
-	if( gHUD.m_fPlayerDead || ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
+	if( iMouseInUse || gHUD.m_fPlayerDead || ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
 		return;
 
 	if( !gpActiveSel || gpActiveSel == (WEAPON*) 1 )
@@ -849,8 +881,12 @@ int CHudAmmo::Draw( float flTime )
 	int a, x, y, r, g, b;
 	int AmmoWidth;
 
-	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) ) ) )
+	if( !( gHUD.m_iWeaponBits & ( 1 << ( WEAPON_SUIT ) )) || iMouseInUse  )
+	{
+		wrect_t nullrc = {0,};
+		SetCrosshair( 0, nullrc, 0, 0, 0 );
 		return 1;
+	}
 
 	if( ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
 		return 1;
@@ -882,7 +918,7 @@ int CHudAmmo::Draw( float flTime )
 	if( m_fFade > 0 )
 		m_fFade -= ( (float)gHUD.m_flTimeDelta * 20.0f );
 
-	UnpackRGB( r, g, b, RGB_YELLOWISH );
+	UnpackRGB( r, g, b, RGB_WHITE );
 
 	ScaleColors( r, g, b, a );
 
@@ -911,7 +947,7 @@ int CHudAmmo::Draw( float flTime )
 
 			x += AmmoWidth / 2;
 
-			UnpackRGB( r,g,b, RGB_YELLOWISH );
+			UnpackRGB( r,g,b, RGB_WHITE );
 
 			// draw the | bar
 			FillRGBA( x, y, iBarWidth, gHUD.m_iFontHeight, r, g, b, a );
@@ -981,7 +1017,7 @@ int DrawBar( int x, int y, int width, int height, float f )
 		width -= w;
 	}
 
-	UnpackRGB( r, g, b, RGB_YELLOWISH );
+	UnpackRGB( r, g, b, RGB_WHITE );
 
 	FillRGBA( x, y, width, height, r, g, b, 128 );
 
@@ -1049,7 +1085,7 @@ int CHudAmmo::DrawWList( float flTime )
 	{
 		int iWidth;
 
-		UnpackRGB( r, g, b, RGB_YELLOWISH );
+		UnpackRGB( r, g, b, RGB_WHITE );
 
 		if( iActiveSlot == i )
 			a = 255;
@@ -1100,16 +1136,19 @@ int CHudAmmo::DrawWList( float flTime )
 				if( !p || !p->iId )
 					continue;
 
-				UnpackRGB( r, g, b, RGB_YELLOWISH );
+				UnpackRGB( r, g, b, RGB_WHITE );
 
 				// if active, then we must have ammo.
 				if( gpActiveSel == p )
 				{
+					UnpackRGB( r,g,b, RGB_YELLOWISH );
+					int frame;
 					SPR_Set( p->hActive, r, g, b );
 					SPR_DrawAdditive( 0, x, y, &p->rcActive );
 
+					frame = (int)(flTime * 10) % SPR_Frames(gHUD.GetSprite(m_HUD_selection));
 					SPR_Set( gHUD.GetSprite( m_HUD_selection ), r, g, b );
-					SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( m_HUD_selection ) );
+					SPR_DrawAdditive( frame, x, y, &gHUD.GetSpriteRect( m_HUD_selection ) );
 				}
 				else
 				{
@@ -1137,7 +1176,7 @@ int CHudAmmo::DrawWList( float flTime )
 		else
 		{
 			// Draw Row of weapons.
-			UnpackRGB( r, g, b, RGB_YELLOWISH );
+			UnpackRGB( r, g, b, RGB_WHITE );
 
 			for( int iPos = 0; iPos < MAX_WEAPON_POSITIONS; iPos++ )
 			{
@@ -1148,7 +1187,7 @@ int CHudAmmo::DrawWList( float flTime )
 
 				if( gWR.HasAmmo( p ) )
 				{
-					UnpackRGB( r, g, b, RGB_YELLOWISH );
+					UnpackRGB( r, g, b, RGB_WHITE );
 					a = 128;
 				}
 				else

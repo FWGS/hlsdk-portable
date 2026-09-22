@@ -417,62 +417,74 @@ extern void KeyUp( kbutton_t *b );	// HACK
 
 void CAM_PitchUpDown( void )
 {
-	KeyDown( &cam_pitchup );
+	if(cam_mousemove == 0)
+		KeyDown( &cam_pitchup );
 }
 
 void CAM_PitchUpUp( void )
 {
-	KeyUp( &cam_pitchup );
+	if(cam_mousemove == 0)
+		KeyUp( &cam_pitchup );
 }
 
 void CAM_PitchDownDown( void )
 {
-	KeyDown( &cam_pitchdown );
+	if(cam_mousemove == 0)
+		KeyDown( &cam_pitchdown );
 }
 
 void CAM_PitchDownUp( void )
 {
-	KeyUp( &cam_pitchdown );
+	if(cam_mousemove == 0)
+		KeyUp( &cam_pitchdown );
 }
 
 void CAM_YawLeftDown( void )
 {
-	KeyDown( &cam_yawleft );
+	if(cam_mousemove == 0)
+		KeyDown( &cam_yawleft );
 }
 
 void CAM_YawLeftUp( void )
 {
-	KeyUp( &cam_yawleft );
+	if(cam_mousemove == 0)
+		KeyUp( &cam_yawleft );
 }
 
 void CAM_YawRightDown( void )
 {
-	KeyDown( &cam_yawright );
+	if(cam_mousemove == 0)
+		KeyDown( &cam_yawright );
 }
 
 void CAM_YawRightUp( void )
 {
-	KeyUp( &cam_yawright );
+	if(cam_mousemove == 0)
+		KeyUp( &cam_yawright );
 }
 
 void CAM_InDown( void )
 {
-	KeyDown( &cam_in );
+	if(cam_mousemove == 0)
+		KeyDown( &cam_in );
 }
 
 void CAM_InUp( void )
 {
-	KeyUp( &cam_in );
+	if(cam_mousemove == 0)
+		KeyUp( &cam_in );
 }
 
 void CAM_OutDown( void )
 {
-	KeyDown( &cam_out );
+	if(cam_mousemove == 0)
+		KeyDown( &cam_out );
 }
 
 void CAM_OutUp( void )
 {
-	KeyUp( &cam_out );
+	if(cam_mousemove == 0)
+		KeyUp( &cam_out );
 }
 
 void CAM_ToThirdPerson( void )
@@ -513,7 +525,7 @@ void CAM_ToggleSnapto( void )
 
 void CAM_Init( void )
 {
-	gEngfuncs.pfnAddCommand( "+campitchup", CAM_PitchUpDown );
+	/*gEngfuncs.pfnAddCommand( "+campitchup", CAM_PitchUpDown );
 	gEngfuncs.pfnAddCommand( "-campitchup", CAM_PitchUpUp );
 	gEngfuncs.pfnAddCommand( "+campitchdown", CAM_PitchDownDown );
 	gEngfuncs.pfnAddCommand( "-campitchdown", CAM_PitchDownUp );
@@ -525,12 +537,13 @@ void CAM_Init( void )
 	gEngfuncs.pfnAddCommand( "-camin", CAM_InUp );
 	gEngfuncs.pfnAddCommand( "+camout", CAM_OutDown );
 	gEngfuncs.pfnAddCommand( "-camout", CAM_OutUp );
-	gEngfuncs.pfnAddCommand( "thirdperson", CAM_ToThirdPerson );
+	gEngfuncs.pfnAddCommand( "thirdperson", CAM_ToThirdPerson );*/
 	gEngfuncs.pfnAddCommand( "firstperson", CAM_ToFirstPerson );
 	gEngfuncs.pfnAddCommand( "+cammousemove",CAM_StartMouseMove);
 	gEngfuncs.pfnAddCommand( "-cammousemove",CAM_EndMouseMove);
-	gEngfuncs.pfnAddCommand( "+camdistance", CAM_StartDistance );
-	gEngfuncs.pfnAddCommand( "-camdistance", CAM_EndDistance );
+	gEngfuncs.pfnAddCommand( "=cammousemove",CAM_FuckMouseMove );
+	/*gEngfuncs.pfnAddCommand( "+camdistance", CAM_StartDistance );
+	gEngfuncs.pfnAddCommand( "-camdistance", CAM_EndDistance );*/
 	gEngfuncs.pfnAddCommand( "snapto", CAM_ToggleSnapto );
 
 	cam_command			= gEngfuncs.pfnRegisterVariable( "cam_command", "0", 0 );	 // tells camera to go to thirdperson
@@ -579,10 +592,10 @@ void CAM_ClearStates( void )
 
 void CAM_StartMouseMove( void )
 {
-	float flSensitivity;
+	//float flSensitivity;
 
 	//only move the cam with mouse if we are in third person.
-	if( cam_thirdperson )
+	/*if( cam_thirdperson )
 	{
 		//set appropriate flags and initialize the old mouse position
 		//variables for mouse camera movement
@@ -606,10 +619,10 @@ void CAM_StartMouseMove( void )
 	}
 	//we are not in 3rd person view..therefore do not allow camera movement
 	else
-	{   
+	{*/ 
 		cam_mousemove = 0;
 		iMouseInUse = 0;
-	}
+	//}
 }
 
 //the key has been released for camera movement
@@ -620,6 +633,12 @@ void CAM_EndMouseMove( void )
 	iMouseInUse = 0;
 }
 
+void CAM_FuckMouseMove(void)
+{
+   cam_mousemove = 1;
+   iMouseInUse = 1;
+}
+
 //----------------------------------------------------------
 //routines to start the process of moving the cam in or out 
 //using the mouse
@@ -627,8 +646,8 @@ void CAM_EndMouseMove( void )
 void CAM_StartDistance( void )
 {
 	//only move the cam with mouse if we are in third person.
-	if( cam_thirdperson )
-	{
+	//if( cam_thirdperson )
+	//{
 		//set appropriate flags and initialize the old mouse position
 		//variables for mouse camera movement
 		if( !cam_distancemove )
@@ -640,14 +659,14 @@ void CAM_StartDistance( void )
 			cam_old_mouse_x = cam_mouse.x * gHUD.GetSensitivity();
 			cam_old_mouse_y = cam_mouse.y * gHUD.GetSensitivity();
 		}
-	}
+	/*}
 	//we are not in 3rd person view..therefore do not allow camera movement
 	else
 	{
 		cam_distancemove = 0;
 		cam_mousemove = 0;
 		iMouseInUse = 0;
-	}
+	}*/
 }
 
 //the key has been released for camera movement

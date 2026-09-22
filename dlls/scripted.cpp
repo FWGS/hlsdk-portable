@@ -23,6 +23,7 @@
 #include "util.h"
 #include "cbase.h"
 #include "monsters.h"
+#include "player.h"
 
 #if !defined(ANIMATION_H)
 #include "animation.h"
@@ -275,7 +276,81 @@ int CCineMonster::FindEntity( void )
 			pTarget = GetMonsterPointer( pentTarget );
 			if( pTarget && pTarget->CanPlaySequence( FCanOverrideState(), SS_INTERRUPT_BY_NAME ) )
 			{
+				if ( pTarget->m_MonsterState == MONSTERSTATE_PRONE 
+				|| pTarget->m_IdealMonsterState == MONSTERSTATE_PRONE 
+				|| pTarget->m_freezetime > 0
+				|| pTarget->m_barnacleres_time > 0
+				|| pTarget->m_playerguardian_mode == 1)
+				{
+					return FALSE;
+				}
+				if ( pev->armortype == 1 && pTarget->m_hEnemy != NULL)
+				{
+					if(!pTarget->m_hEnemy->IsPlayer())
+					{
+						return FALSE;
+					}
+				}
 				m_hTargetEnt = pTarget;
+
+				if(pev->frags == 1 || pev->frags == 6 || pev->frags == 7)
+				{
+					pTarget->m_can_kill_script = 1;
+				}
+				else if(pev->frags == 2)
+				{
+					pTarget->m_enemyfollower = 0;
+					pTarget->m_can_kill_script = 1;
+					pTarget->m_hEnemy = NULL;
+					pTarget->m_hOldEnemy[0] = NULL;
+					pTarget->m_hOldEnemy[1] = NULL;
+					pTarget->m_hOldEnemy[2] = NULL;
+					pTarget->m_hOldEnemy[3] = NULL;
+					pTarget->m_boltpoison = 40;
+					pTarget->SetBodygroup( 5, 0 );
+					pTarget->pev->gravity = 1.1;
+				}
+				else if(pev->frags == 3)
+				{
+					pTarget->m_enemyfollower = 0;
+					pTarget->m_can_kill_script = 1;
+					pTarget->m_boltpoison = 40;
+					pTarget->SetBodygroup( 5, 0 );
+					pTarget->m_groundElev = TRUE;
+					pTarget->pev->gravity = 1.1;
+				}
+				else if(pev->frags == 4)
+				{
+					pTarget->m_boltpoison = 40;
+					pTarget->m_enemyfollower = 1;
+					pTarget->m_can_kill_script = 0;
+					pTarget->m_groundElev = FALSE;
+					pTarget->m_groundElev2 = TRUE;
+					pTarget->m_lovehate += 50;
+					pTarget->pev->gravity = 1.0;
+				}
+				
+				else if(pev->frags == 5)
+				{
+					if( (pTarget->pev->origin - pev->origin).Length() > m_flRadius)
+						return FALSE;
+			
+					pTarget->m_can_kill_script = 1;
+				}
+				else if(pev->frags == 7)
+				{
+					pTarget->m_FTSmod = 3;
+					pTarget->m_no_pov_limit = 1;
+				}
+				else if(pev->frags == 8)
+				{
+					CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+					if ( pEntity )
+					{
+						CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pEntity->pev);
+						pPlayer->Clear_SayText();
+					}
+				}
 				return TRUE;
 			}
 			ALERT( at_console, "Found %s, but can't play!\n", STRING( m_iszEntity ) );
@@ -296,6 +371,86 @@ int CCineMonster::FindEntity( void )
 					pTarget = pEntity->MyMonsterPointer();
 					if( pTarget && pTarget->CanPlaySequence( FCanOverrideState(), SS_INTERRUPT_IDLE ) )
 					{
+						if ( pTarget->m_MonsterState == MONSTERSTATE_PRONE 
+						|| pTarget->m_IdealMonsterState == MONSTERSTATE_PRONE 
+						|| pTarget->m_freezetime > 0
+						|| pTarget->m_barnacleres_time > 0
+						|| pTarget->m_playerguardian_mode == 1)
+						{
+							return FALSE;
+						}
+						if ( fabs( pev->origin.z - pTarget->pev->origin.z ) > 192 )
+						{
+							return FALSE;
+						}
+						if ( FStrEq(STRING(pev->target), "secur_door") && !FVisible( pTarget ))
+						{
+							return FALSE;
+						}
+						if ( pev->armortype == 1 && pTarget->m_hEnemy != NULL)
+						{
+							if(!pTarget->m_hEnemy->IsPlayer())
+							{
+								return FALSE;
+							}
+						}
+						if(pev->frags == 1)
+						{
+							pTarget->m_can_kill_script = 1;
+						}
+						else if(pev->frags == 2)
+						{
+							pTarget->m_enemyfollower = 0;
+							pTarget->m_can_kill_script = 1;
+							pTarget->m_hEnemy = NULL;
+							pTarget->m_hOldEnemy[0] = NULL;
+							pTarget->m_hOldEnemy[1] = NULL;
+							pTarget->m_hOldEnemy[2] = NULL;
+							pTarget->m_hOldEnemy[3] = NULL;
+							pTarget->m_boltpoison = 40;
+							pTarget->pev->gravity = 1.1;
+						}
+						else if(pev->frags == 3)
+						{
+							pTarget->m_enemyfollower = 0;
+							pTarget->m_can_kill_script = 1;
+							pTarget->m_boltpoison = 40;
+							pTarget->SetBodygroup( 5, 0 );
+							pTarget->m_groundElev = TRUE;
+							pTarget->pev->gravity = 1.1;
+						}
+						else if(pev->frags == 4)
+						{
+							pTarget->m_boltpoison = 40;
+							pTarget->m_enemyfollower = 1;
+							pTarget->m_can_kill_script = 0;
+							pTarget->m_groundElev = FALSE;
+							pTarget->m_groundElev2 = TRUE;
+							pTarget->m_lovehate += 50;
+						}
+						else if(pev->frags == 5)
+						{
+							pTarget->m_boltpoison = 40;
+							pTarget->m_enemyfollower = 1;
+							pTarget->m_can_kill_script = 0;
+							pTarget->m_groundElev = FALSE;
+							pTarget->m_lovehate += 50;
+						}
+						else if(pev->frags == 7)
+						{
+							pTarget->m_FTSmod = 3;
+							pTarget->m_no_pov_limit = 1;
+						}
+						else if(pev->frags == 8)
+						{
+							CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+							if ( pEntity )
+							{
+								CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pEntity->pev);
+								pPlayer->Clear_SayText();
+							}
+						}
+
 						m_hTargetEnt = pTarget;
 						return TRUE;
 					}
@@ -339,6 +494,13 @@ void CCineMonster::PossessEntity( void )
 		{
 		case 0: 
 			pTarget->m_scriptState = SCRIPT_WAIT; 
+			break;
+		case 6: 
+			pTarget->m_scriptState = SCRIPT_WAIT; 
+			UTIL_SetOrigin( pTarget->pev, pev->origin );
+			pTarget->pev->angles.y = pev->angles.y;
+			pTarget->pev->avelocity = Vector( 0, 0, 0 );
+			pTarget->pev->velocity = Vector( 0, 0, 0 );
 			break;
 		case 1: 
 			pTarget->m_scriptState = SCRIPT_WALK_TO_MARK; 
@@ -406,6 +568,13 @@ void CCineAI::PossessEntity( void )
 		switch( m_fMoveTo )
 		{
 		case 0: 
+		case 6: 
+			pTarget->m_scriptState = SCRIPT_WAIT; 
+			UTIL_SetOrigin( pTarget->pev, pev->origin );
+			pTarget->pev->angles.y = pev->angles.y;
+			pTarget->pev->avelocity = Vector( 0, 0, 0 );
+			pTarget->pev->velocity = Vector( 0, 0, 0 );
+			break;
 		case 5:
 			pTarget->m_scriptState = SCRIPT_WAIT; 
 			break;
@@ -550,6 +719,53 @@ void CCineMonster::SequenceDone( CBaseMonster *pMonster )
 	// This is done so that another sequence can take over the monster when triggered by the first
 
 	pMonster->CineCleanup();
+	
+	if(pMonster->m_rpgms_inteam > 0 && pMonster->m_enemyfollower == 0)
+	{
+		if(pMonster->m_hPlayer != NULL && pMonster->m_selfmode == FALSE)
+		{
+			pMonster->m_hTargetEnt = pMonster->m_hPlayer;
+		}
+	}
+
+	if(pev->weapons == 1)
+	{
+		pMonster->m_iTriggerCondition = 0;
+		pMonster->m_walkaround = TRUE;
+	}
+	else if(pev->weapons == 2)
+	{
+		pMonster->m_walkaround = FALSE;
+		pMonster->FadeMonster();
+	}
+	else if(pev->frags == 6)
+	{
+		pMonster->pev->weapons = 1;
+		pMonster->m_rpgms_skill5_learn = 13;
+		pMonster->m_boltpoison = 20;
+		FX_Explosion( pMonster->Center(), 102);
+
+		char text[256];
+		sprintf( text, "Misaliya: Found it.\n");
+
+		UTIL_SayTextAll( text,this );
+		CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+		if ( pEntity )
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pEntity->pev);
+			pPlayer->m_fNextClearTextTime = gpGlobals->time + 6.0;
+		}
+	}
+	else if(pev->weapons == 7)
+	{
+		pMonster->m_iTriggerCondition = 0;
+	}
+	else if(pev->weapons == 8)
+	{
+		pMonster->m_rpgms_inteam = 0;
+		pMonster->SetState( MONSTERSTATE_HUNT );
+		pMonster->m_iTriggerCondition = 0;
+	}
 
 	FixScriptMonsterSchedule( pMonster );
 
@@ -1020,6 +1236,9 @@ void CScriptedSentence::Spawn( void )
 	case 3:
 		//EVERYWHERE
 		m_flAttenuation = ATTN_NONE;
+		break;
+	case 4:	// Large radius
+		m_flAttenuation = 0.6;
 		break;
 	default:
 	case 0:

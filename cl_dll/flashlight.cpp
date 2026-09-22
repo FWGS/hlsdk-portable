@@ -25,6 +25,8 @@
 #include <string.h>
 #include <stdio.h>
 
+extern int iMouseInUse;
+
 DECLARE_MESSAGE( m_Flash, FlashBat )
 DECLARE_MESSAGE( m_Flash, Flashlight )
 
@@ -102,7 +104,7 @@ int CHudFlashlight::Draw( float flTime )
 			gMobileEngfuncs->pfnTouchHideButtons( "flashlight", !show );
 		}
 	}
-	if( !show )
+	if( iMouseInUse || !show )
 		return 1;
 
 	int r, g, b, x, y, a;
@@ -119,7 +121,7 @@ int CHudFlashlight::Draw( float flTime )
 	else
 		a = MIN_ALPHA;
 
-	if( m_flBat < 0.20f )
+	if( m_flBat < 0.40f )
 		UnpackRGB( r,g,b, RGB_REDISH );
 	else
 		UnpackRGB( r,g,b, RGB_YELLOWISH );

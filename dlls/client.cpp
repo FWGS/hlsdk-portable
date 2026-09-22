@@ -45,6 +45,11 @@ extern DLL_GLOBAL BOOL		g_fGameOver;
 extern DLL_GLOBAL int		g_iSkillLevel;
 extern DLL_GLOBAL ULONG		g_ulFrameCount;
 
+extern DLL_GLOBAL int		g_fGameJumpCG;
+extern DLL_GLOBAL int		g_fGameSkipCG;
+
+extern DLL_GLOBAL int		g_restore_fix;
+
 extern void CopyToBodyQue( entvars_t* pev );
 extern int giPrecacheGrunt;
 extern int gmsgSayText;
@@ -161,7 +166,7 @@ GLOBALS ASSUMED SET:  g_ulModelIndexPlayer
 */
 void ClientKill( edict_t *pEntity )
 {
-	entvars_t *pev = &pEntity->v;
+	/*entvars_t *pev = &pEntity->v;
 
 	CBasePlayer *pl = (CBasePlayer*)CBasePlayer::Instance( pev );
 
@@ -172,11 +177,13 @@ void ClientKill( edict_t *pEntity )
 
 	// have the player kill themself
 	pev->health = 0;
-	pl->Killed( pev, GIB_NEVER );
+	pl->Killed( pev, GIB_NEVER );*/
 
 	//pev->modelindex = g_ulModelIndexPlayer;
 	//pev->frags -= 2;		// extra penalty
 	//respawn( pev );
+
+	return;
 }
 
 /*
@@ -476,14 +483,15 @@ void ClientCommand( edict_t *pEntity )
 		return;
 
 	entvars_t *pev = &pEntity->v;
+	CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pev);
 
 	if( FStrEq( pcmd, "say" ) )
 	{
-		Host_Say( pEntity, 0 );
+		//Host_Say( pEntity, 0 );
 	}
 	else if( FStrEq( pcmd, "say_team" ) )
 	{
-		Host_Say( pEntity, 1 );
+		//Host_Say( pEntity, 1 );
 	}
 	else if( FStrEq( pcmd, "fullupdate" ) )
 	{
@@ -491,7 +499,7 @@ void ClientCommand( edict_t *pEntity )
 	}
 	else if( FStrEq(pcmd, "give" ) )
 	{
-		if( g_enable_cheats->value != 0 )
+		if( CVAR_GET_FLOAT( "cshl623_debug_mode" ) == 1999 )
 		{
 			int iszItem = ALLOC_STRING( CMD_ARGV( 1 ) );	// Make a copy of the classname
 			GetClassPtr( (CBasePlayer *)pev )->GiveNamedItem( STRING( iszItem ) );
@@ -528,11 +536,528 @@ void ClientCommand( edict_t *pEntity )
 			}
 		}
 	}
+	else if ( FStrEq(pcmd, "give_f" ) )
+	{
+		if ( CVAR_GET_FLOAT( "cshl623_debug_mode" ) == 1999 )
+		{
+			int iszItem = ALLOC_STRING( CMD_ARGV(1) );	// Make a copy of the classname
+			CBaseEntity::Create((char *)STRING(iszItem), pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+	}
+	else if ( FStrEq(pcmd, "wdoor_rpg_menu_select1" ) )
+	{
+		if(pPlayer->m_rpg_menu_actor1 == 0)
+		{
+			return;
+		}
+		if( pPlayer->m_rpg_password_on >= 1)
+		{
+			pPlayer->PassWordBordUse(2);
+		}
+		else if ( pPlayer->m_rpg_menu_on == 1)
+		{
+			EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+			pPlayer->m_rpg_menu_select -= 1;
+			if(pPlayer->m_rpg_menu_select < 0)
+			{
+				pPlayer->m_rpg_menu_select = 3;
+			}
+		}
+		else if ( pPlayer->m_rpg_menu_on == 2 || pPlayer->m_rpg_menu_on == 5)
+		{
+			EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+			pPlayer->m_rpg_menu_select -= 1;
+			if(pPlayer->m_rpg_menu_select < 0)
+			{
+				pPlayer->m_rpg_menu_select = 11;
+			}
+		}
+		else if ( pPlayer->m_rpg_menu_on == 3)
+		{
+			EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+			pPlayer->m_rpg_menu_select -= 1;
+			if(pPlayer->m_rpg_menu_select < 0)
+			{
+				pPlayer->m_rpg_menu_select = 2;
+			}
+		}
+		else if ( pPlayer->m_rpg_menu_on == 4 || pPlayer->m_rpg_menu_on == 6)
+		{
+			EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+			pPlayer->m_rpg_menu_select -= 1;
+			if(pPlayer->m_rpg_menu_select < 0)
+			{
+				pPlayer->m_rpg_menu_select = 4;
+			}
+		}
+		else if ( pPlayer->m_rpg_menu_on == 7)
+		{
+			EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+			pPlayer->m_rpg_menu_select -= 4;
+			if(pPlayer->m_rpg_menu_select <= 0)
+			{
+				pPlayer->m_rpg_menu_select += 12;
+			}
+		}
+	}
+	else if ( FStrEq(pcmd, "wdoor_rpg_menu_select2" ) )
+	{
+		if(pPlayer->m_rpg_menu_actor1 == 0)
+			return;
+
+		if( pPlayer->m_rpg_password_on >= 1)
+		{
+			pPlayer->PassWordBordUse(3);
+		}
+		else if ( pPlayer->m_rpg_menu_on == 1)
+		{
+			EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+			pPlayer->m_rpg_menu_select += 1;
+			if(pPlayer->m_rpg_menu_select > 3)
+			{
+				pPlayer->m_rpg_menu_select = 0;
+			}
+		}
+		else if ( pPlayer->m_rpg_menu_on == 2 || pPlayer->m_rpg_menu_on == 5)
+		{
+			EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+			pPlayer->m_rpg_menu_select += 1;
+			if(pPlayer->m_rpg_menu_select > 11)
+			{
+				pPlayer->m_rpg_menu_select = 0;
+			}
+		}
+		else if ( pPlayer->m_rpg_menu_on == 3)
+		{
+			EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+			pPlayer->m_rpg_menu_select += 1;
+			if(pPlayer->m_rpg_menu_select > 2)
+			{
+				pPlayer->m_rpg_menu_select = 0;
+			}
+		}
+		else if ( pPlayer->m_rpg_menu_on == 4 || pPlayer->m_rpg_menu_on == 6)
+		{
+			EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+			pPlayer->m_rpg_menu_select += 1;
+			if(pPlayer->m_rpg_menu_select > 4)
+			{
+				pPlayer->m_rpg_menu_select = 0;
+			}
+		}
+		else if ( pPlayer->m_rpg_menu_on == 7)
+		{
+			EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+			pPlayer->m_rpg_menu_select += 4;
+			if(pPlayer->m_rpg_menu_select > 12)
+			{
+				pPlayer->m_rpg_menu_select -= 12;
+			}
+		}
+	}
+	else if ( FStrEq(pcmd, "wdoor_rpg_menu_select3" ) )
+	{
+		if(pPlayer->m_rpg_menu_actor1 == 0)
+			return;
+
+		if( pPlayer->m_rpg_password_on >= 1)
+		{
+			pPlayer->PassWordBordUse(4);
+		}
+		else if ( pPlayer->m_rpg_menu_on == 7)
+		{
+			EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+			if(pPlayer->m_rpg_menu_select >= 9)
+			{
+				if(pPlayer->m_rpg_menu_select == 9)
+				{
+					pPlayer->m_rpg_menu_select = 12;
+				}
+				else
+				{
+					pPlayer->m_rpg_menu_select -= 1;
+				}
+			}
+			else if(pPlayer->m_rpg_menu_select >= 5)
+			{
+				if(pPlayer->m_rpg_menu_select == 5)
+				{
+					pPlayer->m_rpg_menu_select = 8;
+				}
+				else
+				{
+					pPlayer->m_rpg_menu_select -= 1;
+				}
+			}
+			else if(pPlayer->m_rpg_menu_select >= 1)
+			{
+				if(pPlayer->m_rpg_menu_select == 1)
+				{
+					pPlayer->m_rpg_menu_select = 4;
+				}
+				else
+				{
+					pPlayer->m_rpg_menu_select -= 1;
+				}
+			}
+		}
+	}
+	else if ( FStrEq(pcmd, "wdoor_rpg_menu_select4" ) )
+	{
+		if(pPlayer->m_rpg_menu_actor1 == 0)
+			return;
+	
+		if( pPlayer->m_rpg_password_on >= 1)
+		{
+			pPlayer->PassWordBordUse(5);
+		}
+		else if ( pPlayer->m_rpg_menu_on == 7)
+		{
+			EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+			if(pPlayer->m_rpg_menu_select == 12)
+			{
+				pPlayer->m_rpg_menu_select = 9;
+			}
+			else if(pPlayer->m_rpg_menu_select == 8)
+			{
+				pPlayer->m_rpg_menu_select = 5;
+			}
+			else if(pPlayer->m_rpg_menu_select == 4)
+			{
+				pPlayer->m_rpg_menu_select = 1;
+			}
+			else
+			{
+				pPlayer->m_rpg_menu_select += 1;
+			}
+		}
+	}
+	else if(FStrEq(pcmd, "quick_use_equip_item" ))
+	{
+		if (!(pPlayer->pev->flags & FL_FROZEN) && pPlayer->m_trainning == 0 && (pPlayer->pev->weapons & (1<<WEAPON_SUIT)) && g_restore_fix <= 0)
+		{
+			if(pPlayer->m_rpg_menu_item_e >= 0)
+			{
+				pPlayer->MenuItem_use(pPlayer->m_rpg_menu_item_e);
+				pPlayer->m_rpg_menu_item_e = -1;
+				pPlayer->m_rpg_menu_item_t = -1;
+				pPlayer->m_iClient_mynpc = -1;
+			}
+		}
+	}
+	else if ( FStrEq(pcmd, "wdoor_rpg_menu_open" ) )
+	{
+			if(pPlayer->m_rpg_password_on >= 1)
+			{
+				pPlayer->EnableControl(TRUE);
+				if(pPlayer->m_rpg_password_on <= 10)
+				{
+					pPlayer->m_rpg_password_light1 = 0;
+					pPlayer->m_rpg_password_light2 = 0;
+					pPlayer->m_rpg_password_light3 = 0;
+					pPlayer->m_rpg_password_light4 = 0;
+					pPlayer->m_rpg_password_light5 = 0;
+					pPlayer->m_rpg_password_light6 = 0;
+					pPlayer->m_rpg_password_light7 = 0;
+					pPlayer->m_rpg_password_light8 = 0;
+					pPlayer->m_rpg_password_light9 = 0;
+					if(pPlayer->m_rpg_password_on == 2)
+					{
+						pPlayer->m_rpg_password_light1 = 1;
+						pPlayer->m_rpg_password_light5 = 1;
+					}
+					else if(pPlayer->m_rpg_password_on == 3)
+					{
+						pPlayer->m_rpg_password_light3 = 1;
+						pPlayer->m_rpg_password_light5 = 1;
+						pPlayer->m_rpg_password_light7 = 1;
+						pPlayer->m_rpg_password_light9 = 1;
+					}
+				}
+				pPlayer->m_rpg_password_on = 0;
+			}
+			else if (!(pPlayer->pev->flags & FL_FROZEN) && pPlayer->m_trainning == 0 && (pPlayer->pev->weapons & (1<<WEAPON_SUIT)) && g_restore_fix <= 0)
+			{
+				if(pPlayer->m_rpg_menu_on <= 0)
+				{
+					//pPlayer->SelectItem("weapon_fist");
+					EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+					pPlayer->m_rpg_menu_on = 1;
+					pPlayer->m_rpg_menu_select = 0;
+				}
+				else
+				{
+					if(pPlayer->m_rpg_menu_on == 1)
+					{
+						EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_cancle.wav", 0.4, ATTN_NORM);
+						pPlayer->m_rpg_menu_on = 0;
+						pPlayer->m_rpg_menu_select = 0;
+					}
+					else if(pPlayer->m_rpg_menu_on == 3)
+					{
+						EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_cancle.wav", 0.4, ATTN_NORM);
+						pPlayer->m_rpg_menu_on = 2;
+						pPlayer->m_rpg_menu_select = pPlayer->m_rpg_menu_item_s;
+					}
+					else
+					{
+						EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_cancle.wav", 0.4, ATTN_NORM);
+						pPlayer->m_rpg_menu_on = 1;
+						pPlayer->m_rpg_menu_select = 0;
+					}
+				}
+			}
+			else if ((pPlayer->pev->flags & FL_FROZEN) && pPlayer->m_rpg_menu_on > 0)
+			{
+				EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_cancle.wav", 0.4, ATTN_NORM);
+				pPlayer->m_rpg_menu_on = 0;
+				pPlayer->m_rpg_menu_select = 0;
+			}
+	}
+	else if ( FStrEq(pcmd, "wdoor_rpg_menu_enter" ) )
+	{
+		if(pPlayer->m_rpg_menu_actor1 == 0)
+			return;
+
+		if( pPlayer->m_rpg_password_on >= 1)
+		{
+			pPlayer->PassWordBordUse(1);
+		}
+		else if ( pPlayer->m_rpg_menu_on == 1)
+		{
+			if(pPlayer->m_rpg_menu_select == 0)
+			{
+				EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+				pPlayer->m_rpg_menu_on = 2;
+				pPlayer->m_rpg_menu_select = 0;
+			}
+			else if(pPlayer->m_rpg_menu_select == 1)
+			{
+				EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+				pPlayer->m_rpg_menu_on = 4;
+				pPlayer->m_rpg_menu_select = 0;
+			}
+			else if(pPlayer->m_rpg_menu_select == 2)
+			{
+				EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+				pPlayer->TeamMate_GetNagamatagi();
+				pPlayer->m_rpg_menu_on = 7;
+				pPlayer->m_rpg_menu_select = 1;
+				pPlayer->m_rpg_menu_skill_chater = 0;
+			}
+			else if(pPlayer->m_rpg_menu_select == 3)
+			{
+				EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+				pPlayer->m_rpg_menu_on = 8;
+				pPlayer->m_rpg_menu_select = 0;
+			}
+		}
+		else if ( pPlayer->m_rpg_menu_on == 2)
+		{
+			if( (pPlayer->m_rpg_menu_select == 0 && pPlayer->m_rpg_menu_item1 != 0)
+			|| (pPlayer->m_rpg_menu_select == 1 && pPlayer->m_rpg_menu_item2 != 0)
+			|| (pPlayer->m_rpg_menu_select == 2 && pPlayer->m_rpg_menu_item3 != 0)
+			|| (pPlayer->m_rpg_menu_select == 3 && pPlayer->m_rpg_menu_item4 != 0)
+			|| (pPlayer->m_rpg_menu_select == 4 && pPlayer->m_rpg_menu_item5 != 0)
+			|| (pPlayer->m_rpg_menu_select == 5 && pPlayer->m_rpg_menu_item6 != 0)
+			|| (pPlayer->m_rpg_menu_select == 6 && pPlayer->m_rpg_menu_item7 != 0)
+			|| (pPlayer->m_rpg_menu_select == 7 && pPlayer->m_rpg_menu_item8 != 0)
+			|| (pPlayer->m_rpg_menu_select == 8 && pPlayer->m_rpg_menu_item9 != 0)
+			|| (pPlayer->m_rpg_menu_select == 9 && pPlayer->m_rpg_menu_item10 != 0)
+			|| (pPlayer->m_rpg_menu_select == 10 && pPlayer->m_rpg_menu_item11 != 0)
+			|| (pPlayer->m_rpg_menu_select == 11 && pPlayer->m_rpg_menu_item12 != 0))
+			{
+				pPlayer->m_rpg_menu_on = 3;
+				pPlayer->m_rpg_menu_item_s = pPlayer->m_rpg_menu_select;
+				pPlayer->m_rpg_menu_select = 0;
+				EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+			}
+		}
+		else if ( pPlayer->m_rpg_menu_on == 3)
+		{
+			if( pPlayer->m_rpg_menu_select == 0)
+			{
+				EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+				pPlayer->MenuItem_use(pPlayer->m_rpg_menu_item_s);
+			}
+			else if( pPlayer->m_rpg_menu_select == 1)
+			{
+				EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+				pPlayer->MenuItem_equip(pPlayer->m_rpg_menu_item_s);
+			}
+			else if( pPlayer->m_rpg_menu_select == 2)
+			{
+				EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+				pPlayer->MenuItem_drop(pPlayer->m_rpg_menu_item_s);
+			}
+
+			if(pPlayer->m_rpg_menu_on == 3)
+			{
+				pPlayer->m_rpg_menu_on = 2;
+				pPlayer->m_rpg_menu_select = pPlayer->m_rpg_menu_item_s;
+			}
+		}
+		else if ( pPlayer->m_rpg_menu_on == 4)
+		{
+			if(pPlayer->m_rpg_menu_select == 0 && pPlayer->m_rpg_menu_actor1 == 1)
+			{
+				EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+				pPlayer->m_rpg_menu_on = 5;
+				pPlayer->m_rpg_menu_select = 0;
+				pPlayer->m_rpg_menu_skill_chater = 1;
+				pPlayer->m_rpg_menu_skill1 = pPlayer->m_skill_punch;
+				pPlayer->m_rpg_menu_skill2 = pPlayer->m_skill_locked;
+				pPlayer->m_rpg_menu_skill3 = pPlayer->m_skill_longjump;
+				pPlayer->m_rpg_menu_skill4 = pPlayer->m_skill_defguard;
+				pPlayer->m_rpg_menu_skill5 = pPlayer->m_skill_valvesword;
+				pPlayer->m_rpg_menu_skill6 = pPlayer->m_skill_miss;
+				pPlayer->m_rpg_menu_skill7 = pPlayer->m_skill_goddam;
+				pPlayer->m_rpg_menu_skill8 = pPlayer->m_skill_darkhide;
+				pPlayer->m_rpg_menu_skill9 = pPlayer->m_skill_respawn;
+				pPlayer->m_rpg_menu_skill10 = pPlayer->m_skill_deathmatch;
+				pPlayer->m_rpg_menu_skill11 = pPlayer->m_skill_wrongdoor;
+				pPlayer->m_rpg_menu_skill12 = pPlayer->m_skill_reload;
+			}
+			else if(pPlayer->m_rpg_menu_select == 1 && pPlayer->m_team_npc1 != NULL)
+			{
+				CBaseMonster *pMonster = pPlayer->m_team_npc1->MyMonsterPointer();
+				if ( pMonster )
+				{
+					EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+					pPlayer->m_rpg_menu_on = 5;
+					pPlayer->m_rpg_menu_select = 0;
+					pPlayer->TeamMate_GetSkill(pMonster);
+				}
+			}
+			else if(pPlayer->m_rpg_menu_select == 2 && pPlayer->m_team_npc2 != NULL)
+			{
+				CBaseMonster *pMonster = pPlayer->m_team_npc2->MyMonsterPointer();
+				if ( pMonster )
+				{
+					EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+					pPlayer->m_rpg_menu_on = 5;
+					pPlayer->m_rpg_menu_select = 0;
+					pPlayer->TeamMate_GetSkill(pMonster);
+				}
+			}
+			else if(pPlayer->m_rpg_menu_select == 3 && pPlayer->m_team_npc3 != NULL)
+			{
+				CBaseMonster *pMonster = pPlayer->m_team_npc3->MyMonsterPointer();
+				if ( pMonster )
+				{
+					EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+					pPlayer->m_rpg_menu_on = 5;
+					pPlayer->m_rpg_menu_select = 0;
+					pPlayer->TeamMate_GetSkill(pMonster);
+				}
+			}
+			else if(pPlayer->m_rpg_menu_select == 4 && pPlayer->m_team_npc4 != NULL)
+			{
+				CBaseMonster *pMonster = pPlayer->m_team_npc4->MyMonsterPointer();
+				if ( pMonster )
+				{
+					EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+					pPlayer->m_rpg_menu_on = 5;
+					pPlayer->m_rpg_menu_select = 0;
+					pPlayer->TeamMate_GetSkill(pMonster);
+				}
+			}
+		}
+		else if ( pPlayer->m_rpg_menu_on == 7)
+		{
+				EMIT_SOUND( ENT(pPlayer->pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+				pPlayer->TeamMate_GetNagamatagi();
+				if(pPlayer->m_rpg_menu_skill_chater == 0 && pPlayer->m_rpg_menu_skill_chater != pPlayer->m_rpg_menu_select)
+				{
+					pPlayer->m_rpg_menu_skill_chater = pPlayer->m_rpg_menu_select;
+					if(pPlayer->m_rpg_menu_select == 4)
+					{
+						pPlayer->m_rpg_menu_select = 1;
+					}
+					else if(pPlayer->m_rpg_menu_select == 8)
+					{
+						pPlayer->m_rpg_menu_select = 5;
+					}
+					else if(pPlayer->m_rpg_menu_select == 12)
+					{
+						pPlayer->m_rpg_menu_select = 9;
+					}
+					else
+					{
+						pPlayer->m_rpg_menu_select += 1;
+					}
+				}
+				else if(pPlayer->m_rpg_menu_skill_chater != 0)
+				{
+					pPlayer->TeamMate_Nagamatagi_Switch(pPlayer->m_rpg_menu_select,pPlayer->m_rpg_menu_skill_chater);
+					pPlayer->m_rpg_menu_skill_chater = 0;
+					pPlayer->TeamMate_GetNagamatagi();
+				}
+		}
+	}
+	// Start - VGUI 
+    else if ( FStrEq(pcmd, "vguimenu" ) )
+    {
+        if (CMD_ARGC() >= 1)
+            GetClassPtr((CBasePlayer *)pev)->ShowVGUIMenu(atoi(CMD_ARGV(1)));
+    }
+    // End - VGUI 
+	else if ( FStrEq(pcmd, "jumpcg" ) )
+	{
+		if ( CVAR_GET_FLOAT( "cshl623_debug_mode" ) == 1999 )
+		{
+			if ( g_enable_cheats->value )
+			{
+				g_fGameJumpCG = atoi( CMD_ARGV(1) );
+			}
+		}
+	}
+	else if ( FStrEq(pcmd, "skipcg" ) )
+	{
+		g_fGameSkipCG = 1;
+	}
 	else if( FStrEq( pcmd, "drop" ) )
 	{
 		// player is dropping an item. 
-		GetClassPtr( (CBasePlayer *)pev )->DropPlayerItem( (char *)CMD_ARGV( 1 ) );
+		//GetClassPtr( (CBasePlayer *)pev )->DropPlayerItem( (char *)CMD_ARGV( 1 ) );
 	}
+	else if ( FStrEq(pcmd, "select_button1" ) )
+	{
+		if(pPlayer->m_fSelectMode)
+		{
+			pPlayer->m_fSelectNumber = 1;
+			pPlayer->ShowVGUIMenu(32);
+			pPlayer->m_fSelectMode = false;
+		}
+	}
+	else if ( FStrEq(pcmd, "select_button2" ) )
+	{
+		if(pPlayer->m_fSelectMode)
+		{
+			pPlayer->m_fSelectNumber = 2;
+			pPlayer->ShowVGUIMenu(32);
+			pPlayer->m_fSelectMode = false;
+		}
+	}
+	else if ( FStrEq(pcmd, "select_button3" ) )
+	{
+		if(pPlayer->m_fSelectMode)
+		{
+			pPlayer->m_fSelectNumber = 3;
+			pPlayer->ShowVGUIMenu(32);
+			pPlayer->m_fSelectMode = false;
+		}
+	}
+	else if ( FStrEq(pcmd, "select_button4" ) )
+	{
+		if(pPlayer->m_fSelectMode)
+		{
+			pPlayer->m_fSelectNumber = 4;
+			pPlayer->ShowVGUIMenu(32);
+			pPlayer->m_fSelectMode = false;
+		}
+	}
+
 	else if( FStrEq( pcmd, "fov" ) )
 	{
 		if( g_enable_cheats->value != 0 && CMD_ARGC() > 1 )
@@ -825,7 +1350,12 @@ void ClientPrecache( void )
 
 	// PRECACHE_SOUND( "player/pl_jumpland2.wav" );		// UNDONE: play 2x step sound
 
-	PRECACHE_SOUND( "player/pl_fallpain2.wav" );
+
+	PRECACHE_SOUND("debris/bustconcrete2.wav");
+
+	PRECACHE_SOUND("newadd/pl_jump.wav");		// UNDONE: play 2x step sound
+
+	//PRECACHE_SOUND( "player/pl_fallpain2.wav" );
 	PRECACHE_SOUND( "player/pl_fallpain3.wav" );
 
 	PRECACHE_SOUND( "player/pl_step1.wav" );		// walk on concrete
@@ -862,6 +1392,8 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "player/pl_slosh2.wav" );
 	PRECACHE_SOUND( "player/pl_slosh3.wav" );
 	PRECACHE_SOUND( "player/pl_slosh4.wav" );
+
+	PRECACHE_SOUND("player/water_small_splash.wav");
 
 	PRECACHE_SOUND( "player/pl_tile1.wav" );		// walk on tile
 	PRECACHE_SOUND( "player/pl_tile2.wav" );
@@ -901,6 +1433,11 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( SOUND_FLASHLIGHT_ON );
 	PRECACHE_SOUND( SOUND_FLASHLIGHT_OFF );
 
+	PRECACHE_SOUND( SOUND_NIGHTVIEW_ON );
+	PRECACHE_SOUND( SOUND_NIGHTVIEW_OFF );
+
+	PRECACHE_SOUND( "items/hide1.wav" );
+
 	// player gib sounds
 	PRECACHE_SOUND( "common/bodysplat.wav" );
 
@@ -928,8 +1465,13 @@ void ClientPrecache( void )
 	PRECACHE_SOUND( "player/geiger2.wav" );
 	PRECACHE_SOUND( "player/geiger1.wav" );
 
-	if( giPrecacheGrunt )
-		UTIL_PrecacheOther( "monster_human_grunt" );
+	PRECACHE_SOUND("common/ace_cancle.wav");
+	PRECACHE_SOUND("common/ace_enter.wav");
+	PRECACHE_SOUND("common/ace_enter2.wav");
+	PRECACHE_SOUND("common/ace_select.wav");
+
+	/*if( giPrecacheGrunt )
+		UTIL_PrecacheOther( "monster_human_grunt" );*/
 }
 
 /*
@@ -944,7 +1486,7 @@ const char *GetGameDescription()
 	if( g_pGameRules ) // this function may be called before the world has spawned, and the game rules initialized
 		return g_pGameRules->GetGameDescription();
 	else
-		return "Half-Life";
+		return "Wrong-Door";
 }
 
 /*
@@ -1009,6 +1551,7 @@ A spectator has joined the game
 */
 void SpectatorConnect( edict_t *pEntity )
 {
+	entvars_t *pev = &pEntity->v;
 	CBaseSpectator *pPlayer = (CBaseSpectator *)GET_PRIVATE( pEntity );
 
 	if( pPlayer )
@@ -1123,7 +1666,7 @@ int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *h
 	CBaseEntity *Entity;
 
 	// don't send if flagged for NODRAW and it's not the host getting the message
-	if( ( ent->v.effects & EF_NODRAW ) && ( ent != host ) )
+	if( ( ent->v.effects == EF_NODRAW ) && ( ent != host ) )
 		return 0;
 
 	// Ignore ents without valid / visible models

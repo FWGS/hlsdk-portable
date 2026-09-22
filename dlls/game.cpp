@@ -891,6 +891,6 @@ void GameDLLInit( void )
 
 	CVAR_REGISTER( &sv_pushable_fixed_tick_fudge );
 
-	SERVER_COMMAND( "exec skill.cfg\n" );
+	SERVER_COMMAND( "exec game.cfg\n" );
 }
 

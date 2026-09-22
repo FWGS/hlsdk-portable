@@ -57,7 +57,12 @@ void CHud::Think( void )
 	newfov = HUD_GetFOV();
 	if( newfov == 0 )
 	{
-		m_iFOV = default_fov->value;
+		if(default_fov->value > 110)
+			m_iFOV = 110;
+		else if(default_fov->value < 90)
+			m_iFOV = 90;
+		else
+			m_iFOV = default_fov->value;
 	}
 	else
 	{
@@ -74,14 +79,14 @@ void CHud::Think( void )
 	else
 	{
 		// set a new sensitivity that is proportional to the change from the FOV default
-		m_flMouseSensitivity = sensitivity->value * ((float)newfov / Q_max( default_fov->value, 90 )) * CVAR_GET_FLOAT("zoom_sensitivity_ratio");
+		m_flMouseSensitivity = sensitivity->value * ((float)newfov / Q_max( default_fov->value, 100 )) * CVAR_GET_FLOAT("zoom_sensitivity_ratio");
 	}
 
 	// think about default fov
 	if( m_iFOV == 0 )
 	{
 		// only let players adjust up in fov,  and only if they are not overriden by something else
-		m_iFOV = Q_max( default_fov->value, 90 );  
+		m_iFOV = Q_max( default_fov->value, 100 );  
 	}
 
 	if( gEngfuncs.IsSpectateOnly() )
@@ -89,6 +94,14 @@ void CHud::Think( void )
 		m_iFOV = gHUD.m_Spectator.GetFOV(); // default_fov->value;
 	}
 }
+
+
+//LRC - fog fading values
+extern float g_fFadeDuration;
+extern float g_fStartDist;
+extern float g_fEndDist;
+//extern int g_iFinalStartDist;
+extern int g_iFinalEndDist;
 
 // Redraw
 // step through the local data,  placing the appropriate graphics & text as appropriate
@@ -99,6 +112,22 @@ int CHud::Redraw( float flTime, int intermission )
 	m_flTime = flTime;
 	m_flTimeDelta = (double)( m_flTime - m_fOldTime );
 	static float m_flShotTime = 0;
+
+	//LRC - handle fog fading effects. (is this the right place for it?)
+	if (g_fFadeDuration)
+	{
+		// Nicer might be to use some kind of logarithmic fade-in?
+		double fFraction = m_flTimeDelta/g_fFadeDuration;
+//		g_fStartDist -= (FOG_LIMIT - g_iFinalStartDist)*fFraction;
+		g_fEndDist -= (FOG_LIMIT - g_iFinalEndDist)*fFraction;
+
+
+		// cap it
+//		if (g_fStartDist > FOG_LIMIT)				g_fStartDist = FOG_LIMIT;
+		if (g_fEndDist   > FOG_LIMIT)				g_fEndDist = FOG_LIMIT;
+//		if (g_fStartDist < g_iFinalStartDist)	g_fStartDist = g_iFinalStartDist;
+		if (g_fEndDist   < g_iFinalEndDist)		g_fEndDist   = g_iFinalEndDist;
+	}
 
 	// Clock was reset, reset delta
 	if( m_flTimeDelta < 0 )
@@ -385,6 +414,96 @@ int CHud::DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, in
 
 		// SPR_Draw ones
 		SPR_DrawAdditive( 0,  x, y, &GetSpriteRect( m_HUD_number_0 ) );
+		x += iWidth;
+	}
+
+	return x;
+}
+
+int CHud :: DrawHudNumberLarge( int x, int y, int iFlags, int iNumber, int r, int g, int b)
+{
+	int iWidth = GetSpriteRect(m_HUD_number_0).right - GetSpriteRect(m_HUD_number_0).left;
+	int k;
+	
+	if (iNumber > 0)
+	{
+
+		// SPR_Draw 10000's
+		if (iNumber >= 10000)
+		{
+			k = (iNumber % 100000)/10000;
+			SPR_Set(GetSprite(m_HUD_number_0 + k), r, g, b );
+			SPR_DrawAdditive( 0, x, y, &GetSpriteRect(m_HUD_number_0 + k));
+			x += iWidth;
+		}
+		else if (iFlags & (DHN_3DIGITS))
+		{
+			x += iWidth;
+		}
+
+		// SPR_Draw 1000's
+		if (iNumber >= 1000)
+		{
+			k = (iNumber % 10000)/1000;
+			SPR_Set(GetSprite(m_HUD_number_0 + k), r, g, b );
+			SPR_DrawAdditive( 0, x, y, &GetSpriteRect(m_HUD_number_0 + k));
+			x += iWidth;
+		}
+		else if (iFlags & (DHN_3DIGITS))
+		{
+			x += iWidth;
+		}
+
+		// SPR_Draw 100's
+		if (iNumber >= 100)
+		{
+			k = (iNumber % 1000)/100;
+			SPR_Set(GetSprite(m_HUD_number_0 + k), r, g, b );
+			SPR_DrawAdditive( 0, x, y, &GetSpriteRect(m_HUD_number_0 + k));
+			x += iWidth;
+		}
+		else if (iFlags & (DHN_3DIGITS))
+		{
+			x += iWidth;
+		}
+
+		// SPR_Draw 10's
+		if (iNumber >= 10)
+		{
+			k = (iNumber % 100)/10;
+			SPR_Set(GetSprite(m_HUD_number_0 + k), r, g, b );
+			SPR_DrawAdditive( 0, x, y, &GetSpriteRect(m_HUD_number_0 + k));
+			x += iWidth;
+		}
+		else if (iFlags & (DHN_3DIGITS | DHN_2DIGITS))
+		{
+			//SPR_DrawAdditive( 0, x, y, &rc );
+			x += iWidth;
+		}
+
+		// SPR_Draw ones
+		k = iNumber % 10;
+		SPR_Set(GetSprite(m_HUD_number_0 + k), r, g, b );
+		SPR_DrawAdditive(0,  x, y, &GetSpriteRect(m_HUD_number_0 + k));
+		x += iWidth;
+		
+	} 
+	else if (iFlags & DHN_DRAWZERO) 
+	{
+		SPR_Set(GetSprite(m_HUD_number_0), r, g, b );
+
+		// SPR_Draw 100's
+		if (iFlags & (DHN_3DIGITS))
+		{
+			x += iWidth;
+		}
+
+		if (iFlags & (DHN_3DIGITS | DHN_2DIGITS))
+		{
+			x += iWidth;
+		}
+
+		SPR_DrawAdditive( 0,  x, y, &GetSpriteRect(m_HUD_number_0));
 		x += iWidth;
 	}
 

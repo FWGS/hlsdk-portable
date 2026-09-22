@@ -119,7 +119,8 @@ enum
 	AITRIGGER_HEARPLAYER,
 	AITRIGGER_HEARCOMBAT,
 	AITRIGGER_SEEPLAYER_UNCONDITIONAL,
-	AITRIGGER_SEEPLAYER_NOT_IN_COMBAT
+	AITRIGGER_SEEPLAYER_NOT_IN_COMBAT,
+	AITRIGGER_SEEPLAYER_OR_TAKEDAMAGE
 };
 /*
 		0 : "No Trigger"
@@ -147,8 +148,8 @@ public:
 	void LimitVelocity( void );
 
 	virtual int ObjectCaps( void ) { return ( CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION ) | FCAP_DONT_SAVE; }
-	static void SpawnHeadGib( entvars_t *pevVictim );
-	static void SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human );
+	static void SpawnHeadGib( entvars_t *pevVictim, int body, int fastfade );
+	static void SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human, int fastfade );
 	static void SpawnStickyGibs( entvars_t *pevVictim, Vector vecOrigin, int cGibs );
 
 	int m_bloodColor;

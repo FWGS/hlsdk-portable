@@ -61,6 +61,9 @@ void CBaseMonster::SetState( MONSTERSTATE State )
 //=========================================================
 void CBaseMonster::RunAI( void )
 {
+	if(pev->deadflag == DEAD_DEAD)
+		return;
+
 	// to test model's eye height
 	//UTIL_ParticleEffect ( pev->origin + pev->view_ofs, g_vecZero, 255, 10 );
 
@@ -73,6 +76,7 @@ void CBaseMonster::RunAI( void )
 
 	if( m_MonsterState != MONSTERSTATE_NONE &&
 		 m_MonsterState != MONSTERSTATE_PRONE &&
+		 m_MonsterState != MONSTERSTATE_PLAYDEAD && 
 		 m_MonsterState != MONSTERSTATE_DEAD )// don't bother with this crap if monster is prone. 
 	{
 		// collect some sensory Condition information.
@@ -80,7 +84,27 @@ void CBaseMonster::RunAI( void )
 		// things will happen before the player gets there!
 		// UPDATE: We now let COMBAT state monsters think and act fully outside of player PVS. This allows the player to leave 
 		// an area where monsters are fighting, and the fight will continue.
-		if( !FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ) || ( m_MonsterState == MONSTERSTATE_COMBAT ) )
+		if(m_no_pov_limit == 1 || m_enemyfollower == 1 || m_playerguardian_mode == 1)
+		{
+			Look( m_flDistLook );
+			Listen();// check for audible sounds. 
+
+			// now filter conditions.
+			ClearConditions( IgnoreConditions() );
+
+			GetEnemy();
+		}
+		else if( !FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ) || ( m_MonsterState == MONSTERSTATE_COMBAT ) )
+		{
+			Look( m_flDistLook );
+			Listen();// check for audible sounds. 
+
+			// now filter conditions.
+			ClearConditions( IgnoreConditions() );
+
+			GetEnemy();
+		}
+		else if ( m_MonsterState == MONSTERSTATE_ALERT )
 		{
 			Look( m_flDistLook );
 			Listen();// check for audible sounds. 
@@ -95,6 +119,10 @@ void CBaseMonster::RunAI( void )
 		if( m_hEnemy != 0 )
 		{
 			CheckEnemy( m_hEnemy );
+		}
+		else if (m_enemyfollower_combat == 1)
+		{
+			m_enemyfollower_combat = 0;
 		}
 
 		CheckAmmo();
@@ -198,7 +226,7 @@ MONSTERSTATE CBaseMonster::GetIdealState( void )
 		COMBAT goes to ALERT upon death of enemy
 		*/
 		{
-			if( m_hEnemy == 0 )
+			if( m_hEnemy == 0 && m_cleardally_enemy == 0 )
 			{
 				m_IdealMonsterState = MONSTERSTATE_ALERT;
 				// pev->effects = EF_BRIGHTFIELD;
@@ -224,6 +252,9 @@ MONSTERSTATE CBaseMonster::GetIdealState( void )
 		break;
 	case MONSTERSTATE_DEAD:
 		m_IdealMonsterState = MONSTERSTATE_DEAD;
+		break;
+	case MONSTERSTATE_PLAYDEAD:
+		m_IdealMonsterState = MONSTERSTATE_PLAYDEAD;
 		break;
 	default:
 		break;

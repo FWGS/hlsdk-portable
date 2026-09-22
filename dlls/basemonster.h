@@ -34,11 +34,20 @@ public:
 		SCRIPT_RUN_TO_MARK
 	} SCRIPTSTATE;
 
+	EHANDLE	m_hHitEnemy;
+	EHANDLE	m_hPortecter;
+
 	// these fields have been added in the process of reworking the state machine. (sjb)
 	EHANDLE m_hEnemy;		 // the entity that the monster is fighting.
 	EHANDLE m_hTargetEnt;	 // the entity that the monster is trying to reach
 	EHANDLE m_hOldEnemy[MAX_OLD_ENEMIES];
 	Vector m_vecOldEnemy[MAX_OLD_ENEMIES];
+
+	EHANDLE m_hPlayer;
+	EHANDLE m_hTeamMate1;
+	EHANDLE	m_hTeamMate2;
+	EHANDLE	m_hTeamMate3;
+	EHANDLE	m_hTeamMate4;
 
 	float m_flFieldOfView;// width of monster's field of view ( dot product )
 	float m_flWaitFinished;// if we're told to wait, this is the time that the wait will be over.
@@ -61,6 +70,8 @@ public:
 	int m_iRouteIndex;			// index into m_Route[]
 	float m_moveWaitTime;			// How long I should wait for something to move
 
+	float m_OpenDoorWaitTime;
+
 	Vector m_vecMoveGoal; // kept around for node graph moves, so we know our ultimate goal
 	Activity m_movementActivity;	// When moving, set this activity
 
@@ -78,6 +89,7 @@ public:
 	Vector m_vecEnemyLKP;// last known position of enemy. (enemy's origin)
 
 	int m_cAmmoLoaded;		// how much ammo is in the weapon (used to trigger reload anim sequences)
+	int	m_cClipSize;
 
 	int m_afCapability;// tells us what a monster can/can't do.
 
@@ -90,9 +102,208 @@ public:
 										// time based damage counters, decr. 1 per 2 seconds
 	int m_bloodColor;		// color of blood particless
 
+	//===============
+	void EXPORT DeadTouch( CBaseEntity *pOther );
+	
+	int                 m_grenadekilled;
+	Vector              m_MSblastvec;
+	Vector				m_vecGuardPoint;
+
+	int                 m_duckseq;
+	int                 m_crouchmode;
+	int                 m_lovehate;
+	int                 m_alert;
+	int                 m_finish;
+	int                 m_notarget_hide;
+
+	int                 m_cover_dist;
+	
+	float               m_attack_dist;
+
+	int					m_killed_exp;
+	
+	int                 m_fightmode;
+	BOOL                m_nevergibmode;
+
+	BOOL                m_godmode;
+	BOOL                m_selfmode;
+	BOOL                m_walkaround;
+	BOOL                m_walkaroundFail;
+	BOOL                m_forcefuckdoor;
+	BOOL                m_MoveFail_FuckRoad;
+	BOOL                m_MoveFail_SimpleRoad;
+
+	BOOL                m_groundElev;
+	BOOL                m_groundElev2;
+	
+	int                 m_HenemyEnemyMe;
+	int                 m_HenemyEnemyMe2;
+
+	int					m_chaofhate;
+
+	BOOL                m_victoryeat;
+
+	BOOL                m_cover_fromplayer;
+	BOOL                m_is_the_boss;
+
+	BOOL                m_undropgun;
+
+	BOOL                m_noidleseq;
+
+	int                 m_MoveFailNum;
+   	int                 m_ignoreFail;
+	int                 m_ignoreFail_MAX;
+	int                 m_ignoreFail_OFF;
+	int                 m_ignoredamage;
+	int                 m_MoveFail_FuckRoad_Mode;
+
+	int                 m_makerspawn_call;
+	int                 m_ignorePlayer;
+	float               m_PlayerHealth;
+
+	int                 m_die;
+	int                 m_gibed;
+	int                 m_dieseq;
+	int                 m_dielift;
+	int					m_die_dont_alert;
+	int                 m_diefadeout;
+	int                 m_die_dont_move;
+	int                 m_die_corpse_solid;
+	int					m_die_for_back;
+
+	int                 m_cleardally;
+	int                 m_cleardally_enemy;
+	int                 m_cleardally_enemy_long;
+	int                 m_cleardally_deadcorpse;
+	BOOL                m_user_aimflag;
+	float               m_aimflag_dist;
+
+	int                 m_no_victdance;
+	int                 m_no_pov_limit;
+
+	BOOL                m_alwaysrunpath;
+	int                 m_pathtrack_reuse;
+
+	int                 m_running_rangeattack;
+	int                 m_damageforback;
+
+	int					m_chase_mode;
+	int					m_chase_failed_delay;
+	int					m_chase_failed_max;
+
+	int					m_facing_fucking_mode;
+
+	int                 m_no_cover_mode;
+	BOOL                m_guard_mode;
+	int                 m_playerguardian_mode;
+	int					m_follow_mode;
+
+	int                 m_can_kill_script;
+
+	float               m_flVelocityModifier;
+
+	int                 m_hasenemy_nosee;
+	int                 m_trainstuck;
+	int                 m_boltpoison;
+	int                 m_FTSmod;
+	int					m_killbyheadcrab;
+	int					m_canheadcrab_mode;
+	int					m_canbarnacle_mode;
+	int					m_crabzombie_begain;
+	int                 m_aimenemy_mod;
+	int                 m_EyeMod;
+	int                 m_ctmod;
+	int					m_lookignoremod;
+	int                 m_listenlong;
+
+	int					m_elseuseful;
+	int					m_killedbydmg;
+
+	int					m_barnacleres_time;
+
+	int                 m_movestuck;
+
+	int					m_fucked_run;
+
+	int                 m_thinkspeed;
+
+	int                 m_allymovedebug_cover;
+
+	int                 m_longming;
+	int			    	m_headdef;
+
+	int					m_candrownwater;
+
+	int                 m_enemyfollower;
+	int                 m_enemyfollower_walk;
+	int                 m_enemyfollower_combat;
+
+	int                 m_trouch_full_radiusdmg;
+
+	float				m_zombiehead_health;
+
+	int                 m_allydeadcheck;
+
+	Vector				m_vecOldLKP;
+	Vector				m_vecAllyLKP;
+
+	int			    	m_oldwaterlevel;
+	int                 m_droptofloor;
+	
+	int					m_igonre_npc;
+
+	int			    	m_enemyget_mode;
+
+	int					m_rpgms_actor;
+	int					m_rpgms_level;
+	int					m_rpgms_exp;
+	int					m_rpgms_maxexp;
+	int					m_rpgms_type;
+	int					m_rpgms_inteam;
+	int					m_rpgms_skill1_learn;
+	int					m_rpgms_skill2_learn;
+	int					m_rpgms_skill3_learn;
+	int					m_rpgms_skill4_learn;
+	int					m_rpgms_skill5_learn;
+	int					m_rpgms_skill6_learn;
+	int					m_rpgms_skill7_learn;
+	int					m_rpgms_skill8_learn;
+	int					m_rpgms_skill9_learn;
+	int					m_rpgms_skill10_learn;
+	int					m_rpgms_skill11_learn;
+	int					m_rpgms_skill12_learn;
+
+	BOOL                m_new_ally_type;
+
+	float				m_flPlayerDamage_exp;
+	float				m_flPlayerTeamMateDamage_exp1;
+	float				m_flPlayerTeamMateDamage_exp2;
+	float				m_flPlayerTeamMateDamage_exp3;
+	float				m_flPlayerTeamMateDamage_exp4;
+
+	float				m_flPlayerDamage_hate;
+
+	float				m_flNPC_Pain;
+
+	float				m_flGodTime;
+
+	int					m_freezetime;
+	int					m_freeze_def;
+
+	int					m_singdelay_max;
+	int					m_singdelay_use;
+
+	//BOOL            m_nosetact;
+
+	Vector			m_vecOldMovePoint;
+	int				m_MovePointMax;
+	int				m_MoveStuckCheck;
+
 	int m_failSchedule;				// Schedule type to choose if current schedule fails
 
 	float m_flHungryTime;// set this is a future time to stop the monster from eating for a while. 
+
+	float m_flDeadTime;
 
 	float m_flDistTooFar;	// if enemy farther away than this, bits_COND_ENEMY_TOOFAR set in CheckEnemy
 	float m_flDistLook;	// distance monster sees (Default 2048)
@@ -126,6 +337,15 @@ public:
 	virtual void RunAI( void );// core ai function!	
 	void Listen( void );
 
+	void Alert_Clients ( CBaseEntity *Attacker );
+	void Alert_Ally ( CBaseEntity *Attacker );
+
+	void Hunt_Stand_Set ( int mode );
+
+	void Freeze_Monster ( int time );
+
+	void Use_PathWalk ( void );
+
 	virtual BOOL IsAlive( void ) { return ( pev->deadflag != DEAD_DEAD ); }
 	virtual BOOL ShouldFadeOnDeath( void );
 
@@ -149,10 +369,13 @@ public:
 	virtual void StartMonster( void );
 	virtual CBaseEntity *BestVisibleEnemy( void );// finds best visible enemy for attack
 	virtual BOOL FInViewCone( CBaseEntity *pEntity );// see if pEntity is in monster's view cone
+	virtual BOOL FInViewCone2 ( CBaseEntity *pEntity );// see if pEntity is in monster's view cone
+	virtual BOOL FInViewCone3 ( CBaseEntity *pEntity );// see if pEntity is in monster's view cone
+	virtual BOOL FInViewCone4 ( CBaseEntity *pEntity );// see if pEntity is in monster's view cone
 	virtual BOOL FInViewCone( Vector *pOrigin );// see if given location is in monster's view cone
 	virtual void HandleAnimEvent( MonsterEvent_t *pEvent );
 
-	virtual int CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist );// check validity of a straight move through space
+	virtual int CheckLocalMove ( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist, int igonrefailed );// check validity of a straight move through space
 	virtual void Move( float flInterval = 0.1 );
 	virtual void MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval );
 	virtual BOOL ShouldAdvanceRoute( float flWaypointDist );
@@ -302,7 +525,19 @@ public:
 	virtual void FadeMonster( void );	// Called instead of GibMonster() when gibs are disabled
 
 	Vector ShootAtEnemy( const Vector &shootOrigin );
-	virtual Vector BodyTarget( const Vector &posSrc ) { return Center() * 0.75 + EyePosition() * 0.25; };		// position to shoot at
+	//virtual Vector BodyTarget( const Vector &posSrc ) { return Center() * 0.75 + EyePosition() * 0.25; };		// position to shoot at
+
+	virtual Vector BodyTarget_s( const Vector &posSrc ) { return EyePosition() * 1.1;					  };
+	virtual Vector BodyTarget_e( const Vector &posSrc ) { return EyePosition();							  };
+	virtual Vector BodyTarget_h( const Vector &posSrc ) { return Center( ) * 0.1  + EyePosition() * 0.9;  };
+	virtual Vector BodyTarget_b( const Vector &posSrc ) { return Center( ) * 0.2  + EyePosition() * 0.8;  };
+	virtual Vector BodyTarget  ( const Vector &posSrc ) { return Center( ) * 0.25 + EyePosition() * 0.75; };
+	virtual Vector BodyTarget_l( const Vector &posSrc ) { return Center( ) * 0.4  + EyePosition() * 0.6;  };
+	virtual Vector BodyTarget_c( const Vector &posSrc ) { return Center( ) * 0.5  + EyePosition() * 0.5;  };
+	virtual Vector BodyTarget_d( const Vector &posSrc ) { return Center( ) * 0.6  + EyePosition() * 0.4;  };
+	virtual Vector BodyTarget_o( const Vector &posSrc ) { return Center( ) * 0.75 + EyePosition() * 0.25; };
+	virtual Vector BodyTarget_z( const Vector &posSrc ) { return Center( );								  };
+
 
 	virtual	Vector GetGunPosition( void );
 

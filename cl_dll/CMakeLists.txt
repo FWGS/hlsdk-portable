@@ -57,20 +57,93 @@ if (USE_STATIC_FREEVGUI)
 endif()
 
 set (CLDLL_SOURCES
-	../dlls/crossbow.cpp
-	../dlls/crowbar.cpp
-	../dlls/egon.cpp
-	../dlls/gauss.cpp
-	../dlls/handgrenade.cpp
-	../dlls/hornetgun.cpp
-	../dlls/mp5.cpp
-	../dlls/python.cpp
-	../dlls/rpg.cpp
-	../dlls/satchel.cpp
-	../dlls/shotgun.cpp
-	../dlls/squeakgrenade.cpp
-	../dlls/tripmine.cpp
-	../dlls/glock.cpp
+	#../dlls/crossbow.cpp
+	#../dlls/crowbar.cpp
+	#../dlls/egon.cpp
+	#../dlls/gauss.cpp
+	#../dlls/handgrenade.cpp
+	#../dlls/hornetgun.cpp
+	#../dlls/mp5.cpp
+	#../dlls/python.cpp
+	#../dlls/rpg.cpp
+	#../dlls/satchel.cpp
+	#../dlls/shotgun.cpp
+	#../dlls/squeakgrenade.cpp
+	#../dlls/tripmine.cpp
+	#../dlls/glock.cpp
+	../dlls/wdoor/wpn_airgun.cpp
+	../dlls/wdoor/wpn_ak47.cpp
+	../dlls/wdoor/wpn_crossbow.cpp
+	../dlls/wdoor/wpn_crowbar.cpp
+	../dlls/wdoor/wpn_darkgrenade.cpp
+	../dlls/wdoor/wpn_deagle.cpp
+	../dlls/wdoor/wpn_displacer.cpp
+	../dlls/wdoor/wpn_doubleuzi.cpp
+	../dlls/wdoor/wpn_dualdbarrel.cpp
+	../dlls/wdoor/wpn_egon.cpp
+	../dlls/wdoor/wpn_fist.cpp
+	../dlls/wdoor/wpn_gauss.cpp
+	../dlls/wdoor/wpn_glock.cpp
+	../dlls/wdoor/wpn_hammer.cpp
+	../dlls/wdoor/wpn_handgrenade.cpp
+	../dlls/wdoor/wpn_hornetgun.cpp
+	../dlls/wdoor/wpn_kmedkit.cpp
+	../dlls/wdoor/wpn_minigun.cpp
+	../dlls/wdoor/wpn_mp5.cpp
+	../dlls/wdoor/wpn_python.cpp
+	../dlls/wdoor/wpn_redeemer.cpp
+	../dlls/wdoor/wpn_rpg.cpp
+	../dlls/wdoor/wpn_satchel.cpp
+	../dlls/wdoor/wpn_sg550.cpp
+	../dlls/wdoor/wpn_shotgun.cpp
+	../dlls/wdoor/wpn_smg.cpp
+	../dlls/wdoor/wpn_sniper.cpp
+	../dlls/wdoor/wpn_squeakgrenade.cpp
+	../dlls/wdoor/wpn_tripmine.cpp
+	../dlls/wdoor/wpn_valvesword.cpp
+	wdoor/game_fx.cpp
+	wdoor/HUD_AirBar.cpp
+	wdoor/HUD_ArmorBar.cpp
+	wdoor/HUD_DarkHoles.cpp
+	wdoor/HUD_GameOver.cpp
+	wdoor/HUD_HealthBar.cpp
+	wdoor/HUD_life.cpp
+	wdoor/HUD_ModeShow.cpp
+	wdoor/HUD_nvg.cpp
+	wdoor/HUD_PassageBar.cpp
+	wdoor/HUD_PasswordBord.cpp
+	wdoor/HUD_RPGMenu.cpp
+	wdoor/HUD_RTP_Bar.cpp
+	wdoor/HUD_Scope.cpp
+	wdoor/Particle.cpp
+	wdoor/ParticleSystem.cpp
+	wdoor/PSBeam.cpp
+	wdoor/PSBlastCone.cpp
+	wdoor/PSBlood.cpp
+	wdoor/PSBubbles.cpp
+	wdoor/PSBubbleTrail.cpp
+	wdoor/PSDrips.cpp
+	wdoor/PSFlatTrail.cpp
+	wdoor/PSGravityPart.cpp
+	wdoor/PSSparks.cpp
+	wdoor/PSSparkShower.cpp
+	wdoor/PSSpawnEffect.cpp
+	wdoor/PSStreaks.cpp
+	wdoor/PSTrail.cpp
+	wdoor/PSWallGibs.cpp
+	wdoor/r_particle.cpp
+	wdoor/rain.cpp
+	wdoor/RenderManager.cpp
+	wdoor/RenderSystem.cpp
+	wdoor/RotatingSystem.cpp
+	wdoor/RSBeam.cpp
+	wdoor/RSBeamStar.cpp
+	wdoor/RSCylinder.cpp
+	wdoor/RSDisk.cpp
+	wdoor/RSLight.cpp
+	wdoor/RSSprite.cpp
+	wdoor/RSTeleparts.cpp
+	wdoor/vgui_SelectMenu.cpp
 	ev_hldm.cpp
 	hl/hl_baseentity.cpp
 	hl/hl_events.cpp
@@ -160,7 +233,7 @@ else()
 		../external/openbsd/strlcat.c)
 endif()
 
-include_directories (. hl/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
+include_directories (. hl/ wdoor/ ../dlls ../dlls/wpn_shared ../common ../engine ../pm_shared ../game_shared ../public)
 
 if (GOLDSOURCE_SUPPORT)
 	include_directories (../external/)

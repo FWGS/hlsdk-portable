@@ -88,6 +88,7 @@ typedef enum
 } USE_TYPE;
 
 extern void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+extern void Remove_Targets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
 
 typedef void(CBaseEntity::*BASEPTR)( void );
 typedef void(CBaseEntity::*ENTITYFUNCPTR)( CBaseEntity *pOther );
@@ -109,6 +110,10 @@ typedef void(CBaseEntity::*USEPTR)( CBaseEntity *pActivator, CBaseEntity *pCalle
 #define CLASS_PLAYER_BIOWEAPON		12 // hornets and snarks.launched by players
 #define CLASS_ALIEN_BIOWEAPON		13 // hornets and snarks.launched by the alien menace
 #define CLASS_VEHICLE			14
+#define CLASS_HUMAN_BIOWEAPON	15
+#define CLASS_MACHINE_BLACK		18
+#define CLASS_MACHINE_ASS		17
+#define CLASS_HUMAN_ASS	        18
 #define	CLASS_BARNACLE			99 // special because no one pays attention to it, and it eats a wide cross-section of creatures.
 
 class CBaseEntity;
@@ -142,6 +147,20 @@ public:
 //
 // Base Entity.  All entity types derive from this
 //
+//Ghoul - you are completely idiot! What did I told you about making this functions global?
+void	FX_ImpBeam( Vector origin, Vector angles, int IsBsp, int InWater, int type );
+void	FX_ImpBullet( Vector origin, Vector normal, Vector angles, int IsBsp, int type, float TexType );
+void	FX_ImpRocket( Vector origin, Vector angles, int IsBsp, int type, float TexType );
+void	FX_ImpBeam( Vector origin, Vector angles, int IsBsp, int type );
+void	FX_Explosion( Vector origin, int type );
+void	FX_FireGun( Vector angles, int EntIndex, int Animation, int Special, int Type );
+void	FX_FireBeam( Vector origin, Vector angles, Vector normal, int Type );
+void	FX_BrassClip( Vector origin, Vector angles, int EntIndex, int Type );
+void	FX_PlrGib( Vector origin, int Type );
+void	FX_TankFire( int EntIndex, int FlashFrame, int FlashScale, int DlightScale, int DlightR, int DlightG, int DlightB, int Smoke, int ShellType );
+void	FX_Trail( Vector origin, int EntIndex, int Type );
+void	FX_BreakGib( Vector origin, int Velocity, int Scale, int Amount, int Type );
+
 class CBaseEntity 
 {
 public:
@@ -245,13 +264,21 @@ public:
 
 	// common member functions
 	void EXPORT SUB_Remove( void );
+	void EXPORT SUB_Remove_fx( void );
 	void EXPORT SUB_DoNothing( void );
 	void EXPORT SUB_StartFadeOut ( void );
+	void EXPORT SUB_StartFadeOut2 ( void );
+	void EXPORT SUB_StartFadeOut3 ( void );
 	void EXPORT SUB_FadeOut( void );
+	void EXPORT SUB_FadeOut2 ( void );
+	void EXPORT SUB_FadeOut3 ( void );
 	void EXPORT SUB_CallUseToggle( void ) { this->Use( this, this, USE_TOGGLE, 0 ); }
+	void EXPORT SUB_Animate_think( void );
 	int ShouldToggle( USE_TYPE useType, BOOL currentState );
 	void FireBullets( ULONG cShots, Vector  vecSrc, Vector	vecDirShooting,	Vector	vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t *pevAttacker = NULL  );
 	Vector FireBulletsPlayer( ULONG cShots, Vector  vecSrc, Vector	vecDirShooting,	Vector	vecSpread, float flDistance, int iBulletType, int iTracerFreq = 4, int iDamage = 0, entvars_t *pevAttacker = NULL, int shared_rand = 0 );
+
+	Vector FireBeam(Vector vecSrc, Vector vecDirShooting, int iBeamType, float flDamage = 0, entvars_t *pevAttacker = NULL);
 
 	virtual CBaseEntity *Respawn( void ) { return NULL; }
 
@@ -337,6 +364,15 @@ public:
 	virtual Vector EyePosition() { return pev->origin + pev->view_ofs; };			// position of eyes
 	virtual Vector EarPosition() { return pev->origin + pev->view_ofs; };			// position of ears
 	virtual Vector BodyTarget( const Vector &posSrc ) { return Center(); };		// position to shoot at
+	virtual Vector BodyTarget_b( const Vector &posSrc ) { return Center( ); };
+	virtual Vector BodyTarget_h( const Vector &posSrc ) { return Center( ); };		// position to shoot at
+	virtual Vector BodyTarget_l( const Vector &posSrc ) { return Center( ); };		// position to shoot at
+	virtual Vector BodyTarget_c( const Vector &posSrc ) { return Center( ); };
+	virtual Vector BodyTarget_e( const Vector &posSrc ) { return Center( ); };
+	virtual Vector BodyTarget_o( const Vector &posSrc ) { return Center( ); };
+	virtual Vector BodyTarget_s( const Vector &posSrc ) { return Center( ); };
+	virtual Vector BodyTarget_z( const Vector &posSrc ) { return Center( ); };
+	virtual Vector BodyTarget_d( const Vector &posSrc ) { return Center( ); };
 
 	virtual int Illumination() { return GETENTITYILLUM( ENT( pev ) ); };
 
@@ -352,6 +388,12 @@ public:
 	int ammo_uranium;
 	int ammo_hornets;
 	int ammo_argrens;
+	int ammo_762nato;
+	int ammo_45acp;
+	int ammo_556nato;
+	int ammo_338mag;
+	int ammo_762natobox;
+	
 	//Special stuff for grenades and satchels.
 	float m_flStartThrow;
 	float m_flReleaseThrow;
@@ -621,34 +663,42 @@ public:
 #define DMG_SLOWBURN		(1 << 21)	// in an oven
 #define DMG_SLOWFREEZE		(1 << 22)	// in a subzero freezer
 #define DMG_MORTAR			(1 << 23)	// Hit by air raid (done to distinguish grenade from mortar)
+#define DMG_ENERGYBLAST		(1 << 24)	// Displacer ball hit
+#define DMG_UNKNOWBLAST		(1 << 25)	// UNKNOWBLAST
+#define DMG_BLOOD		    (1 << 26)	// BLOOD
+#define DMG_VALVE_SWORD		(1 << 27)	// generic damage was done
+#define DMG_CONCUSSION		(1 << 28)	// CONCUSSION!
+#define DMG_DARK			(1 << 29)	// Deep Dark Fantasy
+#define DMG_AIR				(1 << 30)	// Air Gun Only
+#define DMG_OPEN_DOOR		(1 << 31)	// Open the Door!
 
 // these are the damage types that are allowed to gib corpses
-#define DMG_GIB_CORPSE		( DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC | DMG_CLUB )
+#define DMG_GIB_CORPSE		( DMG_ACID | DMG_MORTAR | DMG_BURN | DMG_SHOCK | DMG_DARK | DMG_CLUB | DMG_CRUSH | DMG_FALL | DMG_BLAST | DMG_SONIC | DMG_ENERGYBLAST | DMG_SLASH | DMG_UNKNOWBLAST | DMG_VALVE_SWORD | DMG_ENERGYBEAM | DMG_GENERIC )
 
 // these are the damage types that have client hud art
 #define DMG_SHOWNHUD		(DMG_POISON | DMG_ACID | DMG_FREEZE | DMG_SLOWFREEZE | DMG_DROWN | DMG_BURN | DMG_SLOWBURN | DMG_NERVEGAS | DMG_RADIATION | DMG_SHOCK)
 
 // NOTE: tweak these values based on gameplay feedback:
 
-#define PARALYZE_DURATION	2		// number of 2 second intervals to take damage
+#define PARALYZE_DURATION	3		// number of 2 second intervals to take damage
 #define PARALYZE_DAMAGE		1.0		// damage to take each 2 second interval
 
-#define NERVEGAS_DURATION	2
+#define NERVEGAS_DURATION	10
 #define NERVEGAS_DAMAGE		5.0
 
-#define POISON_DURATION		5
+#define POISON_DURATION		3
 #define POISON_DAMAGE		2.0
 
-#define RADIATION_DURATION	2
+#define RADIATION_DURATION	3
 #define RADIATION_DAMAGE	1.0
 
-#define ACID_DURATION		2
+#define ACID_DURATION		3
 #define ACID_DAMAGE			5.0
 
-#define SLOWBURN_DURATION	2
+#define SLOWBURN_DURATION	3
 #define SLOWBURN_DAMAGE		1.0
 
-#define SLOWFREEZE_DURATION	2
+#define SLOWFREEZE_DURATION	3
 #define SLOWFREEZE_DAMAGE	1.0
 
 

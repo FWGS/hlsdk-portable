@@ -23,6 +23,7 @@
 #include "player.h"
 #include "talkmonster.h"
 #include "gamerules.h"
+#include "func_break.h"// XDM
 
 extern "C" char *PM_memfgets( byte *pMemFile, int fileSize, int *pFilePos, char *pBuffer, int bufferSize );
 
@@ -1481,7 +1482,7 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 
 	chTextureType = 0;
 
-	if( pEntity && pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE )
+	if( pEntity && pEntity->Classify() != CLASS_NONE && pEntity->Classify() != CLASS_MACHINE && pEntity->Classify() != CLASS_MACHINE_ASS && pEntity->Classify() != CLASS_MACHINE_BLACK )
 		// hit body
 		chTextureType = CHAR_TEX_FLESH;
 	else
@@ -1644,6 +1645,237 @@ float TEXTURETYPE_PlaySound( TraceResult *ptr,  Vector vecSrc, Vector vecEnd, in
 	//EMIT_SOUND_DYN( ENT( m_pPlayer->pev ), CHAN_WEAPON, rgsz[RANDOM_LONG( 0, cnt - 1 )], fvol, ATTN_NORM, 0, 96 + RANDOM_LONG( 0, 0xf ) );
 
 	return fvolbar;
+}
+
+
+// ===================== MATERIAL TYPE DETECTION, MAIN ROUTINES ========================
+// 
+// Used to detect the texture the player is standing on, map the
+// texture name to a material type.  Play footstep sound based
+// on material type.
+extern "C" char PM_FindTextureType(char *name);
+
+// XDM: trace texture and give it's type
+char TEXTURETYPE_Trace(TraceResult *ptr,  Vector vecSrc, Vector vecEnd)
+{
+	char chTextureType = 0;
+	CBaseEntity *pEntity = CBaseEntity::Instance(ptr->pHit);
+
+	if (pEntity && (pEntity->pev->takedamage == DAMAGE_AIM || pEntity->pev->takedamage == DAMAGE_YES))
+	{
+		if (pEntity->Classify() == CLASS_MACHINE || pEntity->Classify() == CLASS_MACHINE_ASS
+		|| pEntity->Classify() == CLASS_MACHINE_BLACK)
+		{
+			chTextureType = CHAR_TEX_BP_METAL;
+		}
+		else if(pEntity->Classify() == CLASS_PLAYER){
+			CBasePlayer *player = GetClassPtr((CBasePlayer *)pEntity->pev);
+			if(player){
+				if(player->m_skill_maxarmor >= 200 && player->pev->armorvalue >= 1){
+				chTextureType = CHAR_TEX_ENERGYSHIELD;
+				}
+			}
+		}
+	}
+	else
+	{
+		float rgfl1[3];
+		float rgfl2[3];
+		vecSrc.CopyToArray(rgfl1);
+		vecEnd.CopyToArray(rgfl2);
+
+		const char *pTextureName = NULL;
+		if (pEntity)
+			pTextureName = TRACE_TEXTURE(ENT(pEntity->pev), rgfl1, rgfl2);
+		else
+			pTextureName = TRACE_TEXTURE(ENT(0), rgfl1, rgfl2);
+
+		if (pTextureName && stricmp(pTextureName, "sky"))// XDM: HACK to avoid playing 'concrete' sounds when missing
+		{
+
+//			ALERT(at_console, "TRACE_TEXTURE returned %s\n", pTextureName);
+			// strip leading '-0' or '+0~' or '{' or '!'
+			if (*pTextureName == '-' || *pTextureName == '+')
+				pTextureName += 2;
+
+			if (*pTextureName == '{' || *pTextureName == '!' || *pTextureName == '~' || *pTextureName == ' ')
+				pTextureName++;
+
+			char szbuffer[32];
+			strcpy(szbuffer, pTextureName);
+			szbuffer[CBTEXTURENAMEMAX - 1] = 0;
+			chTextureType = PM_FindTextureType(szbuffer);
+		}
+	}
+//	ALERT(at_console, "TEXTURETYPE_Trace() returning %c \n", chTextureType);
+	return chTextureType;
+}
+
+char SURFACETYPE_Trace(TraceResult *ptr, Vector vecSrc, Vector vecEnd,int classtype,int damagelevel)
+{
+	char chSurfaceType = SURFACE_NONE;
+	CBaseEntity *pEntity = CBaseEntity::Instance(ptr->pHit);
+
+	if ( pEntity->pev->solid == SOLID_BSP)
+	{
+		chSurfaceType = SURFACE_WORLDBRUSH;
+	}
+	if ( FClassnameIs(pEntity->pev, "func_pushable") || FClassnameIs(pEntity->pev, "func_breakable") )
+	{
+		chSurfaceType = SURFACE_BREAKABLE;
+	}
+	if (pEntity && pEntity->pev->takedamage)
+	{
+			if (pEntity->Classify() == CLASS_NONE)
+			{
+				chSurfaceType = SURFACE_NONE;
+			}
+			else if (pEntity->Classify() == CLASS_PLAYER_ALLY 
+				|| pEntity->Classify() == CLASS_PLAYER
+				|| pEntity->Classify() == CLASS_HUMAN_PASSIVE
+				|| pEntity->Classify() == CLASS_HUMAN_ASS
+				|| pEntity->Classify() == CLASS_HUMAN_MILITARY
+				|| pEntity->Classify() == CLASS_HUMAN_BIOWEAPON){			
+				chSurfaceType = SURFACE_FLESH;
+			
+				if(pEntity->Classify() == CLASS_PLAYER){
+					CBasePlayer *player = GetClassPtr((CBasePlayer *)pEntity->pev);
+					if(player){
+						if(player->m_skill_maxarmor >= 200 && player->pev->armorvalue >= 1){
+						chSurfaceType = SURFACE_ENERGYARMOR;
+						}
+					}
+				}
+			}
+			else if (pEntity->Classify() == CLASS_MACHINE 
+			|| pEntity->Classify() == CLASS_MACHINE_ASS
+			|| pEntity->Classify() == CLASS_MACHINE_BLACK)
+			{
+				chSurfaceType = SURFACE_NONE;
+			}
+			else if (pEntity->Classify() == CLASS_ALIEN_MONSTER 
+				|| pEntity->Classify() == CLASS_ALIEN_MILITARY){
+				chSurfaceType = SURFACE_FLESH_YELLOW;
+			}
+			
+
+			if ( FClassnameIs(pEntity->pev, "monster_barnacle")){
+					chSurfaceType = SURFACE_FLESH;
+			}
+			else if ( FClassnameIs(pEntity->pev, "monster_alien_grunt") || FClassnameIs(pEntity->pev, "monster_alien_grunt_big")
+			|| FClassnameIs(pEntity->pev, "monster_revenant")){
+					if(ptr->iHitgroup == 10){
+					chSurfaceType = SURFACE_NONE;
+					}
+			}
+			else if(FClassnameIs(pEntity->pev, "monster_alien_xing_tian")){
+					if(ptr->iHitgroup == 10 || ptr->iHitgroup == 8 || ptr->iHitgroup == 0){
+					chSurfaceType = SURFACE_NONE;
+					}
+			}
+			else if ( FClassnameIs(pEntity->pev, "monster_cof_ms5")){
+					if(ptr->iHitgroup == 1){
+					chSurfaceType = SURFACE_NONE;
+					}
+			}
+			else if ( FClassnameIs(pEntity->pev, "monster_tyant_boss")  )
+			{
+				if(ptr->iHitgroup == 1){
+				chSurfaceType = SURFACE_FLESH;
+				}
+				else{
+				chSurfaceType = SURFACE_NONE;
+				}
+			}
+			else if ( FClassnameIs(pEntity->pev, "monster_crasher_boss")  )
+			{
+				if(ptr->iHitgroup == 10){
+				chSurfaceType = SURFACE_NONE;
+				}
+				else{
+				chSurfaceType = SURFACE_FLESH;
+				}
+			}
+			else if ( FClassnameIs(pEntity->pev, "monster_gargantua") || FClassnameIs(pEntity->pev, "monster_gargantua_hell")
+			|| FClassnameIs(pEntity->pev, "monster_stone_devil") || FClassnameIs(pEntity->pev, "monster_zdeadeye")
+			|| FClassnameIs(pEntity->pev, "monster_shadow") || FClassnameIs(pEntity->pev, "monster_gman_boss")
+			|| FClassnameIs(pEntity->pev, "monster_doma_boss") || FClassnameIs(pEntity->pev, "monster_god625_boss"))
+			{
+				chSurfaceType = SURFACE_NONE;
+			}
+			else if ( FClassnameIs(pEntity->pev, "monster_barney_shield") || FClassnameIs(pEntity->pev, "monster_barney_tr4")
+			|| FClassnameIs(pEntity->pev, "monster_barney_hevshield"))
+			{
+				if(ptr->iHitgroup != 0 && ptr->iHitgroup != 8){
+				chSurfaceType = SURFACE_FLESH;
+				}
+				else{
+				chSurfaceType = SURFACE_NONE;
+				}
+			}
+			else if ( FClassnameIs(pEntity->pev, "monster_willam") )
+			{
+				if(ptr->iHitgroup != 0){
+				chSurfaceType = SURFACE_FLESH;
+				}
+				else{
+				chSurfaceType = SURFACE_NONE;
+				}
+			}
+
+	}
+	if (pEntity->Classify() == CLASS_BARNACLE){
+		chSurfaceType = SURFACE_FLESH_YELLOW;
+	}
+
+				if(chSurfaceType == SURFACE_FLESH){
+					if(pEntity->pev->deadflag != DEAD_NO){
+					chSurfaceType = SURFACE_NONE;
+					}
+					else if(damagelevel == 1){
+					chSurfaceType = 7;
+					}
+					else if(damagelevel == 2){
+					chSurfaceType = 9;
+					}
+				}
+				else if(chSurfaceType == SURFACE_FLESH_YELLOW){
+					if(pEntity->pev->deadflag != DEAD_NO){
+					chSurfaceType = SURFACE_NONE;
+					}
+					else if(damagelevel == 1){
+					chSurfaceType = 8;
+					}
+					else if(damagelevel == 2){
+					chSurfaceType = 10;
+					}
+				}
+
+		if(pEntity->Classify() == CLASS_PLAYER){
+			if(classtype == CLASS_PLAYER_ALLY){
+				chSurfaceType = SURFACE_NONE;
+			}
+
+			CBasePlayer *player = GetClassPtr((CBasePlayer *)pEntity->pev);
+			if(player){
+				if(player->m_god_time >= gpGlobals->time){
+				chSurfaceType = SURFACE_NONE;
+				}
+			}
+		}
+		else if(classtype == CLASS_PLAYER){
+			if(pEntity->Classify() == CLASS_PLAYER_ALLY){
+				chSurfaceType = SURFACE_NONE;
+			}
+		}
+
+		if(classtype == pEntity->Classify()){
+			if(chSurfaceType == SURFACE_FLESH || SURFACE_FLESH_YELLOW){
+				chSurfaceType = SURFACE_NONE;
+			}
+		}
+		
+	return chSurfaceType;
 }
 
 // ===================================================================================

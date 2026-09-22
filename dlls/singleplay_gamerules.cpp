@@ -249,13 +249,152 @@ int CHalfLifeRules::IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKilled
 //=========================================================
 void CHalfLifeRules::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor )
 {
+	DeathNotice( pVictim, pKiller, pInflictor, 0);
 }
 
 //=========================================================
 // Deathnotice
 //=========================================================
-void CHalfLifeRules::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor )
+void CHalfLifeRules::DeathNotice( CBaseEntity *pVictim, entvars_t *pKiller, entvars_t *pInflictor, int type )
 {
+	if(CVAR_GET_FLOAT( "cl_deathnotice" ) <= 0){
+	return;
+	}
+// Work out what killed the player, and send a message to all clients about it
+	CBaseEntity *Killer = CBaseEntity::Instance( pKiller );
+
+	const char *killer_weapon_name = "world";		// by default, the player is killed by the world
+	const char *victim_name = "";
+	const char *killer_name = "";
+
+	int killer_color = 0;
+	int victim_color = 0;
+	//killer_weapon_name = STRING( pInflictor->classname );
+	
+	victim_name = STRING( pVictim->pev->netname );
+	//killer_name = STRING( pInflictor->classname );
+
+		if(type & DMG_UNKNOWBLAST){
+			killer_weapon_name = "mortar";
+		}
+		else if(type & DMG_ENERGYBEAM){
+			killer_weapon_name = "energy";
+		}
+		else if(type & DMG_ENERGYBLAST){
+			killer_weapon_name = "energyblast";
+		}
+		else if(type & DMG_BURN){
+			killer_weapon_name = "burn";
+		}
+		else if(type & DMG_FREEZE){
+			killer_weapon_name = "freeze";
+		}
+		else if(type & DMG_BLAST){
+			killer_weapon_name = "blast";
+		}
+		else if(type & DMG_DARK){
+			killer_weapon_name = "dark";
+		}
+		else if(type & DMG_ACID){
+			killer_weapon_name = "acid";
+		}
+		else if(type & DMG_CRUSH){
+			killer_weapon_name = "crush";
+		}
+		else if(type & DMG_SONIC){
+			killer_weapon_name = "sonic";
+		}
+		else if(type & DMG_SLASH){
+			killer_weapon_name = "slash";
+		}
+		else if(type & DMG_CONCUSSION){
+			killer_weapon_name = "concussion";
+		}
+		else if(type & DMG_FALL){
+			killer_weapon_name = "skull";
+		}
+
+	if(Killer != NULL && Killer != pVictim){
+
+		if ( (Killer->pev->flags & FL_MONSTER) ){
+			if(Killer->Classify() == CLASS_PLAYER_ALLY || Killer->Classify() == CLASS_MACHINE_BLACK){
+				killer_color = 1;//�����
+				if(type == DMG_SHOCK){
+				killer_weapon_name = "shock";
+				}
+				else if(type & DMG_SLASH){
+				killer_weapon_name = "cleave";
+				}
+			}
+			else{
+				if(type == DMG_SHOCK){
+				killer_weapon_name = "electric";
+				}
+				else if(type & DMG_ENERGYBEAM){
+				killer_weapon_name = "beam";
+				}
+				killer_color = 2;//�����
+			}
+			killer_name = STRING( Killer->pev->netname );
+		}
+		else if ( (Killer->pev->flags & FL_CLIENT) ){
+			killer_name = "Kadoma";
+			killer_color = 3;
+
+			if(type == DMG_CRUSH){
+			killer_weapon_name = "vehicle";
+			}
+			else if(type & DMG_MORTAR){
+			killer_weapon_name = "mortar";
+			}
+			else if(type & DMG_VALVE_SWORD){
+			killer_weapon_name = "holysword";
+			}
+			else if(type & DMG_AIR){
+			killer_weapon_name = "fist";
+			}
+		}
+
+	}
+
+	if ( (pVictim->pev->flags & FL_CLIENT) ){
+		victim_name = "Kadoma";
+		victim_color = 3;
+	}
+
+	if ( (pVictim->pev->flags & FL_MONSTER) ){
+			if(pVictim->Classify() == CLASS_PLAYER_ALLY || pVictim->Classify() == CLASS_MACHINE_BLACK){
+			victim_color = 1;//�����
+			}
+			else{
+			victim_color = 2;//�����
+			}
+	}
+
+	// strip the monster_* or weapon_* from the inflictor's classname
+	if ( strncmp( killer_name, "weapon_", 7 ) == 0 )
+		killer_name += 7;
+	else if ( strncmp( killer_name, "monster_", 8 ) == 0 )
+		killer_name += 8;
+	else if ( strncmp( killer_name, "func_", 5 ) == 0 )
+		killer_name += 5;
+	else if ( strncmp( killer_name, "env_", 4 ) == 0 )
+		killer_name += 4;
+
+
+	MESSAGE_BEGIN( MSG_ALL, gmsgDeathMsg );
+		WRITE_BYTE( 0 );						// the killer
+		WRITE_BYTE( ENTINDEX(pVictim->edict()) );		// the victim
+		WRITE_STRING( killer_weapon_name );		// what they were killed by (should this be a string?)
+		WRITE_STRING( victim_name );
+		WRITE_STRING( killer_name );
+		WRITE_BYTE( killer_color );
+		WRITE_BYTE( victim_color );
+	MESSAGE_END();
+
+	UTIL_LogPrintf( "\"%s\" killed with \"%s\"\n",
+	STRING( pVictim->pev->netname ),
+	killer_name );		
 }
 
 //=========================================================

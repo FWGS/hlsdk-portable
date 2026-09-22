@@ -249,6 +249,15 @@ void CSquadMonster::SquadMakeEnemy( CBaseEntity *pEnemy )
 		return;
 	}
 
+	if( pEnemy->IsPlayer() )
+	{
+		if(m_enemyfollower == 1 && Classify() == CLASS_PLAYER_ALLY)
+			return;
+	}
+
+	if( FClassnameIs( pEnemy->pev, "player_aim_flag" ) )
+		return;
+	
 	CSquadMonster *pSquadLeader = MySquadLeader();
 	for( int i = 0; i < MAX_SQUAD_MEMBERS; i++ )
 	{
@@ -434,8 +443,8 @@ void CSquadMonster::StartMonster( void )
 
 		if( IsLeader() && FClassnameIs( pev, "monster_human_grunt" ) )
 		{
-			SetBodygroup( 1, 1 ); // UNDONE: truly ugly hack
-			pev->skin = 0;
+			//SetBodygroup( 1, 1 ); // UNDONE: truly ugly hack
+			//pev->skin = 0;
 		}
 	}
 }

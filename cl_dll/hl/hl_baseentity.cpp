@@ -96,6 +96,7 @@ void CGrenade::Explode( TraceResult *, int ) { }
 void CGrenade::Killed( entvars_t *, int ) { }
 void CGrenade::Spawn( void ) { }
 CGrenade *CGrenade::ShootTimed( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time ){ return 0; }
+CGrenade *CGrenade:: ShootTimed_darkhole( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity, float time ){ return 0; }
 CGrenade *CGrenade::ShootContact( entvars_t *pevOwner, Vector vecStart, Vector vecVelocity ){ return 0; }
 void CGrenade::DetonateUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value ){ }
 
@@ -150,7 +151,7 @@ void CBaseMonster::PushEnemy( CBaseEntity *pEnemy, Vector &vecLastKnownPos ) { }
 BOOL CBaseMonster::PopEnemy() { return FALSE; }
 void CBaseMonster::SetActivity( Activity NewActivity ) { }
 void CBaseMonster::SetSequenceByName( const char *szSequence ) { }
-int CBaseMonster::CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist ) { return 0; }
+int CBaseMonster::CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist, int igonrefailed ) { return 0; }
 float CBaseMonster::OpenDoorAndWait( entvars_t *pevDoor ) { return 0.0; }
 void CBaseMonster::AdvanceRoute( float distance ) { }
 int CBaseMonster::RouteClassify( int iMoveFlag ) { return 0; }
@@ -170,6 +171,9 @@ BOOL CBaseMonster::FindCover( Vector vecThreat, Vector vecViewOffset, float flMi
 BOOL CBaseMonster::BuildNearestRoute( Vector vecThreat, Vector vecViewOffset, float flMinDist, float flMaxDist ) { return FALSE; }
 CBaseEntity *CBaseMonster::BestVisibleEnemy( void ) { return NULL; }
 BOOL CBaseMonster::FInViewCone( CBaseEntity *pEntity ) { return FALSE; }
+BOOL CBaseMonster::FInViewCone2 ( CBaseEntity *pEntity ) { return FALSE; }
+BOOL CBaseMonster::FInViewCone3 ( CBaseEntity *pEntity ) { return FALSE; }
+BOOL CBaseMonster::FInViewCone4 ( CBaseEntity *pEntity ) { return FALSE; }
 BOOL CBaseMonster::FInViewCone( Vector *pOrigin ) { return FALSE; }
 BOOL CBaseEntity::FVisible( CBaseEntity *pEntity ) { return FALSE; }
 BOOL CBaseEntity::FVisible( const Vector &vecOrigin ) { return FALSE; }
