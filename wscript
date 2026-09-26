@@ -220,7 +220,7 @@ def configure(conf):
 		# LIB_M added in xcompile!
 		pass
 	elif conf.env.DEST_OS == 'win32':
-		a = [ 'user32', 'winmm' ]
+		a = [ 'user32', 'winmm', 'gdi32' ]
 		if conf.env.COMPILER_CC == 'msvc':
 			for i in a:
 				conf.start_msg('Checking for MSVC library')
