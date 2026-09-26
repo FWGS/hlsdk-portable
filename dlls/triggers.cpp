@@ -1494,6 +1494,7 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		strcpy( st_szNextSpot, m_szLandmarkName );
 		gpGlobals->vecLandmarkOffset = VARS( pentLandmark )->origin;
 	}
+	SET_VIEW(pPlayer->edict(), pPlayer->edict());
 	//ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
 	ALERT( at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot );
 	CHANGE_LEVEL( st_szNextMap, st_szNextSpot );
