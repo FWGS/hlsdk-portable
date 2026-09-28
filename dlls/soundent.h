@@ -51,6 +51,7 @@ public:
 	void	Reset ( void );
 
 	Vector	m_vecOrigin;	// sound's location in space
+	int		m_iClassType;	// what type of sound this is
 	int		m_iType;		// what type of sound this is
 	int		m_iVolume;		// how loud the sound is
 	float	m_flExpireTime;	// when the sound should be purged from the list

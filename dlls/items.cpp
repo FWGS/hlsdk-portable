@@ -86,12 +86,18 @@ void CWorldItem::Spawn( void )
 	REMOVE_ENTITY( edict() );
 }
 
+void CItem::SetObjectCollisionBox( void )
+{
+	pev->absmin = pev->origin + Vector(-16, -16, 0);
+	pev->absmax = pev->origin + Vector(16, 16, 16); 
+}
+
 void CItem::Spawn( void )
 {
 	pev->movetype = MOVETYPE_TOSS;
 	pev->solid = SOLID_TRIGGER;
 	UTIL_SetOrigin( pev, pev->origin );
-	UTIL_SetSize( pev, Vector( -16, -16, 0 ), Vector( 16, 16, 16 ) );
+	UTIL_SetSize( pev, g_vecZero, g_vecZero );
 	SetTouch( &CItem::ItemTouch );
 
 	if( DROP_TO_FLOOR(ENT( pev ) ) == 0 )
@@ -176,22 +182,23 @@ class CItemSuit : public CItem
 	void Spawn( void )
 	{ 
 		Precache();
-		SET_MODEL( ENT( pev ), "models/w_suit.mdl" );
+		SET_MODEL( ENT( pev ), "models/w_all_items3.mdl" );
+		pev->body = 5;
 		CItem::Spawn();
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL( "models/w_suit.mdl" );
+		//PRECACHE_MODEL( "models/w_suit.mdl" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
 		if( pPlayer->pev->weapons & ( 1<<WEAPON_SUIT ) )
 			return FALSE;
 
-		if( pev->spawnflags & SF_SUIT_SHORTLOGON )
+		/*if( pev->spawnflags & SF_SUIT_SHORTLOGON )
 			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_A0" );		// short version of suit logon,
 		else
-			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );	// long version of suit logon
+			EMIT_SOUND_SUIT( pPlayer->edict(), "!HEV_AAx" );*/	// long version of suit logon
 
 		pPlayer->pev->weapons |= ( 1 << WEAPON_SUIT );
 		return TRUE;
@@ -200,59 +207,422 @@ class CItemSuit : public CItem
 
 LINK_ENTITY_TO_CLASS( item_suit, CItemSuit )
 
-class CItemBattery : public CItem
+class CItemHealthUper : public CItem
 {
 	void Spawn( void )
 	{ 
-		Precache();
-		SET_MODEL( ENT( pev ), "models/w_battery.mdl" );
-		CItem::Spawn();
+		Precache( );
+		SET_MODEL(ENT(pev), "models/w_all_items5.mdl");
+		pev->body = 2;
+		CItem::Spawn( );
 	}
 	void Precache( void )
 	{
-		PRECACHE_MODEL( "models/w_battery.mdl" );
-		PRECACHE_SOUND( "items/gunpickup2.wav" );
+		PRECACHE_SOUND( "rmxp/111-Heal07.wav" );
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		if( pPlayer->pev->deadflag != DEAD_NO )
+		if ( pPlayer->pev->deadflag != DEAD_NO )
 		{
 			return FALSE;
 		}
 
-		if( ( pPlayer->pev->armorvalue < MAX_NORMAL_BATTERY ) &&
-			( pPlayer->pev->weapons & ( 1 << WEAPON_SUIT ) ) )
+		if(!pPlayer->HasMenuItem_Full())
 		{
-			int pct;
-			char szcharge[64];
-
-			pPlayer->pev->armorvalue += gSkillData.batteryCapacity;
-			pPlayer->pev->armorvalue = Q_min( pPlayer->pev->armorvalue, MAX_NORMAL_BATTERY );
+			pPlayer->MenuItem_add(13);
 
 			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
 
 			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
-				WRITE_STRING( STRING( pev->classname ) );
+			WRITE_STRING( STRING(pev->classname) );
 			MESSAGE_END();
 
-			// Suit reports new power level
-			// For some reason this wasn't working in release build -- round it.
-			pct = (int)( (float)( pPlayer->pev->armorvalue * 100.0f ) * ( 1.0f / MAX_NORMAL_BATTERY ) + 0.5f );
-			pct = ( pct / 5 );
-			if( pct > 0 )
-				pct--;
-
-			sprintf( szcharge,"!HEV_%1dP", pct );
-
-			//EMIT_SOUND_SUIT( ENT( pev ), szcharge );
-			pPlayer->SetSuitUpdate( szcharge, FALSE, SUIT_NEXT_IN_30SEC);
-			return TRUE;
+			return TRUE;		
 		}
 		return FALSE;
 	}
 };
 
+LINK_ENTITY_TO_CLASS(item_respawn, CItemHealthUper);
+
+class CItemGodWater : public CItem
+{
+	void Spawn( void )
+	{ 
+		Precache( );
+		SET_MODEL(ENT(pev), "models/w_all_items5.mdl");
+		pev->body = 16;
+		CItem::Spawn( );
+	}
+	void Precache( void )
+	{
+		PRECACHE_SOUND( "rmxp/111-Heal07.wav" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if ( pPlayer->pev->deadflag != DEAD_NO )
+		{
+			return FALSE;
+		}
+
+		if(!pPlayer->HasMenuItem_Full())
+		{
+			pPlayer->MenuItem_add(21);
+
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+			WRITE_STRING( STRING(pev->classname) );
+			MESSAGE_END();
+
+			return TRUE;		
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_godwater, CItemGodWater);
+
+class CItemNuke : public CItem
+{
+	void Spawn( void )
+	{ 
+		SET_MODEL(ENT(pev), "models/nuke_box.mdl");
+		CItem::Spawn( );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if ( pPlayer->pev->deadflag != DEAD_NO )
+		{
+			return FALSE;
+		}
+
+		if(!pPlayer->HasMenuItem_Full())
+		{
+			pPlayer->MenuItem_add(23);
+
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+			//MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+			//WRITE_STRING( STRING(pev->classname) );
+			//MESSAGE_END();
+
+			return TRUE;		
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_nuke, CItemNuke);
+
+class CItemArmor3 : public CItem
+{
+	void Spawn( void )
+	{ 
+		Precache( );
+		SET_MODEL(ENT(pev), "models/w_all_items4.mdl");
+		pev->body = 1;
+		CItem::Spawn( );
+	}
+	void Precache( void )
+	{
+		PRECACHE_SOUND( "items/ammopickup.wav" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if ( pPlayer->pev->deadflag != DEAD_NO )
+		{
+			return FALSE;
+		}
+	
+		if (pPlayer->m_skill_maxarmor <= 200 && pPlayer->pev->armorvalue < pPlayer->m_skill_maxarmor || pPlayer->pev->armorvalue == 0)
+		{
+			pPlayer->m_skill_maxarmor = 200;
+			pPlayer->pev->armorvalue = pPlayer->m_skill_maxarmor;
+
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/ammopickup.wav", 1, ATTN_NORM );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+			WRITE_STRING( STRING(pev->classname) );
+			MESSAGE_END();
+
+			return TRUE;		
+		}
+		else if(!pPlayer->HasMenuItem_Full())
+		{
+			pPlayer->MenuItem_add(12);
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+			WRITE_STRING( STRING(pev->classname) );
+			MESSAGE_END();
+
+			return TRUE;
+		}
+
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_armor3, CItemArmor3);
+
+class CItemArmor2 : public CItem
+{
+	void Spawn( void )
+	{ 
+		Precache( );
+		SET_MODEL(ENT(pev), "models/w_all_items1.mdl");
+		pev->body = 1;
+		CItem::Spawn( );
+	}
+	void Precache( void )
+	{
+		PRECACHE_SOUND( "items/ammopickup.wav" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if ( pPlayer->pev->deadflag != DEAD_NO )
+		{
+			return FALSE;
+		}
+
+		if (pPlayer->m_skill_maxarmor <= 150 && pPlayer->pev->armorvalue < pPlayer->m_skill_maxarmor || pPlayer->pev->armorvalue == 0)
+		{
+			pPlayer->m_skill_maxarmor = 150;
+			pPlayer->pev->armorvalue = pPlayer->m_skill_maxarmor;
+
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/ammopickup.wav", 1, ATTN_NORM );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+			WRITE_STRING( STRING(pev->classname) );
+			MESSAGE_END();
+
+			return TRUE;		
+		}
+		else if(!pPlayer->HasMenuItem_Full())
+		{
+			pPlayer->MenuItem_add(11);
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+			WRITE_STRING( STRING(pev->classname) );
+			MESSAGE_END();
+
+			return TRUE;
+		}
+
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_armor2, CItemArmor2);
+
+class CItemArmor1 : public CItem
+{
+	void Spawn( void )
+	{ 
+		Precache( );
+		SET_MODEL(ENT(pev), "models/w_all_items4.mdl");
+		pev->body = 0;
+		CItem::Spawn( );
+	}
+	void Precache( void )
+	{
+		PRECACHE_SOUND( "items/ammopickup.wav" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if ( pPlayer->pev->deadflag != DEAD_NO )
+		{
+			return FALSE;
+		}
+
+		if (pPlayer->m_skill_maxarmor <= 100 && pPlayer->pev->armorvalue < pPlayer->m_skill_maxarmor || pPlayer->pev->armorvalue == 0)
+		{
+			pPlayer->m_skill_maxarmor = 100;
+			pPlayer->pev->armorvalue = pPlayer->m_skill_maxarmor;
+
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/ammopickup.wav", 1, ATTN_NORM );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+			WRITE_STRING( STRING(pev->classname) );
+			MESSAGE_END();
+
+			return TRUE;		
+		}
+		else if(!pPlayer->HasMenuItem_Full())
+		{
+			pPlayer->MenuItem_add(9);
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+			WRITE_STRING( STRING(pev->classname) );
+			MESSAGE_END();
+
+			return TRUE;
+		}
+
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_armor1, CItemArmor1);
+
+class CItemArmor4 : public CItem
+{
+	void Spawn( void )
+	{ 
+		Precache( );
+		SET_MODEL(ENT(pev), "models/w_all_items2.mdl");
+		pev->body = 10;
+		CItem::Spawn( );
+	}
+	void Precache( void )
+	{
+		PRECACHE_SOUND( "items/ammopickup.wav" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if ( pPlayer->pev->deadflag != DEAD_NO )
+		{
+			return FALSE;
+		}
+
+		if (pPlayer->m_skill_maxarmor <= 120 && pPlayer->pev->armorvalue < pPlayer->m_skill_maxarmor || pPlayer->pev->armorvalue == 0)
+		{
+			pPlayer->m_skill_maxarmor = 120;
+			pPlayer->pev->armorvalue = pPlayer->m_skill_maxarmor;
+
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/ammopickup.wav", 1, ATTN_NORM );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+			WRITE_STRING( STRING(pev->classname) );
+			MESSAGE_END();
+
+			return TRUE;		
+		}
+		else if(!pPlayer->HasMenuItem_Full())
+		{
+			pPlayer->MenuItem_add(10);
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+			WRITE_STRING( STRING(pev->classname) );
+			MESSAGE_END();
+
+			return TRUE;
+		}
+
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_armor4, CItemArmor4);
+
+class CItemLevelUper : public CItem
+{
+	void Spawn( void )
+	{ 
+		Precache( );
+		SET_MODEL(ENT(pev), "models/w_all_items5.mdl");
+		pev->body = 5;
+		pev->effects		= EF_DIMLIGHT;
+		if ( FClassnameIs(pev, "item_leveluper_s")){
+		pev->effects		|= EF_BRIGHTFIELD;
+		}
+		CItem::Spawn( );
+	}
+	void Precache( void )
+	{
+		PRECACHE_SOUND( "items/ammopickup.wav" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if ( pPlayer->pev->deadflag != DEAD_NO )
+		{
+			return FALSE;
+		}
+
+		if (pPlayer->m_kadoma_level < 100)
+		{
+			if ( FClassnameIs(pev, "item_leveluper_s"))
+			{
+				pPlayer->m_kadoma_exp += 20000;
+			}
+			else
+			{
+				pPlayer->m_kadoma_exp += 1000;
+			}
+
+			EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/ammopickup.wav", 1, ATTN_NORM );
+
+			return TRUE;		
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_leveluper, CItemLevelUper);
+LINK_ENTITY_TO_CLASS(item_leveluper_s, CItemLevelUper);
+
+class CItemBattery : public CItem
+{
+	void Spawn( void )
+	{ 
+		Precache( );
+		SET_MODEL( ENT( pev ), "models/w_all_items3.mdl" );
+		pev->body = 6;
+		CItem::Spawn();
+	}
+	void Precache( void )
+	{
+		PRECACHE_SOUND( "items/gunpickup2.wav" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		return FALSE;
+	}
+};
+
 LINK_ENTITY_TO_CLASS( item_battery, CItemBattery )
+
+class CItemFlashlight : public CItem
+{
+	void Spawn( void )
+	{ 
+		Precache( );
+		SET_MODEL(ENT(pev), "models/w_all_items4.mdl");
+		pev->body = 18;
+		CItem::Spawn( );
+	}
+	void Precache( void )
+	{
+		PRECACHE_SOUND( "items/gunpickup2.wav" );
+	}
+	BOOL MyTouch( CBasePlayer *pPlayer )
+	{
+		if ( pPlayer->pev->deadflag != DEAD_NO )
+		{
+			return FALSE;
+		}
+
+		if (!pPlayer->m_hasflashlight)
+		{
+			if(!pPlayer->HasMenuItem_Full())
+			{
+				pPlayer->MenuItem_add(1);
+				EMIT_SOUND( pPlayer->edict(), CHAN_ITEM, "items/gunpickup2.wav", 1, ATTN_NORM );
+
+				pPlayer->m_hasflashlight = TRUE;
+
+				return TRUE;		
+			}
+			else
+			{
+				return FALSE;
+			}
+		}
+		return FALSE;
+	}
+};
+
+LINK_ENTITY_TO_CLASS(item_flashlight, CItemFlashlight);
 
 class CItemAntidote : public CItem
 {
@@ -268,7 +638,7 @@ class CItemAntidote : public CItem
 	}
 	BOOL MyTouch( CBasePlayer *pPlayer )
 	{
-		pPlayer->SetSuitUpdate( "!HEV_DET4", FALSE, SUIT_NEXT_IN_1MIN );
+		//pPlayer->SetSuitUpdate( "!HEV_DET4", FALSE, SUIT_NEXT_IN_1MIN );
 
 		pPlayer->m_rgItems[ITEM_ANTIDOTE] += 1;
 		return TRUE;

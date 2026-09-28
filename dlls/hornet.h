@@ -57,4 +57,15 @@ public:
 	int m_iHornetType;
 	float m_flFlySpeed;
 };
+
+class CAirBall : public CBaseMonster
+{
+public:
+	void Spawn( void );
+	void Precache( void );
+	int	 Classify ( void );
+
+	void IgniteTrail( void );
+	void EXPORT DieTouch ( CBaseEntity *pOther );
+};
 #endif // HORNET_H

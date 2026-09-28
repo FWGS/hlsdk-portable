@@ -50,6 +50,8 @@ static CBasePlayerWeapon *g_pWpns[MAX_WEAPONS];
 float g_flApplyVel = 0.0;
 int g_irunninggausspred = 0;
 
+int g_iWaterLevel; //LRC - for DMC fog
+
 vec3_t previousorigin;
 
 // HLDM Weapon placeholder entities.
@@ -67,6 +69,23 @@ CHandGrenade g_HandGren;
 CSatchel g_Satchel;
 CTripmine g_Tripmine;
 CSqueak g_Snark;
+
+CSg550 g_Sg550;
+CFist g_Fist;
+CFireAxe g_Axe;
+CAK47 g_Ak47;
+CDeagle g_Deagle;
+CSniper g_m40a1;
+CDisplacer g_displacer;
+Ckmedkit g_Kmedkit;
+CRedeemer g_redeemer;
+CDarkGrenade g_DarkGren;
+CDuelUzi g_DuelUzi;
+CSMG g_Smg;
+CHammer g_Hammer;
+CM134 g_M134;
+CAirGun g_Airgun;
+CDualdbarrel g_Dualdbarrel;
 
 /*
 ======================
@@ -286,7 +305,7 @@ CBaseEntity::FireBulletsPlayer
 Only produces random numbers to match the server ones.
 =====================
 */
-Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int shared_rand )
+Vector CBaseEntity::FireBulletsPlayer( ULONG cShots, Vector vecSrc, Vector vecDirShooting, Vector vecSpread, float flDistance, int iBulletType, int iTracerFreq, int iDamage, entvars_t *pevAttacker, int shared_rand )
 {
 	float x = 0.0f, y = 0.0f, z;
 
@@ -312,6 +331,45 @@ Vector CBaseEntity::FireBulletsPlayer ( ULONG cShots, Vector vecSrc, Vector vecD
 	}
 
 	return Vector( x * vecSpread.x, y * vecSpread.y, 0.0f );
+}
+
+void CBasePlayerWeapon::KickBack( float up_base, float lateral_base, float up_modifier, float lateral_modifier, float up_max, float lateral_max, int direction_change )
+{
+	float flFront, flSide;
+
+	if (m_iShotsFired == 1)
+	{
+		flFront = up_base;
+		flSide = lateral_base;
+	}
+	else
+	{
+		flFront = m_iShotsFired * up_modifier + up_base;
+		flSide = m_iShotsFired * lateral_modifier + lateral_base;
+	}
+
+	m_pPlayer->pev->punchangle.x -= flFront;
+
+	if (m_pPlayer->pev->punchangle.x < -up_max)
+		m_pPlayer->pev->punchangle.x = -up_max;
+
+	if (m_iDirection == 1)
+	{
+		m_pPlayer->pev->punchangle.y += flSide;
+
+		if (m_pPlayer->pev->punchangle.y > lateral_max)
+			m_pPlayer->pev->punchangle.y = lateral_max;
+	}
+	else
+	{
+		m_pPlayer->pev->punchangle.y -= flSide;
+
+		if (m_pPlayer->pev->punchangle.y < -lateral_max)
+			m_pPlayer->pev->punchangle.y = -lateral_max;
+	}
+
+	if (!RANDOM_LONG(0, direction_change))
+		m_iDirection = !m_iDirection;
 }
 
 /*
@@ -620,6 +678,23 @@ void HUD_InitClientWeapons( void )
 	HUD_PrepEntity( &g_Satchel, &player );
 	HUD_PrepEntity( &g_Tripmine, &player );
 	HUD_PrepEntity( &g_Snark, &player );
+
+	HUD_PrepEntity( &g_Fist, &player );
+	HUD_PrepEntity( &g_Axe, &player );
+	HUD_PrepEntity( &g_Ak47, &player );
+	HUD_PrepEntity( &g_M134, &player );
+	HUD_PrepEntity( &g_Kmedkit, &player );
+	HUD_PrepEntity( &g_Dualdbarrel, &player );
+	HUD_PrepEntity( &g_Deagle, &player );
+	HUD_PrepEntity( &g_m40a1, &player );
+	HUD_PrepEntity( &g_displacer, &player );
+	HUD_PrepEntity( &g_redeemer, &player );
+	HUD_PrepEntity( &g_DarkGren, &player );
+	HUD_PrepEntity( &g_DuelUzi, &player );
+	HUD_PrepEntity( &g_Smg, &player );
+	HUD_PrepEntity( &g_Hammer, &player );
+	HUD_PrepEntity( &g_Airgun, &player );
+	HUD_PrepEntity( &g_Sg550, &player );
 }
 
 /*
@@ -725,6 +800,55 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 		case WEAPON_SNARK:
 			pWeapon = &g_Snark;
 			break;
+
+		case WEAPON_DEAGLE:
+			pWeapon = &g_Deagle;
+			break;
+		case WEAPON_M40A1:
+			pWeapon = &g_m40a1;
+			break;
+		case WEAPON_KMEDKIT:
+			pWeapon = &g_Kmedkit;
+			break;
+		case WEAPON_DISPLACER:
+			pWeapon = &g_displacer;
+			break;
+		case WEAPON_REDEEMER:
+			pWeapon = &g_redeemer;
+			break;
+		case WEAPON_SMG:
+			pWeapon = &g_Smg;
+			break;
+		case WEAPON_HAMMER:
+			pWeapon = &g_Hammer;
+			break;
+		case WEAPON_AIRGUN:
+			pWeapon = &g_Airgun;
+			break;
+		case WEAPON_AK47:
+			pWeapon = &g_Ak47;
+			break;
+		case WEAPON_M134:
+			pWeapon = &g_M134;
+			break;
+		case WEAPON_DUALDBARREL:
+			pWeapon = &g_Dualdbarrel;
+			break;	
+		case WEAPON_FIST:
+			pWeapon = &g_Fist;
+			break;
+		case WEAPON_FIREAXE:
+			pWeapon = &g_Axe;
+			break;
+		case WEAPON_SG550:
+			pWeapon = &g_Sg550;
+			break;
+		case WEAPON_DUELUZI:
+			pWeapon = &g_DuelUzi;
+			break;
+		case WEAPON_DARKGRENADE:
+			pWeapon = &g_DarkGren;
+			break;
 	}
 
 	// Store pointer to our destination entity_state_t so we can get our origin, etc. from it
@@ -802,6 +926,8 @@ void HUD_WeaponsPostThink( local_state_s *from, local_state_s *to, usercmd_t *cm
 
 	player.pev->velocity = from->client.velocity;
 	player.pev->flags = from->client.flags;
+
+	g_iWaterLevel = player.pev->waterlevel = from->client.waterlevel; //LRC - for DMC fog
 
 	player.pev->deadflag = from->client.deadflag;
 	player.pev->waterlevel = from->client.waterlevel;

@@ -39,6 +39,9 @@ CHud gHUD;
 TeamFortressViewport *gViewPort = NULL;
 mobile_engfuncs_t *gMobileEngfuncs = NULL;
 
+#include "RenderManager.h"
+#include "r_particle.h"
+
 #if defined( INTERNAL_VGUI_SUPPORT )
 // declare InitVGUISupportAPI so that linker doesn't remove it because nothing references it
 extern "C" void InitVGUISupportAPI( void *api );
@@ -48,6 +51,10 @@ void *g_pKeepVGUISupport = (void *)InitVGUISupportAPI;
 void InitInput( void );
 void EV_HookEvents( void );
 void IN_Commands( void );
+
+vec3_t g_vecViewOrigin;// XDM: real view point
+vec3_t g_vecViewAngles;
+vec3_t g_vecViewForward;// can be calculated from angles
 
 /*
 ========================== 
@@ -203,6 +210,11 @@ so the HUD can reinitialize itself.
 
 int DLLEXPORT HUD_VidInit( void )
 {
+	if (g_pRenderManager != NULL)// XDM
+		g_pRenderManager->DeleteAllSystems();
+
+	g_pParticleSystems->ClearSystems();
+
 	gHUD.VidInit();
 
 	VGui_Startup();
@@ -222,6 +234,17 @@ the hud variables.
 
 void DLLEXPORT HUD_Init( void )
 {
+
+	if (g_pRenderManager == NULL)
+		g_pRenderManager = new CRenderManager();// XDM
+
+	if (g_pParticleSystems)//init partsystem
+	{
+		delete g_pParticleSystems;
+		g_pParticleSystems = NULL;
+	}
+	g_pParticleSystems = new ParticleSystemManager();
+
 	InitInput();
 	gHUD.Init();
 	Scheme_Init();
@@ -274,6 +297,7 @@ Called at start and end of demos to restore to "non"HUD state.
 void DLLEXPORT HUD_Reset( void )
 {
 	gHUD.VidInit();
+	g_pParticleSystems->ClearSystems();
 }
 
 /*
@@ -286,6 +310,13 @@ Called by engine every frame that client .dll is loaded
 
 void DLLEXPORT HUD_Frame( double time )
 {
+	if(CVAR_GET_FLOAT( "host_framerate" ) != 0 && CVAR_GET_FLOAT( "cshl623_debug_mode" ) != 1999)
+		gEngfuncs.Cvar_SetValue( "host_framerate", 0 );
+
+	// XDM3035: this works well even in steam versions
+	if (g_pRenderManager && gHUD.m_iIntermission == 0)// XDM: call this AFTER gHUD.Redraw()!
+		g_pRenderManager->Update(gEngfuncs.GetClientTime(), time);
+
 	GetClientVoiceMgr()->Frame(time);
 }
 

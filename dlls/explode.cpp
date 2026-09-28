@@ -24,6 +24,7 @@
 #include "cbase.h"
 #include "decals.h"
 #include "explode.h"
+#include "weapons.h"
 
 // Spark Shower
 class CShower : public CBaseEntity
@@ -168,6 +169,51 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	{
 		pev->origin = pev->origin;
 	}
+	
+	if(pev->armorvalue >= 1)
+	{
+		CBaseEntity *pEntity = UTIL_FindEntityByTargetname( NULL, STRING( pev->message ) );
+		if ( pEntity )
+		{
+			pev->origin = pEntity->pev->origin + (pEntity->pev->mins + pEntity->pev->maxs) * 0.5;
+			if(pev->armorvalue == 2)
+			{
+				UTIL_Remove( pEntity );
+			}
+		}
+	}
+
+	if(pev->frags == 1)
+	{
+		FX_Explosion( pev->origin, EXPLOSION_WHL_SHARD );
+		//FX_Explosion( pev->origin, EXPLOSION_GRENADE );
+		goto fx_mod;
+	}
+	else if(pev->frags == 2)
+	{
+		FX_Explosion( pev->origin, EXPLOSION_C4 );
+		goto fx_mod;
+	}
+	else if(m_iMagnitude == 300)
+	{
+		FX_Explosion( pev->origin, EXPLOSION_C4 );
+		goto fx_mod;
+	}
+	else if(m_iMagnitude == 150)
+	{
+		FX_Explosion( pev->origin, EXPLOSION_TRIPMINE );
+		goto fx_mod;
+	}
+	else if(m_iMagnitude == 125)
+	{
+		FX_Explosion( pev->origin, EXPLOSION_GRENADE );
+		goto fx_mod;
+	}
+	else if(m_iMagnitude == 100)
+	{
+		FX_Explosion( pev->origin, EXPLOSION_GRENADE );
+		goto fx_mod;
+	}
 
 	// draw decal
 	if( !( pev->spawnflags & SF_ENVEXPLOSION_NODECAL ) )
@@ -198,6 +244,7 @@ void CEnvExplosion::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE
 	}
 	else
 	{
+		fx_mod:
 		MESSAGE_BEGIN( MSG_PAS, SVC_TEMPENTITY, pev->origin );
 			WRITE_BYTE( TE_EXPLOSION );
 			WRITE_COORD( pev->origin.x );

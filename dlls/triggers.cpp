@@ -23,10 +23,16 @@
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
+#include "monsters.h"
+#include "schedule.h"
+#include "defaultai.h"
+#include "scripted.h"
 #include "player.h"
 #include "saverestore.h"
 #include "trains.h"			// trigger_camera has train functionality
 #include "gamerules.h"
+#include "shake.h"
+#include "weapons.h"
 
 #define	SF_TRIGGER_PUSH_START_OFF	2//spawnflag that makes trigger_push spawn turned OFF
 #define SF_TRIGGER_HURT_TARGETONCE	1// Only fire hurt target once
@@ -36,6 +42,8 @@
 #define SF_TRIGGER_HURT_CLIENTONLYTOUCH 32// only clients may touch this trigger.
 
 extern DLL_GLOBAL BOOL		g_fGameOver;
+extern DLL_GLOBAL int		g_ChangeLevelLimit;
+extern DLL_GLOBAL int		g_causality_add;
 
 extern void SetMovedir(entvars_t* pev);
 extern Vector VecBModelOrigin( entvars_t* pevBModel );
@@ -266,7 +274,8 @@ public:
 	virtual int Restore( CRestore &restore );
 
 	static TYPEDESCRIPTION m_SaveData[];
-
+	
+	int	m_rduse;
 	int m_cTargets; // the total number of targets in this manager's fire list.
 	int m_index;	// Current target
 	float m_startTime;// Time we started firing
@@ -286,10 +295,13 @@ private:
 };
 
 LINK_ENTITY_TO_CLASS( multi_manager, CMultiManager )
+LINK_ENTITY_TO_CLASS( multi_delete, CMultiManager );
+LINK_ENTITY_TO_CLASS( multi_random, CMultiManager );
 
 // Global Savedata for multi_manager
 TYPEDESCRIPTION	CMultiManager::m_SaveData[] =
 {
+	DEFINE_FIELD( CMultiManager, m_rduse, FIELD_INTEGER ),
 	DEFINE_FIELD( CMultiManager, m_cTargets, FIELD_INTEGER ),
 	DEFINE_FIELD( CMultiManager, m_index, FIELD_INTEGER ),
 	DEFINE_FIELD( CMultiManager, m_startTime, FIELD_TIME ),
@@ -306,7 +318,12 @@ void CMultiManager::KeyValue( KeyValueData *pkvd )
 	// if( !pkvd->fHandled )
 	// ... etc.
 
-	if( FStrEq( pkvd->szKeyName, "wait" ) )
+	if (FStrEq(pkvd->szKeyName, "rdnum"))
+	{
+		m_rduse = atof(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
+	else if(FStrEq(pkvd->szKeyName, "wait"))
 	{
 		m_flWait = atof( pkvd->szValue );
 		pkvd->fHandled = TRUE;
@@ -375,8 +392,27 @@ void CMultiManager::ManagerThink( void )
 	time = gpGlobals->time - m_startTime;
 	while( m_index < m_cTargets && m_flTargetDelay[m_index] <= time )
 	{
-		FireTargets( STRING( m_iTargetName[m_index] ), m_hActivator, this, USE_TOGGLE, 0 );
-		m_index++;
+		if(FClassnameIs(pev, "multi_random"))
+		{
+			if(m_rduse > m_cTargets)
+			{
+				m_rduse = m_cTargets;
+			}
+			FireTargets( STRING( m_iTargetName[ RANDOM_LONG(0,m_rduse) ] ), m_hActivator, this, USE_TOGGLE, 0 );
+			SetThink( NULL );
+			UTIL_Remove( this );
+			return;//only use once
+		}
+		else if(FClassnameIs(pev, "multi_delete"))
+		{
+			Remove_Targets( STRING( m_iTargetName[ m_index ] ), m_hActivator, this, USE_TOGGLE, 0 );
+			m_index++;
+		}
+		else
+		{
+			FireTargets( STRING( m_iTargetName[m_index] ), m_hActivator, this, USE_TOGGLE, 0 );
+			m_index++;
+		}
 	}
 
 	if( m_index >= m_cTargets )// have we fired all targets?
@@ -528,7 +564,7 @@ void CBaseTrigger::InitTrigger()
 	pev->solid = SOLID_TRIGGER;
 	pev->movetype = MOVETYPE_NONE;
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );    // set size and link into world
-	if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
+	//if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
 		SetBits( pev->effects, EF_NODRAW );
 }
 
@@ -564,6 +600,7 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( trigger_hurt, CTriggerHurt )
+LINK_ENTITY_TO_CLASS( trigger_movetype, CTriggerHurt );
 
 //
 // trigger_monsterjump
@@ -759,7 +796,7 @@ void CTargetCDAudio::Think( void )
 	if( !pClient )
 		return;
 
-	pev->nextthink = gpGlobals->time + 0.5f;
+	pev->nextthink = gpGlobals->time + 0.25f;
 
 	if( ( pClient->v.origin - pev->origin ).Length() <= pev->scale )
 		Play();
@@ -799,6 +836,11 @@ void CTriggerHurt::Spawn( void )
 
 	if( FBitSet( pev->spawnflags, SF_TRIGGER_HURT_START_OFF ) )// if flagged to Start Turned Off, make trigger nonsolid.
 		pev->solid = SOLID_NOT;
+	
+	if(pev->frags == 1419)
+	{
+		pev->flags |= FL_MONSTERCLIP;
+	}
 
 	UTIL_SetOrigin( pev, pev->origin );		// Link into the list
 }
@@ -855,7 +897,7 @@ void CTriggerHurt::RadiationThink( void )
 			pPlayer->m_flgeigerRange = flRange;
 	}
 
-	pev->nextthink = gpGlobals->time + 0.25f;
+	pev->nextthink = gpGlobals->time + 0.2f;
 }
 
 //
@@ -883,6 +925,160 @@ void CBaseTrigger::ToggleUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE
 void CBaseTrigger::HurtTouch( CBaseEntity *pOther )
 {
 	float fldmg;
+
+	if(pev->frags == 642)
+	{
+		if ( FClassnameIs(pOther->pev, "monster_generic_item") )
+		{
+			CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+			if(pEntity)
+			{
+				CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pEntity->pev);
+				if(pPlayer)
+				{
+					pPlayer->EnableControl(FALSE);
+					pPlayer->m_trainning = 1;
+					UTIL_ScreenFade( pPlayer, Vector(0,0,0), 4.0, 6.0, 255, FFADE_OUT );
+					pPlayer->m_iClient_Gameover = -1;
+					pPlayer->m_fGameOverTime = gpGlobals->time + 4;
+				}
+			}
+			return;
+		}
+		if(pev->dmg == 0)
+		{
+			return;
+		}
+	}
+
+	if(pev->frags == 114)
+	{
+		if ( (pOther->pev->flags & FL_MONSTER) || (pOther->pev->flags & FL_CLIENT) )
+		{
+			entvars_t* pevToucher = pOther->pev;
+			if ( !(pOther->pev->effects & EF_NODRAW) )
+			{
+				UTIL_SetOrigin( pevToucher, pevToucher->origin - Vector(0,0,10086) );
+				pOther->pev->health = 1;
+				pOther->TakeDamage( pev, pev, 1000, DMG_FALL );
+				pOther->pev->effects = EF_NODRAW;
+			}
+			return;
+		}
+	}
+
+	if(pev->frags == 762)
+	{
+		if ( (pOther->pev->flags & FL_MONSTER) )
+		{
+			entvars_t* pevToucher = pOther->pev;
+
+			if(pOther->Classify() == CLASS_PLAYER_ALLY && pOther->pev->weapons != 467)
+			{
+				if(pOther->pev->deadflag == DEAD_NO)
+				{
+					pOther->TakeDamage( pev, pev, 1000, DMG_FALL );
+				}
+				return;
+			}
+
+			if (pOther->pev->solid != SOLID_NOT)
+			{
+				//pOther->pev->effects = EF_NODRAW;
+				pOther->SetThink ( &CBaseTrigger::SUB_Remove );
+				pOther->pev->solid = SOLID_NOT;
+				pOther->pev->nextthink = gpGlobals->time + 0.1;
+			}
+			return;
+		}
+		else if ( (pOther->pev->flags & FL_CLIENT) )
+		{
+			entvars_t* pevToucher = pOther->pev;
+			if ( !(pOther->pev->effects & EF_NODRAW) )
+			{
+				UTIL_SetOrigin( pevToucher, pevToucher->origin - Vector(0,0,10086) );
+				pOther->pev->health = 1;
+				pOther->TakeDamage( pev, pev, 1000, DMG_FALL );
+				pOther->pev->effects = EF_NODRAW;
+			}
+			return;
+		}
+		else
+		{
+			entvars_t* pevToucher = pOther->pev;
+			if (pOther->pev->effects != EF_NODRAW)
+			{
+				pOther->pev->effects = EF_NODRAW;
+				pOther->SetThink ( &CBaseTrigger::SUB_Remove_fx );
+				pOther->pev->nextthink = gpGlobals->time;
+			}
+			return;
+		}
+	}
+
+	if(pev->frags == 763)
+	{
+		if ( (pOther->pev->flags & FL_CLIENT) )
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+			if(pPlayer)
+			{
+				if( pPlayer->m_mode_float2 != 520 )
+				{
+					pOther->TakeDamage( pev, pev, 1000, DMG_UNKNOWBLAST );
+				}
+					pPlayer->pev->velocity.x = RANDOM_LONG(-1000,1000);
+					pPlayer->pev->velocity.y = RANDOM_LONG(-1000,1000);
+					pPlayer->pev->velocity.z = 2000;
+				return;
+			}
+		}
+		else if(pOther->pev->movetype != MOVETYPE_NOCLIP && pOther->Classify() != CLASS_PLAYER_ALLY)
+		{
+			entvars_t* pevToucher = pOther->pev;
+			if (pOther->pev->effects != EF_NODRAW)
+			{
+				pOther->pev->effects = EF_NODRAW;
+				pOther->SetThink ( &CBaseTrigger::SUB_Remove_fx );
+				pOther->pev->nextthink = gpGlobals->time;
+			}
+		}
+		return;
+	}
+
+	if(pev->frags == 467)
+	{
+		if ( (pOther->pev->flags & FL_MONSTER) )
+		{
+			entvars_t* pevToucher = pOther->pev;
+			if ( pOther->pev->weapons == 0 )
+			{
+				pOther->pev->weapons = 467;
+				SET_MODEL(ENT(pOther->pev), "models/snake_women.mdl");
+				pOther->pev->body = 1;
+				UTIL_SetSize(pOther->pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+				EMIT_SOUND(ENT(pOther->pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart2old.wav", 1, 0.7);
+
+				MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY,pev->origin);
+				WRITE_BYTE(3);
+				WRITE_COORD( pOther->pev->origin.x );
+				WRITE_COORD( pOther->pev->origin.y );
+				WRITE_COORD( pOther->pev->origin.z);
+				WRITE_SHORT(g_sModelIndexCteleport);
+				WRITE_BYTE(15);
+				WRITE_BYTE(15);
+				WRITE_BYTE(4);
+				MESSAGE_END();
+			}
+			return;
+		}
+	}
+
+	if ( FClassnameIs(pev, "trigger_hurt") && !pOther->pev->takedamage )
+		return;
+
+	if ( (FClassnameIs(pev, "trigger_movetype") || (pev->spawnflags & SF_TRIGGER_HURT_NO_CLIENTS)) && pOther->IsPlayer() )
+		return;
 
 	if( !pOther->pev->takedamage )
 		return;
@@ -945,6 +1141,15 @@ void CBaseTrigger::HurtTouch( CBaseEntity *pOther )
 			// too early to hurt again, and not same frame with a different entity
 			return;
 		}
+
+		if(pev->frags == 1919)
+		{
+			if ( (pOther->pev->flags & FL_MONSTER) && pOther->pev->health > 0 )
+			{
+				UTIL_Remove( pOther );
+				return;
+			}
+		}
 	}
 
 	// If this is time_based damage (poison, radiation), override the pev->dmg with a 
@@ -952,7 +1157,7 @@ void CBaseTrigger::HurtTouch( CBaseEntity *pOther )
 	// while touching the trigger.  Player continues taking damage for a while after
 	// leaving the trigger
 
-	fldmg = pev->dmg * 0.5f;	// 0.5 seconds worth of damage, pev->dmg is damage/second
+	fldmg = pev->dmg;	// 0.5 seconds worth of damage, pev->dmg is damage/second
 
 	// JAY: Cut this because it wasn't fully realized.  Damage is simpler now.
 #if 0
@@ -983,21 +1188,31 @@ void CBaseTrigger::HurtTouch( CBaseEntity *pOther )
 		break;
 	}
 #endif
-	if( fldmg < 0 )
-	{
-		if( !( g_pGameRules->IsMultiplayer()
-		    && pOther->IsPlayer()
-		    && pOther->pev->deadflag ))
-			pOther->TakeHealth( -fldmg, m_bitsDamageInflict );
-	}
-	else
-		pOther->TakeDamage( pev, pev, fldmg, m_bitsDamageInflict );
 
+	if(FClassnameIs(pev, "trigger_hurt"))
+	{
+		if( fldmg < 0 )
+		{
+			if( !( g_pGameRules->IsMultiplayer() && pOther->IsPlayer() && pOther->pev->deadflag ))
+				pOther->TakeHealth( -fldmg, m_bitsDamageInflict );
+		}
+		else
+			pOther->TakeDamage( pev, pev, fldmg, m_bitsDamageInflict );
+	}
+	else if(FClassnameIs(pev, "trigger_movetype"))
+	{
+		if(pOther->pev->movetype != MOVETYPE_STEP)
+		{
+			pOther->pev->movetype = MOVETYPE_STEP;
+			pOther->pev->velocity = Vector(0,0,1);
+		}
+	}
+	
 	// Store pain time so we can get all of the other entities on this frame
 	pev->pain_finished = gpGlobals->time;
 
 	// Apply damage every half second
-	pev->dmgtime = gpGlobals->time + 0.5f;// half second delay until this trigger can hurt toucher again
+	pev->dmgtime = gpGlobals->time + 0.1f;// half second delay until this trigger can hurt toucher again
 
 	if( pev->target )
 	{
@@ -1086,10 +1301,17 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( trigger_once, CTriggerOnce )
+LINK_ENTITY_TO_CLASS( trigger_origin_wall, CTriggerOnce );
 
 void CTriggerOnce::Spawn( void )
 {
 	m_flWait = -1;
+
+	if(FClassnameIs(pev, "trigger_origin_wall"))
+	{
+		UTIL_SetSize (pev, pev->mins, pev->maxs);
+		UTIL_SetOrigin( pev, pev->origin - (pev->mins + pev->maxs)* 0.5 );
+	}
 
 	CTriggerMultiple::Spawn();
 }
@@ -1099,6 +1321,187 @@ void CBaseTrigger::MultiTouch( CBaseEntity *pOther )
 	entvars_t *pevToucher;
 
 	pevToucher = pOther->pev;
+
+	if(pev->frags == 1)
+	{
+		if((pevToucher->flags & FL_CLIENT) )
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+			if(pPlayer)
+			{
+				if(pPlayer->m_fBloodlyKey)
+				{
+					pPlayer->m_fBloodlyKey = FALSE;
+					pPlayer->MenuItem_remove(6);
+					ActivateMultiTrigger( pOther );
+				}
+				else
+				{
+					UTIL_CenterPrintAll( "Need Red Keys" );
+				}
+			}
+		}
+		return;
+	}
+	else if(pev->frags == 2)
+	{
+		if((pevToucher->flags & FL_CLIENT) )
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+			if(pPlayer)
+			{
+				if(pPlayer->m_fMask)
+				{
+					ActivateMultiTrigger( pOther );
+				}
+			}
+		}
+		return;
+	}
+	else if(pev->frags == 3)
+	{
+		if((pevToucher->flags & FL_CLIENT) )
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+			if(pPlayer)
+			{
+				if(pPlayer->m_fGlodenKey)
+				{
+					pPlayer->m_fGlodenKey -= 1;
+
+					pPlayer->MenuItem_remove(3);
+
+					ActivateMultiTrigger( pOther );
+				}
+				else
+				{
+					UTIL_CenterPrintAll( "Need Gold Keys" );
+				}
+			}
+		}
+		return;
+	}
+	else if(pev->frags == 4)
+	{
+		if((pevToucher->flags & FL_MONSTER) )
+		{
+			if(FClassnameIs(pevToucher, "monster_saintna"))
+			{
+				CBaseMonster *pSaintna = pOther->MyMonsterPointer( );
+				if(pSaintna)
+				{
+					pSaintna->m_FTSmod = 4;
+					ActivateMultiTrigger( pOther );
+				}	
+			}
+		}
+		return;
+	}
+	else if(pev->frags == 5)
+	{
+		if((pevToucher->flags & FL_CLIENT) )
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+			if(pPlayer)
+			{
+				if(pPlayer->m_fGreenCard)
+				{
+					pPlayer->m_fGreenCard = FALSE;
+					pPlayer->MenuItem_remove(7);
+					ActivateMultiTrigger( pOther );
+				}
+				else
+				{
+					UTIL_CenterPrintAll( "Need Green ID Card" );
+				}
+			}
+		}
+		return;
+	}
+	else if(pev->frags == 6)
+	{
+		if((pevToucher->flags & FL_CLIENT) )
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+			if(pPlayer)
+			{
+				if(pPlayer->m_fMoveItem)
+				{
+					if(pPlayer->m_fMoveItem->pev->weapons == 0)
+					{
+						pPlayer->m_fMoveItem->pev->movetype = MOVETYPE_NONE;
+						pPlayer->m_fMoveItem->pev->angles = g_vecZero;
+						pPlayer->m_fMoveItem->pev->solid = SOLID_NOT;
+						pPlayer->m_fMoveItem->pev->skin = CONTENTS_LADDER;
+
+						Vector vecsrc = pPlayer->pev->origin;
+						TraceResult tr;
+
+						pPlayer->m_fMoveItem = NULL;
+
+						SetTouch( NULL );
+						pev->nextthink = gpGlobals->time + 0.1;
+						SetThink(  &CBaseTrigger::SUB_Remove );
+					}
+				}
+			}
+		}
+		return;
+	}
+	else if(pev->frags == 7)
+	{
+		if((pevToucher->flags & FL_MONSTER) )
+		{
+			if(FClassnameIs(pevToucher, "monster_scientist"))
+			{
+				CBaseMonster *pDengor = pOther->MyMonsterPointer( );
+				if(pDengor)
+				{
+					ActivateMultiTrigger( pOther );
+				}	
+			}
+		}
+		return;
+	}
+	else if(pev->frags == 8)
+	{
+		if((pevToucher->flags & FL_MONSTER) )
+		{
+			if(FClassnameIs(pevToucher, "monster_dengor"))
+			{
+				CBaseMonster *pDengor = pOther->MyMonsterPointer( );
+				if(pDengor)
+				{
+					pDengor->m_iTriggerCondition = 0;
+					pDengor->m_godmode = FALSE;
+					ActivateMultiTrigger( pOther );
+					pevToucher->velocity = Vector(0,0,1);
+				}	
+			}
+		}
+		return;
+	}
+	else if(pev->frags == 9)
+	{
+		if((pevToucher->flags & FL_CLIENT) )
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pevToucher);
+			if(pPlayer)
+			{
+				if(pPlayer->m_fSecurityCard)
+				{
+					pPlayer->m_fSecurityCard = FALSE;
+					pPlayer->MenuItem_remove(8);
+					ActivateMultiTrigger( pOther );
+				}
+				else
+				{
+					UTIL_CenterPrintAll( "Need Security ID Card" );
+				}
+			}
+		}
+		return;
+	}
 
 	// Only touch clients, monsters, or pushables (depending on flags)
 	if( ( ( pevToucher->flags & FL_CLIENT ) && !( pev->spawnflags & SF_TRIGGER_NOCLIENTS ) ) ||
@@ -1464,6 +1867,9 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		return;
 	}
 
+	g_ChangeLevelLimit = pev->weapons;
+	g_causality_add = 0;
+
 	// Create an entity to fire the changetarget
 	if( m_changeTarget )
 	{
@@ -1495,6 +1901,12 @@ void CChangeLevel::ChangeLevelNow( CBaseEntity *pActivator )
 		gpGlobals->vecLandmarkOffset = VARS( pentLandmark )->origin;
 	}
 	//ALERT( at_console, "Level touches %d levels\n", ChangeList( levels, 16 ) );
+	CBasePlayer *pPlayer2 = GetClassPtr((CBasePlayer *)pActivator->pev);
+	if(pPlayer2 && pev->frags == 0)
+	{
+		pPlayer2->m_music_save = 0;
+		pPlayer2->pev->velocity = g_vecZero;
+	}
 	ALERT( at_console, "CHANGE LEVEL: %s %s\n", st_szNextMap, st_szNextSpot );
 	CHANGE_LEVEL( st_szNextMap, st_szNextSpot );
 }
@@ -1633,8 +2045,28 @@ int CChangeLevel::ChangeList( LEVELLIST *pLevelList, int maxList )
 				{
 					//ALERT( at_console, "Trying %s\n", STRING( pEntity->pev->classname ) );
 					int caps = pEntity->ObjectCaps();
+
+					if ( FClassnameIs(pEntity->pev,"cycler") )
+					{
+						goto save_false;
+					}
+
+					if ( g_ChangeLevelLimit == 1)
+					{
+						if(FBitSet( pEntity->pev->flags, FL_MONSTER ) || pEntity->pev->deadflag == DEAD_DEAD)
+						{
+							goto save_false;
+						}
+					}
+
+					if ( FClassnameIs(pEntity->pev,"grenade") )
+					{
+						goto save_jump;
+					}
+
 					if( !(caps & FCAP_DONT_SAVE ) )
 					{
+						save_jump:
 						int flags = 0;
 
 						// If this entity can be moved or is global, mark it
@@ -1655,6 +2087,8 @@ int CChangeLevel::ChangeList( LEVELLIST *pLevelList, int maxList )
 					}
 					//else
 					//	ALERT( at_console, "DON'T SAVE %s\n", STRING( pEntity->pev->classname ) );
+
+					save_false:;
 				}
 				pent = pent->v.chain;
 			}
@@ -1722,6 +2156,7 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( func_ladder, CLadder )
+LINK_ENTITY_TO_CLASS( func_ladder_new, CLadder );
 
 void CLadder::KeyValue( KeyValueData *pkvd )
 {
@@ -1736,12 +2171,20 @@ void CLadder::Precache( void )
 	// Do all of this in here because we need to 'convert' old saved games
 	pev->solid = SOLID_NOT;
 	pev->skin = CONTENTS_LADDER;
-	if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
+	/*if( CVAR_GET_FLOAT( "showtriggers" ) == 0 )
 	{
 		pev->rendermode = kRenderTransTexture;
 		pev->renderamt = 0;
+	}*/
+	if (FClassnameIs(pev, "func_ladder") )
+	{
+		pev->effects = EF_NODRAW;
 	}
-	pev->effects &= ~EF_NODRAW;
+	if(pev->spawnflags == 1)
+	{
+		pev->effects = EF_NODRAW;
+		pev->solid = SOLID_BBOX;
+	}
 }
 
 void CLadder::Spawn( void )
@@ -1749,7 +2192,15 @@ void CLadder::Spawn( void )
 	Precache();
 
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );    // set size and link into world
-	pev->movetype = MOVETYPE_PUSH;
+
+	if (FClassnameIs(pev, "func_ladder") )
+	{
+		pev->movetype = MOVETYPE_PUSH;
+	}
+	else
+	{
+		pev->movetype = MOVETYPE_NONE;  
+	}
 }
 
 // ========================== A TRIGGER THAT PUSHES YOU ===============================
@@ -1791,6 +2242,12 @@ void CTriggerPush::Spawn()
 
 	SetUse( &CBaseTrigger::ToggleUse );
 
+
+	if(pev->impulse == 2)
+	{
+		pev->flags |= FL_MONSTERCLIP;
+	}
+
 	UTIL_SetOrigin( pev, pev->origin );		// Link into the list
 }
 
@@ -1808,27 +2265,68 @@ void CTriggerPush::Touch( CBaseEntity *pOther )
 		return;
 	}
 
+	// Only teleport clients
+	if(pev->frags == 1)
+	{
+		if ( FBitSet( pevToucher->flags, FL_MONSTER ) )
+			return;
+	}
+	else if(pev->frags == 2)
+	{
+		if ( !FBitSet( pevToucher->flags, FL_MONSTER ) )
+			return;
+	}
+	else if(pev->frags == 3){
+		if ( FBitSet( pevToucher->flags, FL_MONSTER ) )
+		{
+			if(FBitSet( pevToucher->flags, FL_MONSTERCLIP ))
+			{
+				CBaseMonster *pEnemyMonster;
+				pEnemyMonster = pOther->MyMonsterPointer();
+				pEnemyMonster->RouteClear();
+				pEnemyMonster->ClearSchedule();
+			}
+			else
+				return;
+		}
+	}
+
 	if( pevToucher->solid != SOLID_NOT && pevToucher->solid != SOLID_BSP )
 	{
-		// Instant trigger, just transfer velocity and remove
-		if( FBitSet( pev->spawnflags, SF_TRIG_PUSH_ONCE ) )
+		if(pev->impulse == 1)
 		{
-			pevToucher->velocity = pevToucher->velocity + ( pev->speed * pev->movedir );
-			if( pevToucher->velocity.z > 0 )
-				pevToucher->flags &= ~FL_ONGROUND;
-			UTIL_Remove( this );
+			if ( (pevToucher->button & IN_JUMP) && pevToucher->waterlevel < 3 )
+			{
+				pevToucher->velocity = pevToucher->velocity + (0.1 * pev->speed * pev->movedir);
+			}
+			else
+			{
+				pevToucher->velocity = pevToucher->velocity + (pev->speed * pev->movedir);
+			}
+
 		}
 		else
 		{
-			// Push field, transfer to base velocity
-			Vector vecPush = pev->speed * pev->movedir;
-			if( pevToucher->flags & FL_BASEVELOCITY )
-				vecPush = vecPush + pevToucher->basevelocity;
+			// Instant trigger, just transfer velocity and remove
+			if( FBitSet( pev->spawnflags, SF_TRIG_PUSH_ONCE ) )
+			{
+				pevToucher->velocity = pevToucher->velocity + ( pev->speed * pev->movedir );
+				if( pevToucher->velocity.z > 0 )
+					pevToucher->flags &= ~FL_ONGROUND;
+				UTIL_Remove( this );
+			}
+			else
+			{
+				// Push field, transfer to base velocity
+				Vector vecPush = pev->speed * pev->movedir;
+				if( pevToucher->flags & FL_BASEVELOCITY )
+					vecPush = vecPush + pevToucher->basevelocity;
 
-			pevToucher->basevelocity = vecPush;
+				pevToucher->basevelocity = vecPush;
 
-			pevToucher->flags |= FL_BASEVELOCITY;
-			//ALERT( at_console, "Vel %f, base %f\n", pevToucher->velocity.z, pevToucher->basevelocity.z );
+				pevToucher->flags |= FL_BASEVELOCITY;
+				//ALERT( at_console, "Vel %f, base %f\n", pevToucher->velocity.z, pevToucher->basevelocity.z );
+			}
 		}
 	}
 }
@@ -1839,6 +2337,7 @@ void CTriggerPush::Touch( CBaseEntity *pOther )
 //
 void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 {
+	int ss = 0;
 	entvars_t *pevToucher = pOther->pev;
 	edict_t	*pentTarget = NULL;
 
@@ -1867,11 +2366,160 @@ void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 		}
 	}
 
+	if(pev->frags == 7)
+	{
+		if( !pOther->IsPlayer() )
+			return;
+		
+		if ( !(pOther->pev->flags & FL_DUCKING) )
+			return;		
+	}
+
+	if(pev->frags == 12)
+	{
+		if ( !pOther->IsPlayer() )
+			return;
+			
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+		UTIL_ScreenFade( pPlayer, Vector(32,255,32), 1, 1, 255, FFADE_IN );
+		EMIT_SOUND(ENT(pOther->pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart10.wav", 1, 0.7);	
+		pPlayer->m_teleprort_in_xen = 0;
+		UTIL_SetOrigin( pevToucher, pPlayer->m_old_teleprort_origin );
+		pPlayer->m_flVelocityModifier -= 1;
+		return;
+	}
+
+	if(pev->frags == 17)
+	{
+		if ( !pOther->IsPlayer() )
+			return;
+				
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+		UTIL_ScreenFade( pPlayer, Vector(32,255,32), 1, 1, 255, FFADE_IN );
+		EMIT_SOUND(ENT(pOther->pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart10.wav", 1, 0.7);	
+		pPlayer->m_teleprort_in_xen = 1;
+		UTIL_SetOrigin( pevToucher, pPlayer->m_old_teleprort_origin );
+		pPlayer->m_flVelocityModifier -= 1;
+		return;
+	}
+
 	pentTarget = FIND_ENTITY_BY_TARGETNAME( pentTarget, STRING( pev->target ) );
 	if( FNullEnt( pentTarget ) )
 	   return;	
 
 	Vector tmp = VARS( pentTarget )->origin;
+
+	if (pev->frags == 8) 
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+
+		if (!strcmp(STRING(gpGlobals->mapname), "c4a1_wdoor") && FStrEq(STRING(pev->target), "player_teleport_chang")) 
+		{
+			pPlayer->pev->velocity.x = RANDOM_LONG(-1000, 1000);
+			pPlayer->pev->velocity.y = RANDOM_LONG(-1000, 1000);
+			pPlayer->pev->velocity.z = 2000;
+			return;
+		}
+
+		if (pPlayer->m_team_npc1 != NULL) 
+		{
+			if (pev->armortype == 2) 
+			{
+				UTIL_SetOrigin(pPlayer->m_team_npc1->pev, tmp + Vector(128, 0, -36));
+			} 
+			else
+			
+			{
+				UTIL_SetOrigin(pPlayer->m_team_npc1->pev, tmp + Vector(96, 0, -36));
+			}
+		}
+		if (pPlayer->m_team_npc2 != NULL) 
+		{
+			if (pev->armortype == 2) 
+			{
+				UTIL_SetOrigin(pPlayer->m_team_npc2->pev, tmp + Vector(256, 0, -36));
+			} 
+			else 
+			{
+				UTIL_SetOrigin(pPlayer->m_team_npc2->pev, tmp + Vector(-96, 0, -36));
+			}
+		}
+		if (pPlayer->m_team_npc3 != NULL) {
+			if (pev->armortype == 2) 
+			{
+				UTIL_SetOrigin(pPlayer->m_team_npc3->pev, tmp + Vector(-128, 0, -36));
+			} 
+			else 
+			{
+				UTIL_SetOrigin(pPlayer->m_team_npc3->pev, tmp + Vector(0, 96, -36));
+			}
+		}
+		if (pPlayer->m_team_npc4 != NULL) 
+		{
+			if (pev->armortype == 2) 
+			{
+				UTIL_SetOrigin(pPlayer->m_team_npc4->pev, tmp + Vector(-256, 0, -36));
+			} 
+			else
+			{
+				UTIL_SetOrigin(pPlayer->m_team_npc4->pev, tmp + Vector(0, -96, -36));
+			}
+		}
+	}
+
+	if (pev->frags == 13 || pev->frags == 16) 
+	{
+		CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+		if (pPlayer->m_team_npc1 != NULL) 
+		{
+			UTIL_SetOrigin(pPlayer->m_team_npc1->pev, tmp + Vector(64, 0, -36));
+		}
+		if (pPlayer->m_team_npc2 != NULL) 
+		{
+			UTIL_SetOrigin(pPlayer->m_team_npc2->pev, tmp + Vector(-64, 0, -36));
+		}
+		if (pPlayer->m_team_npc3 != NULL) 
+		{
+			UTIL_SetOrigin(pPlayer->m_team_npc3->pev, tmp + Vector(0, 64, -36));
+		}
+		if (pPlayer->m_team_npc4 != NULL) 
+		{
+			UTIL_SetOrigin(pPlayer->m_team_npc4->pev, tmp + Vector(0, -64, -36));
+		}
+		if (pPlayer->m_team_npc5 != NULL) 
+		{
+			UTIL_SetOrigin(pPlayer->m_team_npc5->pev, tmp + Vector(-64, -64, -36));
+		}
+		if (pPlayer->m_team_npc6 != NULL) 
+		{
+			UTIL_SetOrigin(pPlayer->m_team_npc6->pev, tmp + Vector(64, 64, -36));
+		}
+		if (pPlayer->m_team_npc7 != NULL) 
+		{
+			UTIL_SetOrigin(pPlayer->m_team_npc7->pev, tmp + Vector(64, -64, -36));
+		}
+		if (pPlayer->m_team_npc8 != NULL) 
+		{
+			UTIL_SetOrigin(pPlayer->m_team_npc8->pev, tmp + Vector(-64, 64, -36));
+		}
+		if (pPlayer->m_team_npc9 != NULL) 
+		{
+			UTIL_SetOrigin(pPlayer->m_team_npc9->pev, tmp + Vector(128, 0, -36));
+		}
+		if (pPlayer->m_team_npc10 != NULL) 
+		{
+			UTIL_SetOrigin(pPlayer->m_team_npc10->pev, tmp + Vector(-128, 0, -36));
+		}
+		if (pPlayer->m_team_npc11 != NULL) 
+		{
+			UTIL_SetOrigin(pPlayer->m_team_npc11->pev, tmp + Vector(0, 128, -36));
+		}
+		if (pPlayer->m_team_npc12 != NULL) 
+		{
+			UTIL_SetOrigin(pPlayer->m_team_npc12->pev, tmp + Vector(0, -128, -36));
+		}
+	}
+
 
 	if( pOther->IsPlayer() )
 	{
@@ -1889,10 +2537,104 @@ void CBaseTrigger::TeleportTouch( CBaseEntity *pOther )
 	if( pOther->IsPlayer() )
 	{
 		pevToucher->v_angle = pentTarget->v.angles;
+
+		if(pev->frags == 1)
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+			UTIL_ScreenFade( pPlayer, Vector(255,64,255), 1, 1, 255, FFADE_IN );
+			EMIT_SOUND(ENT(pOther->pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart10.wav", 1, 0.7);	
+		}
+		else if(pev->frags == 2 || pev->frags == 16)
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+			UTIL_ScreenFade( pPlayer, Vector(32,255,32), 1, 1, 255, FFADE_IN );
+			EMIT_SOUND(ENT(pOther->pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart10.wav", 1, 0.7);	
+		}
+		else if(pev->frags == 3)
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+			UTIL_ScreenFade( pPlayer, Vector(0,0,0), 1, 1, 255, FFADE_IN );
+			EMIT_SOUND(ENT(pOther->pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart10.wav", 1, 0.7);	
+		}
+		else if(pev->frags == 4)
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+			UTIL_ScreenFade( pPlayer, Vector(255,255,255), 1, 1, 255, FFADE_IN );
+			EMIT_SOUND(ENT(pOther->pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart10.wav", 1, 0.7);	
+		}
+		else if(pev->frags == 5)
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+			UTIL_ScreenFade( pPlayer, Vector(0,0,0), 1, 1, 255, FFADE_IN );
+			pPlayer->m_ending_frags -= 5;//����ڰ�·����Ʒֵ-5%
+			EMIT_SOUND(ENT(pOther->pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart10.wav", 1, 0.7);	
+		}
+		else if(pev->frags == 6)
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+			UTIL_ScreenFade( pPlayer, Vector(0,0,0), 1, 1, 255, FFADE_IN );
+			EMIT_SOUND(ENT(pOther->pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart10.wav", 1, 0.7);	
+			SERVER_COMMAND("mp3 stop\n");
+			pPlayer->m_music_save = 0;
+			pPlayer->Clear_SayText();
+		}
+		else if(pev->frags == 7)
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+			UTIL_ScreenFade( pPlayer, Vector(0,0,0), 1, 1, 255, FFADE_IN );
+			EMIT_SOUND(ENT(pOther->pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart10.wav", 1, 0.7);
+			pevToucher->flags &= ~FL_DUCKING;
+			pPlayer->pev->view_ofs = VEC_VIEW;
+		}
+		else if(pev->frags == 9)
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+			UTIL_ScreenFade( pPlayer, Vector(64,0,0), 1, 1, 255, FFADE_IN );
+			EMIT_SOUND(ENT(pOther->pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart10.wav", 1, 0.7);	
+			SERVER_COMMAND("mp3 stop\n");
+			pPlayer->m_music_save = 0;
+			pPlayer->m_flash_mode = 1;
+			pPlayer->Clear_SayText();
+		}
+		if(pev->frags == 10)
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+			UTIL_ScreenFade( pPlayer, Vector(32,255,32), 1, 1, 255, FFADE_IN );
+			EMIT_SOUND(ENT(pOther->pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart10.wav", 1, 0.7);	
+			pPlayer->m_teleprort_in_xen = 1;
+			pPlayer->m_flVelocityModifier -= 1;
+		}
+		if(pev->frags == 11)
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+			UTIL_ScreenFade( pPlayer, Vector(32,255,32), 1, 1, 255, FFADE_IN );
+			EMIT_SOUND(ENT(pOther->pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart10.wav", 1, 0.7);	
+			pPlayer->m_teleprort_in_xen = 0;
+			pPlayer->m_flVelocityModifier -= 1;
+		}
+		else if(pev->frags == 14)
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+			UTIL_ScreenFade( pPlayer, Vector(0,0,0), 1, 1, 255, FFADE_IN );
+			pPlayer->TeamMate_Nagamatagi_Allclear(3);//��ն����ֹ
+			pPlayer->m_flVelocityModifier -= 1;
+		}
+		else if(pev->frags == 15)
+		{
+				CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pOther->pev);
+				UTIL_ScreenFade( pPlayer, Vector(0,0,0), 2, 2, 255, FFADE_IN );
+				pPlayer->m_flVelocityModifier -= 4;
+		}
+	}
+
+	if ( pev->message )
+	{
+		FireTargets( STRING(pev->message), this, this, USE_TOGGLE, 0 );
 	}
 
 	pevToucher->fixangle = TRUE;
-	pevToucher->velocity = pevToucher->basevelocity = g_vecZero;
+	if(pev->armortype != 1)
+		pevToucher->velocity = pevToucher->basevelocity = g_vecZero;
 }
 
 class CTriggerTeleport : public CBaseTrigger
@@ -1911,6 +2653,41 @@ void CTriggerTeleport::Spawn( void )
 }
 
 LINK_ENTITY_TO_CLASS( info_teleport_destination, CPointEntity )
+
+class CTriggerAlert : public CBaseTrigger
+{
+public:
+	void Spawn( void );
+	void EXPORT AlertTouch( CBaseEntity *pOther );
+};
+LINK_ENTITY_TO_CLASS( trigger_alert, CTriggerAlert );
+
+void CTriggerAlert::Spawn( void )
+{
+	InitTrigger();
+	SetTouch( &CTriggerAlert::AlertTouch );
+}
+
+void CTriggerAlert::AlertTouch( CBaseEntity *pOther )
+{
+	if ( !UTIL_IsMasterTriggered( m_sMaster, pOther ) )
+		return;
+
+	if(pev->frags == 1){
+		if ( FBitSet( pOther->pev->flags, FL_MONSTER ) )
+		{
+			if (FClassnameIs(pOther->pev, "monster_kadoma")){//kadoma�������
+				CBaseMonster *pEnemyMonster;
+				pEnemyMonster = pOther->MyMonsterPointer();
+				pEnemyMonster->pev->sequence = pEnemyMonster->LookupActivity ( ACT_MELEE_ATTACK1 );
+				pEnemyMonster->ResetSequenceInfo( );
+				pEnemyMonster->pev->frame = 0;
+				SetTouch( NULL );
+				UTIL_Remove( this );
+			}
+		}
+	}
+}
 
 class CTriggerSave : public CBaseTrigger
 {
@@ -2229,7 +3006,7 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	}
 
 	// Nothing to look at!
-	if( m_hTarget == 0 )
+	if( m_hTarget == 0 && pev->frags == 0 )
 	{
 		return;
 	}
@@ -2237,6 +3014,12 @@ void CTriggerCamera::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYP
 	if( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) )
 	{
 		( (CBasePlayer *)pActivator )->EnableControl( FALSE );
+	}
+
+	if(pev->frags == 1)
+	{
+		((CBasePlayer *)pActivator)->m_iNVG = 1;
+		((CBasePlayer *)pActivator)->Clear_SayText();
 	}
 
 	if( m_sPath )
@@ -2288,54 +3071,79 @@ void CTriggerCamera::FollowTarget()
 	if( m_hPlayer == 0 )
 		return;
 
-	if( m_hTarget == 0 || m_flReturnTime < gpGlobals->time )
+	if(pev->frags == 1)
 	{
-		if( m_hPlayer->IsAlive() )
+		if (m_flReturnTime < gpGlobals->time)
 		{
-			SET_VIEW( m_hPlayer->edict(), m_hPlayer->edict() );
-			( (CBasePlayer *)( (CBaseEntity *)m_hPlayer ) )->EnableControl( TRUE );
+			if (m_hPlayer->IsAlive( ))
+			{
+				SET_VIEW( m_hPlayer->edict(), m_hPlayer->edict() );
+				((CBasePlayer *)((CBaseEntity *)m_hPlayer))->EnableControl(TRUE);
+				((CBasePlayer *)((CBaseEntity *)m_hPlayer))->m_iNVG = 0;
+			}
+			SUB_UseTargets( this, USE_TOGGLE, 0 );
+			pev->avelocity = Vector( 0, 0, 0 );
+			m_state = 0;
+			return;
 		}
-		SUB_UseTargets( this, USE_TOGGLE, 0 );
-		pev->avelocity = Vector( 0, 0, 0 );
-		m_state = 0;
-		return;
+		pev->angles.x = -m_hPlayer->pev->angles.x;
+		pev->angles.y = m_hPlayer->pev->angles.y;
+		pev->angles.z = m_hPlayer->pev->angles.z;
+
+		pev->nextthink = gpGlobals->time;
 	}
-
-	Vector vecGoal = UTIL_VecToAngles( m_hTarget->pev->origin - pev->origin );
-	vecGoal.x = -vecGoal.x;
-
-	if( pev->angles.y > 360 )
-		pev->angles.y -= 360;
-
-	if( pev->angles.y < 0 )
-		pev->angles.y += 360;
-
-	float dx = vecGoal.x - pev->angles.x;
-	float dy = vecGoal.y - pev->angles.y;
-
-	if( dx < -180 )
-		dx += 360;
-	if( dx > 180 )
-		dx = dx - 360;
-	
-	if( dy < -180 ) 
-		dy += 360;
-	if( dy > 180 ) 
-		dy = dy - 360;
-
-	pev->avelocity.x = dx * 40 * 0.01f;
-	pev->avelocity.y = dy * 40 * 0.01f;
-
-	if( !( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) ) )
+	else
 	{
-		pev->velocity = pev->velocity * 0.8f;
-		if( pev->velocity.Length() < 10.0f )
-			pev->velocity = g_vecZero;
+		if( m_hTarget == 0 || m_flReturnTime < gpGlobals->time )
+		{
+			if( m_hPlayer->IsAlive() )
+			{
+				SET_VIEW( m_hPlayer->edict(), m_hPlayer->edict() );
+				( (CBasePlayer *)( (CBaseEntity *)m_hPlayer ) )->EnableControl( TRUE );
+			}
+			SUB_UseTargets( this, USE_TOGGLE, 0 );
+			pev->avelocity = Vector( 0, 0, 0 );
+			m_state = 0;
+			return;
+		}
+		
+
+		Vector vecGoal = UTIL_VecToAngles( m_hTarget->pev->origin - pev->origin );
+		vecGoal.x = -vecGoal.x;
+
+		if( pev->angles.y > 360 )
+			pev->angles.y -= 360;
+
+		if( pev->angles.y < 0 )
+			pev->angles.y += 360;
+
+		float dx = vecGoal.x - pev->angles.x;
+		float dy = vecGoal.y - pev->angles.y;
+
+		if( dx < -180 )
+			dx += 360;
+		if( dx > 180 )
+			dx = dx - 360;
+		
+		if( dy < -180 ) 
+			dy += 360;
+		if( dy > 180 ) 
+			dy = dy - 360;
+
+		pev->avelocity.x = dx * 40 * 0.01f;
+		pev->avelocity.y = dy * 40 * 0.01f;
+
+		if( !( FBitSet( pev->spawnflags, SF_CAMERA_PLAYER_TAKECONTROL ) ) )
+		{
+			pev->velocity = pev->velocity * 0.8f;
+			if( pev->velocity.Length() < 10.0f )
+				pev->velocity = g_vecZero;
+		}
+
+		pev->nextthink = gpGlobals->time;
+
+		Move();
 	}
-
-	pev->nextthink = gpGlobals->time;
-
-	Move();
 }
 
 void CTriggerCamera::Move()

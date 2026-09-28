@@ -34,6 +34,8 @@ DECLARE_MESSAGE( m_StatusBar, StatusValue )
 float *GetClientColor( int clientIndex );
 extern float g_ColorYellow[3];
 
+extern int iMouseInUse;
+
 int CHudStatusBar::Init( void )
 {
 	gHUD.AddHudElem( this );
@@ -43,7 +45,7 @@ int CHudStatusBar::Init( void )
 
 	Reset();
 
-	CVAR_CREATE( "hud_centerid", "0", FCVAR_ARCHIVE );
+	CVAR_CREATE( "hud_centerid", "1", FCVAR_ARCHIVE );
 
 	return 1;
 }
@@ -173,6 +175,9 @@ void CHudStatusBar::ParseStatusString( int line_num )
 
 int CHudStatusBar::Draw( float fTime )
 {
+	if ( iMouseInUse )
+		return 1;
+		
 	if( m_bReparseString )
 	{
 		for( int i = 0; i < MAX_STATUSBAR_LINES; i++ )

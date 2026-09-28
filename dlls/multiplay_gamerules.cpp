@@ -133,7 +133,7 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	// override some values for multiplay.
 
 	// suitcharger
-	gSkillData.suitchargerCapacity = 30;
+	/*gSkillData.suitchargerCapacity = 30;
 
 	// Crowbar whack
 	gSkillData.plrDmgCrowbar = 25;
@@ -173,7 +173,7 @@ void CHalfLifeMultiplay::RefreshSkillData( void )
 	gSkillData.plrDmgTripmine = 150;
 
 	// hornet
-	gSkillData.plrDmgHornet = 10;
+	gSkillData.plrDmgHornet = 10;*/
 }
 
 // longest the intermission can last, in seconds
@@ -298,7 +298,7 @@ BOOL CHalfLifeMultiplay::IsCoOp( void )
 //=========================================================
 BOOL CHalfLifeMultiplay::FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pWeapon )
 {
-	if( !pWeapon->CanDeploy() )
+	/*if( !pWeapon->CanDeploy() )
 	{
 		// that weapon can't deploy anyway.
 		return FALSE;
@@ -330,7 +330,7 @@ BOOL CHalfLifeMultiplay::FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerI
 	if( pWeapon->iWeight() > pPlayer->m_pActiveItem->iWeight() )
 	{
 		return TRUE;
-	}
+	}*/
 
 	return FALSE;
 }
@@ -339,7 +339,8 @@ BOOL CHalfLifeMultiplay::FShouldSwitchWeapon( CBasePlayer *pPlayer, CBasePlayerI
 //=========================================================
 BOOL CHalfLifeMultiplay::GetNextBestWeapon( CBasePlayer *pPlayer, CBasePlayerItem *pCurrentWeapon )
 {
-	return HLGetNextBestWeapon( pPlayer, pCurrentWeapon );
+	//return HLGetNextBestWeapon( pPlayer, pCurrentWeapon );
+	return TRUE;
 }
 
 //=========================================================
@@ -363,7 +364,7 @@ void CHalfLifeMultiplay::UpdateGameMode( CBasePlayer *pPlayer )
 void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 {
 	// notify other clients of player joining the game
-	UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s has joined the game\n", 
+	/*UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s has joined the game\n", 
 		( pl->pev->netname && ( STRING( pl->pev->netname ) )[0] != 0 ) ? STRING( pl->pev->netname ) : "unconnected" ) );
 
 	// team match?
@@ -421,14 +422,14 @@ void CHalfLifeMultiplay::InitHUD( CBasePlayer *pl )
 	{
 		MESSAGE_BEGIN( MSG_ONE, SVC_INTERMISSION, NULL, pl->edict() );
 		MESSAGE_END();
-	}
+	}*/
 }
 
 //=========================================================
 //=========================================================
 void CHalfLifeMultiplay::ClientDisconnected( edict_t *pClient )
 {
-	if( pClient )
+	/*if( pClient )
 	{
 		CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance( pClient );
 
@@ -456,14 +457,14 @@ void CHalfLifeMultiplay::ClientDisconnected( edict_t *pClient )
 
 			pPlayer->RemoveAllItems( TRUE );// destroy all of the players weapons and items
 		}
-	}
+	}*/
 }
 
 //=========================================================
 //=========================================================
 float CHalfLifeMultiplay::FlPlayerFallDamage( CBasePlayer *pPlayer )
 {
-	int iFallDamage = (int)falldamage.value;
+	/*int iFallDamage = (int)falldamage.value;
 
 	switch( iFallDamage )
 	{
@@ -477,7 +478,9 @@ float CHalfLifeMultiplay::FlPlayerFallDamage( CBasePlayer *pPlayer )
 		// fixed
 		return 10;
 		break;
-	}
+	}*/
+
+	return 10;
 } 
 
 //=========================================================
@@ -491,7 +494,7 @@ BOOL CHalfLifeMultiplay::FPlayerCanTakeDamage( CBasePlayer *pPlayer, CBaseEntity
 //=========================================================
 void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 {
-	if( g_fGameOver )
+	/*if( g_fGameOver )
 	{
 		// check for button presses
 		if( pPlayer->m_afButtonPressed & ( IN_DUCK | IN_ATTACK | IN_ATTACK2 | IN_USE | IN_JUMP ) )
@@ -501,14 +504,14 @@ void CHalfLifeMultiplay::PlayerThink( CBasePlayer *pPlayer )
 		pPlayer->m_afButtonPressed = 0;
 		pPlayer->pev->button = 0;
 		pPlayer->m_afButtonReleased = 0;
-	}
+	}*/
 }
 
 //=========================================================
 //=========================================================
 void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 {
-	BOOL		addDefault;
+	/*BOOL		addDefault;
 	CBaseEntity	*pWeaponEntity = NULL;
 	int 		iOldAutoWepSwitch;
 
@@ -532,7 +535,7 @@ void CHalfLifeMultiplay::PlayerSpawn( CBasePlayer *pPlayer )
 		pPlayer->GiveAmmo( 68, "9mm", _9MM_MAX_CARRY );// 4 full reloads
 	}
 
-	pPlayer->m_iAutoWepSwitch = iOldAutoWepSwitch;
+	pPlayer->m_iAutoWepSwitch = iOldAutoWepSwitch;*/
 }
 
 //=========================================================
@@ -568,7 +571,7 @@ int CHalfLifeMultiplay::IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKi
 //=========================================================
 void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor )
 {
-	CBasePlayer *peKiller = NULL;
+	/*CBasePlayer *peKiller = NULL;
 	CBaseEntity *ktmp = CBaseEntity::Instance( pKiller );
 	if( ktmp && (ktmp->Classify() == CLASS_PLAYER ) )
 		peKiller = (CBasePlayer*)ktmp;
@@ -633,16 +636,16 @@ void CHalfLifeMultiplay::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller,
 
 		// let the killer paint another decal as soon as he'd like.
 		PK->m_flNextDecalTime = gpGlobals->time;
-	}
+	}*/
 }
 
 //=========================================================
 // Deathnotice. 
 //=========================================================
-void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor )
+void CHalfLifeMultiplay::DeathNotice( CBaseEntity *pVictim, entvars_t *pKiller, entvars_t *pevInflictor, int type )
 {
 	// Work out what killed the player, and send a message to all clients about it
-	CBaseEntity::Instance( pKiller );
+	/*CBaseEntity::Instance( pKiller );
 
 	const char *killer_weapon_name = "world";		// by default, the player is killed by the world
 	int killer_index = 0;
@@ -786,7 +789,7 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 		else
 			WRITE_SHORT( ENTINDEX( ENT( pKiller ) ) );	// index number of secondary entity
 		WRITE_LONG( 7 | DRC_FLAG_DRAMATIC );   // eventflags (priority and flags)
-	MESSAGE_END();
+	MESSAGE_END();*/
 
 //  Print a standard message
 	// TODO: make this go direct to console
@@ -1678,9 +1681,9 @@ int CMultiplayBusters::IPointsForKill( CBasePlayer *pAttacker, CBasePlayer *pKil
 }
 void CMultiplayBusters::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pevInflictor )
 {
-	if( IsPlayerBusting( pVictim )
+	/*if( IsPlayerBusting( pVictim )
 	    || IsPlayerBusting( CBaseEntity::Instance( pKiller )))
-		CHalfLifeMultiplay::DeathNotice( pVictim, pKiller, pevInflictor );
+		CHalfLifeMultiplay::DeathNotice( pVictim, pKiller, pevInflictor );*/
 }
 
 void CMultiplayBusters::PlayerKilled( CBasePlayer *pVictim, entvars_t *pKiller, entvars_t *pInflictor )

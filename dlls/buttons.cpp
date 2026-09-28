@@ -25,6 +25,7 @@
 #include "cbase.h"
 #include "saverestore.h"
 #include "doors.h"
+#include "player.h" 
 
 #define SF_BUTTON_DONTMOVE		1
 #define SF_ROTBUTTON_NOTSOLID		1
@@ -576,6 +577,9 @@ const char *ButtonSound( int sound )
 		case 14:
 			pszSound = "buttons/lightswitch2.wav";
 			break;
+		case 15: 
+			pszSound = "doors/door_wood_locked1.wav";
+			break;
 
 		// next 6 slots reserved for any additional sliding button sounds we may add
 
@@ -653,6 +657,27 @@ void CBaseButton::ButtonUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_
 		return;
 
 	m_hActivator = pActivator;
+
+	if ( m_hActivator != NULL && pev->impulse == 1 )
+	{
+		if((m_hActivator->pev->flags & FL_CLIENT))
+			return;
+	}
+	else if ( m_hActivator != NULL && pev->impulse == 2 )
+	{
+		if((m_hActivator->pev->flags & FL_CLIENT))
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)m_hActivator->pev);
+			if(pPlayer->m_mode_int2 != -1)
+				return;
+			else
+			{
+				pPlayer->m_mode_int2 = pev->weapons;
+				pev->impulse = 0;
+			}
+		}
+	}
+
 	if( m_toggle_state == TS_AT_TOP )
 	{
 		if( !m_fStayPushed && FBitSet( pev->spawnflags, SF_BUTTON_TOGGLE ) )
@@ -729,6 +754,134 @@ void CBaseButton::ButtonTouch( CBaseEntity *pOther )
 //
 void CBaseButton::ButtonActivate()
 {
+	if(pev->frags >= 1 && pev->frags <= 8)
+	{
+		CBaseEntity *pEntity = NULL;
+		while ((pEntity = UTIL_FindEntityInSphere( pEntity, Vector(0,0,0), 8192 )) != NULL)
+		{
+			if ( FClassnameIs( pEntity->pev, "draw_event" ) )
+			{
+				if(pev->frags == 1 && pEntity->pev->armortype == 1)
+				{
+					pEntity->pev->weapons = 1;
+					pev->frags = 0;
+					break;
+				}
+				else if(pev->frags == 3 && pEntity->pev->armortype == 3)
+				{
+					pEntity->pev->weapons = 1;
+					pev->frags = 0;
+					break;
+				}
+				else if(pev->frags == 4 && pEntity->pev->armortype == 4)
+				{
+					pEntity->pev->weapons = 1;
+					pev->frags = 0;
+					break;
+				}
+				else if(pev->frags == 5 && pEntity->pev->armortype == 5)
+				{
+					pEntity->pev->weapons = 1;
+					pev->frags = 0;
+					break;
+				}
+				else if(pev->frags == 6 && pEntity->pev->armortype == 6)
+				{
+					pEntity->pev->weapons = 1;
+					pev->frags = 0;
+					break;
+				}
+				else if(pev->frags == 7 && pEntity->pev->armortype == 7)
+				{
+					pEntity->pev->weapons = 1;
+					pev->frags = 0;
+					break;
+				}
+				else if(pev->frags == 8 && pEntity->pev->armortype == 8)
+				{
+					pEntity->pev->weapons = 1;
+					pev->frags = 0;
+					break;
+				}
+			}
+		}
+
+		if(pev->frags != 0)
+		{
+			if ( (m_hActivator->pev->flags & FL_CLIENT) )
+			{
+				CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)m_hActivator->pev);
+				pPlayer->m_mode_int2 = 1;
+				pev->frags = 0;
+			}
+		}
+	}
+
+	if(pev->frags >= 60 && pev->frags <= 70)
+	{
+		if ( (m_hActivator->pev->flags & FL_CLIENT) )
+		{
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)m_hActivator->pev);
+			if(pPlayer->m_rpg_password_light1 == 1 && pPlayer->m_rpg_password_light2 == 1
+			&& pPlayer->m_rpg_password_light3 == 1 && pPlayer->m_rpg_password_light4 == 1
+			&& pPlayer->m_rpg_password_light5 == 1 && pPlayer->m_rpg_password_light6 == 1
+			&& pPlayer->m_rpg_password_light7 == 1 && pPlayer->m_rpg_password_light8 == 1
+			&& pPlayer->m_rpg_password_light9 == 1)
+			{
+				pPlayer->m_rpg_password_on = 0;
+				pPlayer->m_rpg_password_light1 = 0;
+				pPlayer->m_rpg_password_light2 = 0;
+				pPlayer->m_rpg_password_light3 = 0;
+				pPlayer->m_rpg_password_light4 = 0;
+				pPlayer->m_rpg_password_light5 = 0;
+				pPlayer->m_rpg_password_light6 = 0;
+				pPlayer->m_rpg_password_light7 = 0;
+				pPlayer->m_rpg_password_light8 = 0;
+				pPlayer->m_rpg_password_light9 = 0;
+				EMIT_SOUND(ENT(pev), CHAN_VOICE, (char*)STRING(pev->noise), 1, ATTN_NORM);
+			}
+			else if(pPlayer->m_rpg_password_on == 0)
+			{
+				pPlayer->m_rpg_password_light1 = 0;
+				pPlayer->m_rpg_password_light2 = 0;
+				pPlayer->m_rpg_password_light3 = 0;
+				pPlayer->m_rpg_password_light4 = 0;
+				pPlayer->m_rpg_password_light5 = 0;
+				pPlayer->m_rpg_password_light6 = 0;
+				pPlayer->m_rpg_password_light7 = 0;
+				pPlayer->m_rpg_password_light8 = 0;
+				pPlayer->m_rpg_password_light9 = 0;
+				if(pev->frags == 60)
+				{
+					pPlayer->m_rpg_password_on = 1;
+				}
+				else if(pev->frags == 61)
+				{
+					pPlayer->m_rpg_password_light1 = 1;
+					pPlayer->m_rpg_password_light5 = 1;
+					pPlayer->m_rpg_password_on = 2;
+				}
+				else if(pev->frags == 62)
+				{
+					pPlayer->m_rpg_password_light1 = 1;
+					pPlayer->m_rpg_password_light3 = 1;
+					pPlayer->m_rpg_password_light5 = 1;
+					pPlayer->m_rpg_password_light7 = 1;
+					pPlayer->m_rpg_password_light9 = 1;
+					pPlayer->m_rpg_password_on = 3;
+				}
+				pPlayer->m_rpg_password_select = 1;
+				pPlayer->m_rpg_menu_on = 0;
+				pPlayer->EnableControl(FALSE);
+				return;
+			}
+		}
+		else
+		{
+			return;
+		}
+	}
+
 	EMIT_SOUND( ENT( pev ), CHAN_VOICE, STRING( pev->noise ), 1, ATTN_NORM );
 
 	if( !UTIL_IsMasterTriggered( m_sMaster, m_hActivator ) )
@@ -1260,7 +1413,8 @@ void CEnvSpark::KeyValue( KeyValueData *pkvd )
 void EXPORT CEnvSpark::SparkThink( void )
 {
 	pev->nextthink = gpGlobals->time + 0.1f + RANDOM_FLOAT( 0.0f, m_flDelay );
-	DoSpark( pev, pev->origin );
+	if(!FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ))
+		DoSpark( pev, pev->origin );
 }
 
 void EXPORT CEnvSpark::SparkStart( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )

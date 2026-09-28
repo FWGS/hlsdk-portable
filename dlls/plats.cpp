@@ -25,6 +25,14 @@
 #include "cbase.h"
 #include "trains.h"
 #include "saverestore.h"
+#include "monsters.h"
+#include "schedule.h"
+#include "player.h"
+#include "weapons.h"
+#include "soundent.h"
+#include "animation.h"
+#include "defaultai.h"
+#include "scripted.h"
 
 static void PlatSpawnInsideTrigger(entvars_t* pevPlatform);
 
@@ -648,8 +656,30 @@ void CFuncTrain::Blocked( CBaseEntity *pOther )
 		return;
 
 	m_flActivateFinished = gpGlobals->time + 0.5f;
-
-	pOther->TakeDamage( pev, pev, pev->dmg, DMG_CRUSH );
+	
+	if ( pev->frags == 89 )
+	{
+		if ( pOther->pev->flags & FL_MONSTER )
+		{
+			CBaseMonster *pEnemyMonster;
+			pEnemyMonster = pOther->MyMonsterPointer();
+			if(pEnemyMonster)
+			{
+				if(pEnemyMonster->m_trainstuck < 10)
+				{
+					pEnemyMonster->m_trainstuck += 3;
+				}
+				else
+				{
+					pOther->TakeDamage(pev, pev, pev->dmg, DMG_CRUSH);
+				}
+			}
+		}
+	}
+	else
+	{
+		pOther->TakeDamage( pev, pev, pev->dmg, DMG_CRUSH );
+	}
 }
 
 void CFuncTrain::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
@@ -912,6 +942,8 @@ TYPEDESCRIPTION	CFuncTrackTrain::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CFuncTrackTrain, CBaseEntity )
 LINK_ENTITY_TO_CLASS( func_tracktrain, CFuncTrackTrain )
+LINK_ENTITY_TO_CLASS( func_tracktrain_nodraw, CFuncTrackTrain );
+LINK_ENTITY_TO_CLASS( func_tracktrain_model, CFuncTrackTrain );
 
 void CFuncTrackTrain::KeyValue( KeyValueData *pkvd )
 {
@@ -952,6 +984,47 @@ void CFuncTrackTrain::KeyValue( KeyValueData *pkvd )
 
 void CFuncTrackTrain::NextThink( float thinkTime, BOOL alwaysThink )
 {
+	if(pev->frags == 1)
+	{
+		CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "func_tracktrain" );
+		if(pEntity && pEntity!=this)
+		{
+			pev->origin = pEntity->pev->origin;
+		}
+
+			Vector vecStart, angleGun;
+			GET_ATTACHMENT( ENT(pev), 0, vecStart, angleGun );
+			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+				WRITE_BYTE( TE_ELIGHT );
+				WRITE_SHORT( entindex( ) + 0x1000 );		// entity, attachment
+				WRITE_COORD( vecStart.x );		// origin
+				WRITE_COORD( vecStart.y );
+				WRITE_COORD( vecStart.z );
+				WRITE_COORD( 2 );	// radius
+				WRITE_BYTE( 255 );	// R
+				WRITE_BYTE( 32 );	// G
+				WRITE_BYTE( 32 );	// B
+				WRITE_BYTE( 255 );	// life * 10
+				WRITE_COORD( -32 ); // decay
+			MESSAGE_END();
+
+			GET_ATTACHMENT( ENT(pev), 1, vecStart, angleGun );
+			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+				WRITE_BYTE( TE_ELIGHT );
+				WRITE_SHORT( entindex( ) + 0x2000 );		// entity, attachment
+				WRITE_COORD( vecStart.x );		// origin
+				WRITE_COORD( vecStart.y );
+				WRITE_COORD( vecStart.z );
+				WRITE_COORD( 2 );	// radius
+				WRITE_BYTE( 255 );	// R
+				WRITE_BYTE( 32 );	// G
+				WRITE_BYTE( 32 );	// B
+				WRITE_BYTE( 255 );	// life * 10
+				WRITE_COORD( -32 ); // decay
+			MESSAGE_END();
+
+	}
+
 	if( alwaysThink )
 		pev->flags |= FL_ALWAYSTHINK;
 	else
@@ -963,6 +1036,15 @@ void CFuncTrackTrain::NextThink( float thinkTime, BOOL alwaysThink )
 void CFuncTrackTrain::Blocked( CBaseEntity *pOther )
 {
 	entvars_t *pevOther = pOther->pev;
+
+	if(pOther->pev->flags & FL_CLIENT)
+	{
+		CBasePlayer *player = GetClassPtr((CBasePlayer *)pOther->pev);
+		if(player)
+		{
+			player->m_trainstuck+=2;
+		}
+	}
 
 	// Blocker is on-ground on the train
 	if( FBitSet( pevOther->flags, FL_ONGROUND ) && VARS( pevOther->groundentity ) == pev )
@@ -1453,6 +1535,18 @@ void CFuncTrackTrain::Spawn( void )
 
 	UTIL_SetSize( pev, pev->mins, pev->maxs );
 	UTIL_SetOrigin( pev, pev->origin );
+
+	if(FClassnameIs(pev, "func_tracktrain_nodraw"))
+	{
+		pev->effects = EF_NODRAW;
+		pev->frags   = 2;
+	}
+	if(FClassnameIs(pev, "func_tracktrain_model"))
+	{
+		SET_MODEL( ENT(pev), "models/props/blackmesainbound_tram.mdl" );
+		pev->frags   = 1;
+	}
+	pev->classname = MAKE_STRING("func_tracktrain");
 
 	// Cache off placed origin for train controls
 	pev->oldorigin = pev->origin;

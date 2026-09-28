@@ -78,6 +78,8 @@ void IN_ResetMouse( void );
 extern CMenuPanel *CMessageWindowPanel_Create( const char *szMOTD, const char *szTitle, int iShadeFullscreen, int iRemoveMe, int x, int y, int wide, int tall );
 extern float *GetClientColor( int clientIndex );
 
+extern int g_iSelectMenuType;
+
 using namespace vgui;
 
 // Team Colors
@@ -512,6 +514,7 @@ TeamFortressViewport::TeamFortressViewport( int x, int y, int wide, int tall ) :
 	m_iInitialized = false;
 	m_pTeamMenu = NULL;
 	m_pClassMenu = NULL;
+	m_pSelectMenu = NULL;
 	m_pScoreBoard = NULL;
 	m_pSpectatorPanel = NULL;
 	m_pCurrentMenu = NULL;
@@ -574,6 +577,7 @@ TeamFortressViewport::TeamFortressViewport( int x, int y, int wide, int tall ) :
 	CreateClassMenu();
 	CreateSpectatorMenu();
 	CreateScoreBoard();
+	CreateSelectMenu(); 
 	// Init command menus
 	m_iNumMenus = 0;
 	m_iCurrentTeamNumber = m_iUser1 = m_iUser2 = m_iUser3 = 0;
@@ -620,6 +624,10 @@ void TeamFortressViewport::Initialize( void )
 	{
 		// Spectator menu doesn't need initializing
 		m_pSpectatorPanel->setVisible( false );
+	}
+	if (m_pSelectMenu)
+	{
+		m_pSelectMenu->setVisible( false );
 	}
 
 	// Make sure all menus are hidden
@@ -1067,11 +1075,11 @@ void TeamFortressViewport::ShowScoreBoard( void )
 	if( m_pScoreBoard )
 	{
 		// No Scoreboard in single-player
-		if( gEngfuncs.GetMaxClients() > 1 )
+		/*if( gEngfuncs.GetMaxClients() > 1 )
 		{
 			m_pScoreBoard->Open();
 			UpdateCursorState();
-		}
+		}*/
 	}
 }
 
@@ -1502,6 +1510,36 @@ void TeamFortressViewport::ShowVGUIMenu( int iMenu )
 	case MENU_CLASS:
 		pNewMenu = ShowClassMenu();
 		break;
+	
+	case MENU_SELECTMENU:
+        pNewMenu = ShowSelectMenu(1);
+        break;
+    
+	case MENU_HIDE:
+		HideVGUIMenu();
+		return;
+        break;
+    
+	case MENU_SELECTMENU2:
+        pNewMenu = ShowSelectMenu(2);
+        break;
+    
+	case MENU_SELECTMENU3:
+        pNewMenu = ShowSelectMenu(3);
+        break;
+	
+	case MENU_SELECTMENU4:
+        pNewMenu = ShowSelectMenu(4);
+        break;
+	
+	case MENU_SELECTMENU5:
+        pNewMenu = ShowSelectMenu(5);
+        break;
+	
+	case MENU_SELECTMENU6:
+        pNewMenu = ShowSelectMenu(6);
+        break;
+
 
 	default:
 		break;
@@ -1622,6 +1660,29 @@ void TeamFortressViewport::CreateClassMenu()
 	m_pClassMenu = new CClassMenuPanel( 100, false, 0, 0, ScreenWidth, ScreenHeight );
 	m_pClassMenu->setParent( this );
 	m_pClassMenu->setVisible( false );
+}
+
+CMenuPanel* TeamFortressViewport::ShowSelectMenu(int type)
+{
+    // Don't open menus in demo playback 
+    if ( gEngfuncs.pDemoAPI->IsPlayingback() )
+        return NULL;
+
+	g_iSelectMenuType = type;
+    //m_pSelectMenu->Reset();
+	m_pSelectMenu = new CSelectMenu(100, false, 0, 0, ScreenWidth, ScreenHeight);
+    m_pSelectMenu->setParent(this);
+    m_pSelectMenu->setVisible( true );
+
+    return m_pSelectMenu;
+}
+
+void TeamFortressViewport::CreateSelectMenu()
+{
+    // Create the panel 
+    m_pSelectMenu = new CSelectMenu(100, false, 0, 0, ScreenWidth, ScreenHeight);
+    m_pSelectMenu->setParent(this);
+    m_pSelectMenu->setVisible( false );
 }
 
 //======================================================================================

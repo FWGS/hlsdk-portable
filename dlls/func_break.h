@@ -33,7 +33,10 @@ typedef enum
 	matUnbreakableGlass,
 	matRocks,
 	matNone,
-	matLastMaterial
+	matLastMaterial,
+	matBrick,
+	matSandwall,
+	matConcrete
 } Materials;
 
 #define	NUM_SHARDS 6 // this many shards spawned when breakable objects break;

@@ -39,6 +39,7 @@ class CHealthKit : public CItem
 };
 
 LINK_ENTITY_TO_CLASS( item_healthkit, CHealthKit )
+LINK_ENTITY_TO_CLASS( item_healthkit2, CHealthKit );
 
 /*
 TYPEDESCRIPTION	CHealthKit::m_SaveData[] =
@@ -52,14 +53,22 @@ IMPLEMENT_SAVERESTORE( CHealthKit, CItem )
 void CHealthKit::Spawn( void )
 {
 	Precache();
-	SET_MODEL( ENT( pev ), "models/w_medkit.mdl" );
+	if ( FClassnameIs( pev, "item_healthkit2" ) )
+	{
+		SET_MODEL(ENT(pev), "models/props_all.mdl");
+		pev->body = 3;
+	}
+	else
+	{
+		SET_MODEL(ENT(pev), "models/w_all_items1.mdl");
+		pev->body = 0;
+	}
 
 	CItem::Spawn();
 }
 
 void CHealthKit::Precache( void )
 {
-	PRECACHE_MODEL( "models/w_medkit.mdl" );
 	PRECACHE_SOUND( "items/smallmedkit1.wav" );
 }
 
@@ -70,24 +79,54 @@ BOOL CHealthKit::MyTouch( CBasePlayer *pPlayer )
 		return FALSE;
 	}
 
-	if( pPlayer->TakeHealth( gSkillData.healthkitCapacity, DMG_GENERIC ) )
+
+	if ( FClassnameIs( pev, "item_healthkit2" ) )
 	{
-		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
-			WRITE_STRING( STRING( pev->classname ) );
-		MESSAGE_END();
-
-		EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "items/smallmedkit1.wav", 1, ATTN_NORM );
-
-		if( g_pGameRules->ItemShouldRespawn( this ) )
+		if ( pPlayer->TakeHealth( 30 , DMG_GENERIC ) )
 		{
-			Respawn();
-		}
-		else
-		{
-			UTIL_Remove( this );	
-		}
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+				WRITE_STRING( "item_healthkit" );
+			MESSAGE_END();
 
-		return TRUE;
+			EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "items/smallmedkit1.wav", 1, ATTN_NORM);
+
+			pev->health += 1;
+			if(pev->health >= 2)
+			{
+				if ( g_pGameRules->ItemShouldRespawn( this ) )
+				{
+					Respawn();
+				}
+				else
+				{
+					UTIL_Remove(this);	
+				}
+				return TRUE;
+			}
+
+		}
+	}
+	else
+	{
+		if( pPlayer->TakeHealth( 30, DMG_GENERIC ) )
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
+				WRITE_STRING( STRING( pev->classname ) );
+			MESSAGE_END();
+
+			EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "items/smallmedkit1.wav", 1, ATTN_NORM );
+
+			if( g_pGameRules->ItemShouldRespawn( this ) )
+			{
+				Respawn();
+			}
+			else
+			{
+				UTIL_Remove( this );	
+			}
+
+			return TRUE;
+		}
 	}
 
 	return FALSE;
@@ -130,6 +169,8 @@ TYPEDESCRIPTION CWallHealth::m_SaveData[] =
 IMPLEMENT_SAVERESTORE( CWallHealth, CBaseToggle )
 
 LINK_ENTITY_TO_CLASS( func_healthcharger, CWallHealth )
+LINK_ENTITY_TO_CLASS(func_healthcharger_cz, CWallHealth)
+LINK_ENTITY_TO_CLASS(func_healthcharger_pointer, CWallHealth)
 
 void CWallHealth::KeyValue( KeyValueData *pkvd )
 {
@@ -146,6 +187,11 @@ void CWallHealth::KeyValue( KeyValueData *pkvd )
 		m_iReactivate = atoi( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "juice"))
+	{
+		m_iJuice = atoi(pkvd->szValue);
+		pkvd->fHandled = TRUE;
+	}
 	else
 		CBaseToggle::KeyValue( pkvd );
 }
@@ -160,8 +206,12 @@ void CWallHealth::Spawn()
 	UTIL_SetOrigin( pev, pev->origin );		// set size and link into world
 	UTIL_SetSize( pev, pev->mins, pev->maxs );
 	SET_MODEL( ENT( pev ), STRING( pev->model ) );
-	m_iJuice = (int)gSkillData.healthchargerCapacity;
+	//m_iJuice = (int)gSkillData.healthchargerCapacity;
 	pev->frame = 0;
+	if ( FClassnameIs( pev, "func_healthcharger_cz" ) )
+	{
+		m_iJuice = 1;	
+	}
 }
 
 void CWallHealth::Precache()
@@ -180,9 +230,37 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	if( !pActivator->IsPlayer() )
 		return;
 
+	if ( FClassnameIs( pev, "func_healthcharger_cz" )  )
+	{
+		if(pev->frame == 0)
+		{
+		
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)pActivator->pev);
+			float take_health = pPlayer->pev->max_health * 0.4;
+
+			if (g_iSkillLevel == SKILL_EASY)
+			{
+				take_health = pPlayer->pev->max_health * 0.5;
+			}
+
+			if ( pPlayer->TakeHealth( take_health , DMG_GENERIC ) )
+			{
+			//	EMIT_SOUND(ENT(pPlayer->pev), CHAN_ITEM, "items/smallmedkit1.wav", 1, ATTN_NORM);
+				FX_Explosion( pPlayer->Center(), 45);
+				pPlayer->m_flVelocityModifier = 0;
+
+				pev->frame = 1;			
+				Off();
+			}
+		}
+
+		return;
+	}
+
 	// if there is no juice left, turn it off
 	if( m_iJuice <= 0 )
 	{
+		pev->body = 1;
 		pev->frame = 1;			
 		Off();
 	}
@@ -225,13 +303,13 @@ void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE u
 	}
 
 	// govern the rate of charge
-	m_flNextCharge = gpGlobals->time + 0.1f;
+	m_flNextCharge = gpGlobals->time + 0.05f;
 }
 
 void CWallHealth::Recharge( void )
 {
 	EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_NORM );
-	m_iJuice = (int)gSkillData.healthchargerCapacity;
+	m_iJuice = 50;
 	pev->frame = 0;			
 	SetThink( &CBaseEntity::SUB_DoNothing );
 }

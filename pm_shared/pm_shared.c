@@ -29,6 +29,7 @@
 #include "pm_defs.h"
 #include "pm_shared.h"
 #include "pm_movevars.h"
+#include "pm_materials.h"
 #include "pm_debug.h"
 
 #if CLIENT_DLL
@@ -47,12 +48,13 @@ static int pm_shared_initialized = 0;
 playermove_t *pmove = NULL;
 
 // Ducking time
-#define TIME_TO_DUCK		0.4f
+#define TIME_TO_DUCK		0.3f
 #define VEC_DUCK_HULL_MIN	-18
 #define VEC_DUCK_HULL_MAX	18
 #define VEC_DUCK_VIEW		12
 #define PM_DEAD_VIEWHEIGHT	-8
 #define MAX_CLIMB_SPEED		200
+#define MAX_CLIMB_SPEED2	240
 #define STUCK_MOVEUP		1
 #define STUCK_MOVEDOWN		-1
 #define VEC_HULL_MIN		-36
@@ -72,6 +74,10 @@ playermove_t *pmove = NULL;
 #define STEP_SLOSH		6		// shallow liquid puddle
 #define STEP_WADE		7		// wading in liquid
 #define STEP_LADDER		8		// climbing ladder
+#define STEP_SNOW		9		// snow
+#define STEP_GRASS		10		// grass
+#define STEP_SAND		11		// sand
+#define STEP_ENERGYSHIELD	12		// energy shield
 
 #define PLAYER_FATAL_FALL_SPEED		1024// approx 60 feet
 #define PLAYER_MAX_SAFE_FALL_SPEED	580// approx 20 feet
@@ -79,7 +85,7 @@ playermove_t *pmove = NULL;
 #define PLAYER_MIN_BOUNCE_SPEED		200
 #define PLAYER_FALL_PUNCH_THRESHHOLD	(float)350 // won't punch player's screen/make scrape noise unless player falling at least this fast.
 
-#define PLAYER_LONGJUMP_SPEED		350 // how fast we longjump
+#define PLAYER_LONGJUMP_SPEED		750 // how fast we longjump
 
 #define PLAYER_DUCKING_MULTIPLIER	0.333f
 
@@ -477,7 +483,7 @@ void PM_PlayStepSound( int step, float fvol )
 		}
 		break;
 	case STEP_SLOSH:
-		switch( irand )
+		/*switch( irand )
 		{
 		// right foot
 		case 0:
@@ -493,7 +499,7 @@ void PM_PlayStepSound( int step, float fvol )
 		case 3:
 			pmove->PM_PlaySound( CHAN_BODY, "player/pl_slosh4.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
 			break;
-		}
+		}*/
 		break;
 	case STEP_WADE:
 		if( iSkipStep == 0 )
@@ -530,17 +536,17 @@ void PM_PlayStepSound( int step, float fvol )
 		{
 		// right foot
 		case 0:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_ladder1.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
+			pmove->PM_PlaySound( CHAN_STATIC, "player/pl_ladder1.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
 			break;
 		case 1:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_ladder3.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
+			pmove->PM_PlaySound( CHAN_STATIC, "player/pl_ladder3.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
 			break;
 		// left foot
 		case 2:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_ladder2.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
+			pmove->PM_PlaySound( CHAN_STATIC, "player/pl_ladder2.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
 			break;
 		case 3:
-			pmove->PM_PlaySound( CHAN_BODY, "player/pl_ladder4.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
+			pmove->PM_PlaySound( CHAN_STATIC, "player/pl_ladder4.wav", fvol, ATTN_NORM, 0, PITCH_NORM );
 			break;
 		}
 		break;
@@ -566,6 +572,16 @@ int PM_MapTextureTypeStepType( char chTextureType )
 			return STEP_TILE;
 		case CHAR_TEX_SLOSH:
 			return STEP_SLOSH;
+		case CHAR_TEX_SNOW: 
+			return STEP_SNOW;	
+		case CHAR_TEX_GRASS: 
+			return STEP_GRASS;	
+		case CHAR_TEX_LEAVES: 
+			return STEP_GRASS;	
+		case CHAR_TEX_SAND: 
+			return STEP_SAND;	
+		case CHAR_TEX_ENERGYSHIELD: 
+			return STEP_ENERGYSHIELD;	
 	}
 }
 
@@ -1092,7 +1108,7 @@ void PM_Accelerate( vec3_t wishdir, float wishspeed, float accel )
 	float addspeed, accelspeed, currentspeed;
 
 	// Dead player's don't accelerate
-	if( pmove->dead )
+	if( pmove->dead || atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "dead_bugfix" ) ) == 1 )
 		return;
 
 	// If waterjumping, don't accelerate
@@ -1381,7 +1397,7 @@ void PM_AirAccelerate( vec3_t wishdir, float wishspeed, float accel )
 	int i;
 	float addspeed, accelspeed, currentspeed, wishspd = wishspeed;
 
-	if( pmove->dead )
+	if( pmove->dead || atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "dead_bugfix" ) ) == 1 )
 		return;
 	if( pmove->waterjumptime )
 		return;
@@ -2067,8 +2083,8 @@ void PM_Duck( void )
 	int buttonsChanged = ( pmove->oldbuttons ^ pmove->cmd.buttons );	// These buttons have changed this frame
 	int nButtonPressed = buttonsChanged & pmove->cmd.buttons;		// The changed ones still down are "pressed"
 
-	//int duckchange = buttonsChanged & IN_DUCK ? 1 : 0;
-	//int duckpressed = nButtonPressed & IN_DUCK ? 1 : 0;
+	int duckchange = buttonsChanged & IN_DUCK ? 1 : 0;
+	int duckpressed = nButtonPressed & IN_DUCK ? 1 : 0;
 
 	if( pmove->cmd.buttons & IN_DUCK )
 	{
@@ -2080,7 +2096,7 @@ void PM_Duck( void )
 	}
 
 	// Prevent ducking if the iuser3 variable is set
-	if( pmove->iuser3 || pmove->dead )
+	if( pmove->iuser3 || pmove->dead || atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "dead_bugfix" ) ) == 1 )
 	{
 		// Try to unduck
 		if( pmove->flags & FL_DUCKING )
@@ -2097,7 +2113,7 @@ void PM_Duck( void )
 		pmove->cmd.upmove *= PLAYER_DUCKING_MULTIPLIER;
 	}
 
-	if( ( pmove->cmd.buttons & IN_DUCK ) || ( pmove->bInDuck ) || ( pmove->flags & FL_DUCKING ) )
+	if( ( pmove->cmd.buttons & IN_DUCK ) || ( pmove->bInDuck ) || ( pmove->flags & FL_DUCKING ) || pmove->fuser4 == 3 )
 	{
 		if( pmove->cmd.buttons & IN_DUCK )
 		{
@@ -2113,8 +2129,11 @@ void PM_Duck( void )
 			if( pmove->bInDuck )
 			{
 				// Finish ducking immediately if duck time is over or not on ground
-				if( ( (float)pmove->flDuckTime / 1000.0f <= ( 1.0f - TIME_TO_DUCK ) ) || ( pmove->onground == -1 ) )
+				if( ( (float)pmove->flDuckTime / 1000.0f <= ( 1.0f - TIME_TO_DUCK ) ) || ( pmove->onground == -1 ) || pmove->fuser4 == 3 )
 				{
+					if(pmove->fuser4 == 3)
+						pmove->punchangle[0] = 30;
+					
 					pmove->usehull = 1;
 					pmove->view_ofs[2] = VEC_DUCK_VIEW;
 					pmove->flags |= FL_DUCKING;
@@ -2499,6 +2518,7 @@ void PM_NoClip( void )
 
 // Only allow bunny jumping up to 1.7x server / player maxspeed setting
 #define BUNNYJUMP_MAX_SPEED_FACTOR 1.7f
+#define BUNNYJUMP_MAX_SPEED_FACTOR_CS 1.2f
 
 //-----------------------------------------------------------------------------
 // Purpose: Corrects bunny jumping ( where player initiates a bunny jump before other
@@ -2544,8 +2564,9 @@ void PM_Jump( void )
 	qboolean tfc = false;
 
 	qboolean cansuperjump = false;
+	qboolean canmariojump = false;
 
-	if( pmove->dead )
+	if( pmove->dead || atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "dead_bugfix" ) ) == 1 )
 	{
 		pmove->oldbuttons |= IN_JUMP;	// don't jump again until released
 		return;
@@ -2645,6 +2666,7 @@ void PM_Jump( void )
 
 	// See if user can super long jump?
 	cansuperjump = atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "slj" ) ) == 1 ? true : false;
+	canmariojump = atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "mario" ) ) == 1 ? true : false;
 
 	// Acclerate upward
 	// If we are ducking...
@@ -2652,21 +2674,62 @@ void PM_Jump( void )
 	{
 		// Adjust for super long jump module
 		// UNDONE -- note this should be based on forward angles, not current velocity.
-		if( cansuperjump && ( pmove->cmd.buttons & IN_DUCK ) && ( pmove->flDuckTime > 0 ) &&
-			Length( pmove->velocity ) > 50 )
+		if( pmove->fuser4 == 0 && cansuperjump && ( pmove->cmd.buttons & IN_FORWARD ) && ( pmove->cmd.buttons & IN_DUCK ) && ( pmove->flDuckTime > 0 ) && Length( pmove->velocity ) > 30 )
 		{
+			pmove->fuser4 = 2;
 			pmove->punchangle[0] = -5;
-
-			for( i = 0; i < 2; i++ )
+			for (i =0; i < 2; i++)
 			{
-				pmove->velocity[i] = pmove->forward[i] * PLAYER_LONGJUMP_SPEED * 1.6f;
+				pmove->velocity[i] = pmove->forward[i] * PLAYER_LONGJUMP_SPEED;
 			}
-
-			pmove->velocity[2] = sqrt( 2.0f * 800.0f * 56.0f );
+		
+			pmove->velocity[2] = sqrt( 2.0f * 800.0f * 45.0f );
+		}
+		else if ( pmove->fuser4 == 0 && cansuperjump && ( pmove->cmd.buttons & IN_BACK ) && ( pmove->cmd.buttons & IN_DUCK ) && ( pmove->flDuckTime > 0 ) && Length( pmove->velocity ) > 30 )
+		{
+			pmove->fuser4 = 2;
+			pmove->punchangle[0] = 5;
+			for (i =0; i < 2; i++)
+			{
+				pmove->velocity[i] = pmove->forward[i] * -PLAYER_LONGJUMP_SPEED;
+			}
+		
+			pmove->velocity[2] = sqrt( 2.0f * 800.0f * 45.0f );
+		}
+		else if ( pmove->fuser4 == 0 && cansuperjump && ( pmove->cmd.buttons & IN_MOVERIGHT ) && ( pmove->cmd.buttons & IN_DUCK ) && ( pmove->flDuckTime > 0 ) && Length( pmove->velocity ) > 30 )
+		{
+			pmove->fuser4 = 2;
+			pmove->punchangle[1] = 5;
+			for (i =0; i < 2; i++)
+			{
+				pmove->velocity[i] = pmove->right[i] * PLAYER_LONGJUMP_SPEED;
+			}
+		
+			pmove->velocity[2] = sqrt( 2.0f * 800.0f * 45.0f );
+		}
+		else if ( pmove->fuser4 == 0 && cansuperjump && ( pmove->cmd.buttons & IN_MOVELEFT ) && ( pmove->cmd.buttons & IN_DUCK ) && ( pmove->flDuckTime > 0 ) && Length( pmove->velocity ) > 30 )
+		{
+			pmove->fuser4 = 2;
+			pmove->punchangle[1] = -5;
+			for (i =0; i < 2; i++)
+			{
+				pmove->velocity[i] = pmove->right[i] * -PLAYER_LONGJUMP_SPEED;
+			}
+		
+			pmove->velocity[2] = sqrt( 2.0f * 800.0f * 45.0f );
 		}
 		else
 		{
-			pmove->velocity[2] = sqrt( 2.0f * 800.0f * 45.0f );
+			PM_PlayStepSound( PM_MapTextureTypeStepType( pmove->chtexturetype ), 1.0 );
+
+			if(canmariojump)
+			{
+				pmove->velocity[2] = sqrt( 2.0f * 800.0f * 120.0f );
+			}
+			else	
+			{
+				pmove->velocity[2] = sqrt( 2.0f * 800.0f * 48.0f );
+			}
 		}
 	}
 	else
@@ -2947,7 +3010,7 @@ void PM_CheckParamters( void )
 	PM_DropPunchAngle( pmove->punchangle );
 
 	// Take angles from command.
-	if( !pmove->dead )
+	if( !pmove->dead && atoi( pmove->PM_Info_ValueForKey( pmove->physinfo, "dead_bugfix" ) ) != 1 )
 	{
 		VectorCopy( pmove->cmd.viewangles, v_angle );         
 		VectorAdd( v_angle, pmove->punchangle, v_angle );
@@ -3052,10 +3115,13 @@ void PM_PlayerMove( qboolean server )
 			// Let the user try to duck to get unstuck
 			PM_Duck();
 
+			pmove->iuser4 = 1;
+
 			if( PM_CheckStuck() )
 				return;  // Can't move, we're stuck
 		}
 	}
+	pmove->iuser4 = 0;
 
 	// Now that we are "unstuck", see where we are ( waterlevel and type, pmove->onground ).
 	PM_CatagorizePosition();
@@ -3097,6 +3163,12 @@ void PM_PlayerMove( qboolean server )
 			//  it will be set immediately again next frame if necessary
 			pmove->movetype = MOVETYPE_WALK;
 		}
+	}
+
+	// Slow down, I'm pulling it! (a box maybe) but only when I'm standing on ground
+	if ( ( pmove->onground != -1 ) && ( pmove->cmd.buttons & IN_USE) )
+	{
+		VectorScale( pmove->velocity, 0.3f, pmove->velocity );
 	}
 
 	// Handle movement

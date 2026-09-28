@@ -41,6 +41,9 @@ extern CBaseEntity				*g_pLastSpawn;
 DLL_GLOBAL edict_t				*g_pBodyQueueHead;
 CGlobalState					gGlobalState;
 extern DLL_GLOBAL int				gDisplayTitle;
+extern DLL_GLOBAL BOOL			g_StartDark;
+extern DLL_GLOBAL int			g_restore_fix;
+extern DLL_GLOBAL int			g_causality_add;
 
 extern void W_Precache( void );
 
@@ -454,19 +457,24 @@ void CWorld::Spawn( void )
 {
 	g_fGameOver = FALSE;
 	Precache();
+
+	CBaseEntity *pEntity = UTIL_FindEntityByClassname( this, "cshl623_map_set" );
+	if ( pEntity == NULL )
+		Create( "cshl623_map_set", pev->origin, pev->angles, NULL );//World Spawn
 }
 
 void CWorld::Precache( void )
 {
 	g_pLastSpawn = NULL;
-#if 1
 	CVAR_SET_STRING( "sv_gravity", "800" ); // 67ft/sec
-	CVAR_SET_STRING( "sv_stepsize", "18" );
-#else
-	CVAR_SET_STRING( "sv_gravity", "384" ); // 32ft/sec
-	CVAR_SET_STRING( "sv_stepsize", "24" );
-#endif
+	CVAR_SET_STRING( "sv_friction", "6" ); // 67ft/sec
+	CVAR_SET_STRING( "sv_stepsize", "20" );
+	CVAR_SET_STRING( "sv_maxvelocity", "9000" );
+	CVAR_SET_STRING( "sv_maxspeed", "400" );
+	CVAR_SET_STRING( "sv_cheats", "1" );
+	//CVAR_SET_STRING("crosshair", "0");
 	CVAR_SET_STRING( "room_type", "0" );// clear DSP
+	CVAR_SET_STRING( "pausable", "1" );// clear DSP
 
 	// Set up game rules
 	if( g_pGameRules )
@@ -513,8 +521,12 @@ void CWorld::Precache( void )
 	PRECACHE_SOUND( "common/bodydrop3.wav" );// dead bodies hitting the ground (animation events)
 	PRECACHE_SOUND( "common/bodydrop4.wav" );
 	
-	PRECACHE_MODEL( "models/hgibs.mdl" );
-	PRECACHE_MODEL( "models/agibs.mdl" );
+	PRECACHE_MODEL( "models/gibs_all.mdl" );
+
+	PRECACHE_MODEL("sprites/c-tele1.spr");
+	PRECACHE_SOUND( "debris/beamstart2old.wav" );
+	PRECACHE_SOUND( "debris/beamstart3.wav" );
+	PRECACHE_SOUND( "debris/beamstart10.wav" );
 
 	PRECACHE_SOUND( "weapons/ric1.wav" );
 	PRECACHE_SOUND( "weapons/ric2.wav" );
@@ -527,7 +539,7 @@ void CWorld::Precache( void )
 	//
 
 	// 0 normal
-	LIGHT_STYLE( 0, "m" );
+	LIGHT_STYLE( 0, "o" );
 
 	// 1 FLICKER (first variety)
 	LIGHT_STYLE( 1, "mmnmmommommnonmmonqnmmo" );
@@ -602,29 +614,39 @@ void CWorld::Precache( void )
 	if( pev->speed > 0 )
 		CVAR_SET_FLOAT( "sv_zmax", pev->speed );
 	else
-		CVAR_SET_FLOAT( "sv_zmax", 4096 );
+		CVAR_SET_FLOAT( "sv_zmax", 8192 );
 
 	// g-cont. moved here to right restore global WaveHeight on save\restore level
 	CVAR_SET_FLOAT( "sv_wateramp", pev->scale );
 
-	if( pev->netname )
+	if( pev->message )
 	{
-		ALERT( at_aiconsole, "Chapter title: %s\n", STRING( pev->netname ) );
+		ALERT( at_aiconsole, "Chapter title: %s\n", STRING( pev->message ) );
 		CBaseEntity *pEntity = CBaseEntity::Create( "env_message", g_vecZero, g_vecZero, NULL );
 		if( pEntity )
 		{
 			pEntity->SetThink( &CBaseEntity::SUB_CallUseToggle );
-			pEntity->pev->message = pev->netname;
-			pev->netname = 0;
-			pEntity->pev->nextthink = gpGlobals->time + 0.3f;
+			pEntity->pev->message = pev->message;
+			pev->message = 0;
+			if( pev->spawnflags & SF_WORLD_TITLE )
+				pEntity->pev->nextthink = gpGlobals->time + 6.0;
+			else
+				pEntity->pev->nextthink = gpGlobals->time + 0.3f;
 			pEntity->pev->spawnflags = SF_MESSAGE_ONCE;
 		}
 	}
 
 	if( pev->spawnflags & SF_WORLD_DARK )
+	{
 		CVAR_SET_FLOAT( "v_dark", 1.0f );
+		g_StartDark = TRUE;
+		pev->spawnflags &= ~SF_WORLD_DARK;
+	}
 	else
+	{
 		CVAR_SET_FLOAT( "v_dark", 0.0f );
+		g_StartDark = FALSE;
+	}
 
 	pev->spawnflags &= ~SF_WORLD_DARK;		// g-cont. don't apply fade after save\restore
 
@@ -643,6 +665,8 @@ void CWorld::Precache( void )
 	{
 		CVAR_SET_FLOAT( "mp_defaultteam", 0.0f );
 	}
+
+	g_restore_fix = 100;
 }
 
 //

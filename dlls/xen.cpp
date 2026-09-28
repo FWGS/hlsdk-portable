@@ -174,13 +174,17 @@ public:
 };
 
 LINK_ENTITY_TO_CLASS( xen_hair, CXenHair )
+LINK_ENTITY_TO_CLASS( hrhr_hair, CXenHair );
 
 #define SF_HAIR_SYNC		0x0001
 
 void CXenHair::Spawn( void )
 {
 	Precache();
-	SET_MODEL( edict(), "models/hair.mdl" );
+	if( FClassnameIs( pev, "hrhr_hair" ) )
+		SET_MODEL( edict(), "models/hrhr_hair.mdl" );
+	else
+		SET_MODEL( edict(), "models/hair.mdl" );
 	UTIL_SetSize( pev, Vector( -4, -4, 0 ), Vector( 4, 4, 32 ) );
 	pev->sequence = 0;
 
@@ -205,6 +209,7 @@ void CXenHair::Think( void )
 void CXenHair::Precache( void )
 {
 	PRECACHE_MODEL( "models/hair.mdl" );
+	PRECACHE_MODEL( "models/hrhr_hair.mdl" );
 }
 
 class CXenTreeTrigger : public CBaseEntity
@@ -354,7 +359,7 @@ void CXenTree::HandleAnimEvent( MonsterEvent_t *pEvent )
 					if( pList[i]->pev->owner != edict() )
 					{
 						sound = TRUE;
-						pList[i]->TakeDamage( pev, pev, 25, DMG_CRUSH | DMG_SLASH );
+						pList[i]->TakeDamage( pev, pev, 30, DMG_CRUSH | DMG_SLASH );
 						pList[i]->pev->punchangle.x = 15;
 						pList[i]->pev->velocity = pList[i]->pev->velocity + forward * 100;
 					}
@@ -473,7 +478,7 @@ void CXenSporeMed::Spawn( void )
 {
 	pev->skin = 1;
 	CXenSpore::Spawn();
-	UTIL_SetSize( pev, Vector( -40, -40, 0 ), Vector( 40, 40, 120 ) );
+	UTIL_SetSize( pev, Vector( -40, -40, 0 ), Vector( 40, 40, 128 ) );
 }
 
 // I just eyeballed these -- fill in hulls for the legs

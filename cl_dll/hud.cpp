@@ -41,6 +41,10 @@ int g_iUser3 = 0;
 
 #include "vgui_ScorePanel.h"
 
+#include "rain.h"
+#include "RenderManager.h"// XDM
+#include "game_fx.h"
+
 class CHLVoiceStatusHelper : public IVoiceStatusHelper
 {
 public:
@@ -94,6 +98,12 @@ extern cvar_t *sensitivity;
 cvar_t *cl_lw = NULL;
 cvar_t *cl_viewbob = NULL;
 
+cvar_t *cl_gunsmoke;
+cvar_t *cl_deathnotice;
+cvar_t *cl_bloodsmoke;
+
+int hink_debug = 0;
+
 void ShutdownInput( void );
 
 //DECLARE_MESSAGE( m_Logo, Logo )
@@ -135,6 +145,13 @@ int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
 	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
 }
 
+//RenderSystem
+void __CmdFunc_DBG_DumpSystems(void)
+{
+	if (g_pRenderManager)
+		g_pRenderManager->DumpSystems();
+}
+
 // TFFree Command Menu
 void __CmdFunc_OpenCommandMenu( void )
 {
@@ -151,6 +168,13 @@ void __CmdFunc_InputPlayerSpecial( void )
 	{
 		gViewPort->InputPlayerSpecial();
 	}
+}
+
+//LRC
+int __MsgFunc_SetFog(const char *pszName, int iSize, void *pbuf)
+{
+	gHUD.MsgFunc_SetFog( pszName, iSize, pbuf );
+	return 1;
 }
 
 void __CmdFunc_CloseCommandMenu( void )
@@ -292,6 +316,17 @@ int __MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf )
 // This is called every time the DLL is loaded
 void CHud::Init( void )
 {
+	// wall chunks, shells, breakables - giblife 
+	TempEntLifeCvar = gEngfuncs.pfnRegisterVariable( "cl_tempent_life", "5", 0 );
+
+	//Human gibs, gun clips - giblife
+	GibsLifeCvar = gEngfuncs.pfnRegisterVariable( "cl_gibs_life", "10", 0 );
+
+	SmokingShells = gEngfuncs.pfnRegisterVariable( "cl_smokingshells", "1", 0 );
+
+	RainInfo = gEngfuncs.pfnRegisterVariable( "cl_raininfo", "0", 0 );	// rain tutorial
+	InitRain();	// rain tutorial
+
 	HOOK_MESSAGE( Logo );
 	HOOK_MESSAGE( ResetHUD );
 	HOOK_MESSAGE( GameMode );
@@ -300,11 +335,17 @@ void CHud::Init( void )
 	HOOK_MESSAGE( SetFOV );
 	HOOK_MESSAGE( Concuss );
 
+	HOOK_MESSAGE( SetFog ); //LRC
+
+	HookFXMessages();// XDM
+
 	// TFFree CommandMenu
 	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
 	HOOK_COMMAND( "-commandmenu", CloseCommandMenu );
 	HOOK_COMMAND( "ForceCloseCommandMenu", ForceCloseCommandMenu );
 	HOOK_COMMAND( "special", InputPlayerSpecial );
+
+	HOOK_COMMAND( "dbg_dumprs", DBG_DumpSystems ); //RenderSystem
 
 	HOOK_MESSAGE( ValClass );
 	HOOK_MESSAGE( TeamNames );
@@ -332,6 +373,12 @@ void CHud::Init( void )
 	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
 	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
 	hud_textmode = CVAR_CREATE ( "hud_textmode", "0", FCVAR_ARCHIVE );
+
+	cl_gunsmoke = gEngfuncs.pfnRegisterVariable ( "cl_gunsmoke", "1", FCVAR_ARCHIVE );
+	cl_deathnotice = gEngfuncs.pfnRegisterVariable ( "cl_deathnotice", "1", FCVAR_ARCHIVE );
+	cl_bloodsmoke = gEngfuncs.pfnRegisterVariable ( "cl_bloodsmoke", "1", FCVAR_ARCHIVE );
+
+	CVAR_CREATE( "cshl623_debug_mode", "0", FCVAR_ARCHIVE );
 
 	m_iLogo = 0;
 	m_iFOV = 0;
@@ -371,6 +418,18 @@ void CHud::Init( void )
 	// In case we get messages before the first update -- time will be valid
 	m_flTime = 1.0;
 
+	m_GunScope.Init();
+    m_NVG.Init();
+	m_DarkHoles.Init();
+    m_HealthBar.Init();
+	m_ArmorBar.Init();
+	m_loadlife.Init();
+	m_AirBar.Init();
+	m_RTPbar.Init();
+	m_GameOver.Init();
+	m_Tbutton.Init();
+	m_ModeShow.Init();
+
 	m_Ammo.Init();
 	m_Health.Init();
 	m_SayText.Init();
@@ -391,6 +450,8 @@ void CHud::Init( void )
 	m_Scoreboard.Init();
 
 	m_Menu.Init();
+	m_RPGMenu.Init();
+	m_PWBord.Init();
 
 	MsgFunc_ResetHUD( 0, 0, NULL );
 	ClientCmd( "richpresence_gamemode\n" );
@@ -565,6 +626,18 @@ void CHud::VidInit( void )
 
 	m_iFontHeight = m_rgrcRects[m_HUD_number_0].bottom - m_rgrcRects[m_HUD_number_0].top;
 
+	m_GunScope.VidInit();
+    m_NVG.VidInit();
+	m_DarkHoles.VidInit();
+    m_HealthBar.VidInit();
+	m_ArmorBar.VidInit();
+	m_loadlife.VidInit();
+	m_AirBar.VidInit();
+	m_RTPbar.VidInit();
+	m_GameOver.VidInit();
+	m_Tbutton.VidInit();
+	m_ModeShow.VidInit();
+
 	m_Ammo.VidInit();
 	m_Health.VidInit();
 	m_Spectator.VidInit();
@@ -583,6 +656,9 @@ void CHud::VidInit( void )
 	GetClientVoiceMgr()->VidInit();
 	m_MOTD.VidInit();
 	m_Scoreboard.VidInit();
+
+	m_RPGMenu.VidInit();
+	m_PWBord.VidInit();
 }
 
 int CHud::MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf )

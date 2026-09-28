@@ -72,7 +72,8 @@
 #define DMG_RADIUS_MAX		(1 << 25)	// Radius damage with this flag doesn't decrease over distance
 #define DMG_RADIUS_QUAKE	(1 << 26)	// Radius damage is done like Quake. 1/2 damage at 1/2 radius.
 #define DMG_IGNOREARMOR		(1 << 27)	// Damage ignores target's armor
-#define DMG_AIMED			(1 << 28)   // Does Hit location damage
+// #define DMG_AIMED			(1 << 28)   // Does Hit location damage
+#define DMG_CONCUSSION		(1 << 28)   // Concussion!
 #define DMG_WALLPIERCING	(1 << 29)	// Blast Damages ents through walls
 
 #define DMG_CALTROP				(1<<30)
@@ -117,6 +118,10 @@ public:
 private:
 	HSPRITE m_hSprite;
 	HSPRITE m_hDamage;
+
+	int m_newcross_active;
+	int m_newcross_size;
+	int m_newcross_ontarget;
 	
 	DAMAGE_IMAGE m_dmg[NUM_DMG_TYPES];
 	int m_bitsDamage;

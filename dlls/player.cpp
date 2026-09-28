@@ -36,14 +36,27 @@
 #include "game.h"
 #include "pm_shared.h"
 #include "hltv.h"
-
+#include "animation.h"
 // #define DUCKFIX
+
+int game_savefucked_num;
+int game_player_dead;
+int game_boss_battle;
 
 extern DLL_GLOBAL ULONG g_ulModelIndexPlayer;
 extern DLL_GLOBAL BOOL g_fGameOver;
+extern DLL_GLOBAL BOOL		g_fCantSave;
 extern DLL_GLOBAL BOOL g_fDrawLines;
 int gEvilImpulse101;
 extern DLL_GLOBAL int g_iSkillLevel, gDisplayTitle;
+extern DLL_GLOBAL int		g_restore_fix;
+extern DLL_GLOBAL int		g_causality_add;
+extern DLL_GLOBAL int		g_gibexp_max;
+extern DLL_GLOBAL BOOL		g_StartDark;
+extern DLL_GLOBAL int		g_fGameSkipCG;
+extern DLL_GLOBAL int		g_fGameJumpCG;
+
+extern DLL_GLOBAL BOOL		g_Spawnpreacheally;
 
 BOOL gInitHUD = TRUE;
 
@@ -51,6 +64,8 @@ extern void CopyToBodyQue( entvars_t *pev);
 extern void respawn( entvars_t *pev, BOOL fCopyCorpse );
 extern Vector VecBModelOrigin( entvars_t *pevBModel );
 extern edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer );
+
+extern DLL_GLOBAL int			g_Language;
 
 // the world node graph
 extern CGraph WorldGraph;
@@ -64,8 +79,8 @@ extern CGraph WorldGraph;
 #define TRAIN_FAST		0x04
 #define TRAIN_BACK		0x05
 
-#define	FLASH_DRAIN_TIME	 1.2f //100 units/3 minutes
-#define	FLASH_CHARGE_TIME	 0.2f // 100 units/20 seconds  (seconds per unit)
+#define	FLASH_DRAIN_TIME	 1.5f //100 units/3 minutes
+#define	FLASH_CHARGE_TIME	 0.4f // 100 units/20 seconds  (seconds per unit)
 
 // Global Savedata for player
 TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
@@ -86,6 +101,13 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_flDuckTime, FIELD_TIME ),
 	DEFINE_FIELD( CBasePlayer, m_flWallJumpTime, FIELD_TIME ),
 
+	DEFINE_FIELD( CBasePlayer, m_IntoWaterTime, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_RecoverTime, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_ClimbWallTime, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_MonsterCatchTime, FIELD_TIME ),
+
+	DEFINE_FIELD( CBasePlayer, m_air_oxyan_stop_time, FIELD_TIME ),
+
 	DEFINE_FIELD( CBasePlayer, m_flSuitUpdate, FIELD_TIME ),
 	DEFINE_ARRAY( CBasePlayer, m_rgSuitPlayList, FIELD_INTEGER, CSUITPLAYLIST ),
 	DEFINE_FIELD( CBasePlayer, m_iSuitPlayNext, FIELD_INTEGER ),
@@ -102,6 +124,43 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_idrownrestored, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_tSneaking, FIELD_TIME ),
 
+	DEFINE_FIELD( CBasePlayer, m_kadoma_exp, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_kadoma_level, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_kadoma_skill, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_skill_reload, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_skill_defguard, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_skill_longjump, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_skill_punch, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_skill_valvesword, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_skill_respawn, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_skill_darkhide, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_skill_deathmatch, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_skill_wrongdoor, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_skill_miss, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_skill_goddam, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_skill_locked, FIELD_INTEGER ),
+	
+	DEFINE_FIELD( CBasePlayer, m_skill_darkhide_on, FIELD_BOOLEAN ),
+	
+	DEFINE_FIELD( CBasePlayer, m_level_up_switch, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBasePlayer, m_concussion_time, FIELD_TIME ),
+
+	DEFINE_FIELD( CBasePlayer, m_skill_respawn_time, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_fldarkhideTime, FIELD_TIME ),
+
+	DEFINE_FIELD( CBasePlayer, m_mode_int1, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_mode_int2, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_mode_int3, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_mode_float1, FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, m_mode_float2, FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, m_mode_origin, FIELD_POSITION_VECTOR ),
+
+	DEFINE_FIELD( CBasePlayer, m_sword_aim_origin, FIELD_POSITION_VECTOR ),
+
+	DEFINE_FIELD( CBasePlayer, m_iNVG, FIELD_INTEGER ),
+
 	DEFINE_FIELD( CBasePlayer, m_iTrain, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_bitsHUDDamage, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_flFallVelocity, FIELD_FLOAT ),
@@ -110,12 +169,192 @@ TYPEDESCRIPTION	CBasePlayer::m_playerSaveData[] =
 	DEFINE_FIELD( CBasePlayer, m_iExtraSoundTypes, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_iWeaponFlash, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_fLongJump, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, m_fSecondWorld, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, m_fPlayerHideMode, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBasePlayer, m_fDeadRespawn, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_old_Respawn_origin, FIELD_POSITION_VECTOR ),
+
 	DEFINE_FIELD( CBasePlayer, m_fInitHUD, FIELD_BOOLEAN ),
 	DEFINE_FIELD( CBasePlayer, m_tbdPrev, FIELD_TIME ),
 
 	DEFINE_FIELD( CBasePlayer, m_pTank, FIELD_EHANDLE ),
 	DEFINE_FIELD( CBasePlayer, m_iHideHUD, FIELD_INTEGER ),
 	DEFINE_FIELD( CBasePlayer, m_iFOV, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_fMoveItem, FIELD_EHANDLE ),
+	DEFINE_FIELD( CBasePlayer, m_fContPoint, FIELD_EHANDLE ),
+	DEFINE_FIELD( CBasePlayer, m_fContPoint_type, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_hasflashlight, FIELD_BOOLEAN ),//Item 1 - ����
+	DEFINE_FIELD( CBasePlayer, m_fMask, FIELD_BOOLEAN ),//Item 2 - �����
+	DEFINE_FIELD( CBasePlayer, m_fGlodenKey, FIELD_INTEGER ),//Item 3 - ���Կ�ף��ɶ���
+	DEFINE_FIELD( CBasePlayer, m_fGenerenKey, FIELD_BOOLEAN ),//Item 4 - ͨ�Կ��
+	DEFINE_FIELD( CBasePlayer, m_fSecurityKey, FIELD_BOOLEAN ),//Item 5 - ��ȫԿ��
+	DEFINE_FIELD( CBasePlayer, m_fBloodlyKey, FIELD_BOOLEAN ),//Item 6 - ȾѪԿ��
+	DEFINE_FIELD( CBasePlayer, m_fGreenCard, FIELD_BOOLEAN ),//Item 7 - �ɫ�ſ�
+	DEFINE_FIELD( CBasePlayer, m_fSecurityCard, FIELD_BOOLEAN ),//Item 8 - ��ȫ�ſ�
+	DEFINE_FIELD( CBasePlayer, m_fValve, FIELD_BOOLEAN ),//Item 9 - ���
+
+	DEFINE_FIELD( CBasePlayer, m_fequip1, FIELD_BOOLEAN ),//װ��1 - ��ģ�����+20%��
+	DEFINE_FIELD( CBasePlayer, m_fequip2, FIELD_BOOLEAN ),//װ��2 - ��������+10%��
+//	DEFINE_FIELD( CBasePlayer, m_fequip3, FIELD_BOOLEAN ),//װ��3 - ���ñ���Ծ��+150%���ȹ�˺���ӣ�
+	DEFINE_FIELD( CBasePlayer, m_fequip4, FIELD_BOOLEAN ),//װ��4 - ��£������+25%��
+	DEFINE_FIELD( CBasePlayer, m_fequip5, FIELD_BOOLEAN ),//װ��5 - ��֮��磨�������������ڰ������
+	DEFINE_FIELD( CBasePlayer, m_fequip6, FIELD_BOOLEAN ),//װ��6 - ����ˮ����������+100%��
+
+	DEFINE_FIELD( CBasePlayer, m_fSelectMode, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBasePlayer, m_fSelectNumber, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_flNextSoundTime1, FIELD_FLOAT ), 
+
+	DEFINE_FIELD( CBasePlayer, m_wdoor_mynpc, FIELD_EDICT ),//���NPC
+// rain tutorial
+/*
+	DEFINE_FIELD( CBasePlayer, Rain_dripsPerSecond, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, Rain_windX, FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, Rain_windY, FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, Rain_randX, FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, Rain_randY, FIELD_FLOAT ),
+
+	DEFINE_FIELD( CBasePlayer, Rain_ideal_dripsPerSecond, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, Rain_ideal_windX, FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, Rain_ideal_windY, FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, Rain_ideal_randX, FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, Rain_ideal_randY, FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, Rain_endFade, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, Rain_nextFadeUpdate, FIELD_TIME ),
+*/
+	DEFINE_FIELD( CBasePlayer, m_fNextClearTextTime, FIELD_TIME ),
+	//======================================
+	DEFINE_FIELD( CBasePlayer, m_newcross_active, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_newcross_size, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_newcross_ontarget, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_stuck_origin, FIELD_POSITION_VECTOR ),
+	DEFINE_FIELD( CBasePlayer, m_old_teleprort_origin, FIELD_POSITION_VECTOR ),
+	DEFINE_FIELD( CBasePlayer, m_teleprort_in_xen, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_god_time, FIELD_TIME ),
+
+	DEFINE_FIELD( CBasePlayer, m_flVelocityModifier, FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, m_flVelocityModifier2, FIELD_FLOAT ),
+	DEFINE_FIELD( CBasePlayer, m_needleheal, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_needleheal2, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_enemy_kills, FIELD_INTEGER ),//ɱ���
+	DEFINE_FIELD( CBasePlayer, m_ending_frags, FIELD_INTEGER ),//�Ʒֵ
+	DEFINE_FIELD( CBasePlayer, m_player_diamonds, FIELD_INTEGER ),//�ʯ�
+	DEFINE_FIELD( CBasePlayer, m_game_rate, FIELD_INTEGER ),//�Ϸ����
+	DEFINE_FIELD( CBasePlayer, m_player_time, FIELD_FLOAT ),//�Ϸʱ��
+
+	DEFINE_FIELD( CBasePlayer, m_vecClimb, FIELD_VECTOR ),
+
+	DEFINE_FIELD( CBasePlayer, m_player_died, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBasePlayer, m_title, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_trainning, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_music_save, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_skill_maxarmor, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_deadtakedmgkill, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_godposion, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_needlekilled_time, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_wrongdoor_time, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_wrongdoor_cover_time, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_needleuse_time, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_swordrecover_time, FIELD_TIME ),
+
+	DEFINE_FIELD( CBasePlayer, m_save_check, FIELD_INTEGER ),//�浵�ͷ��������������������������ǻ��ʧ
+	DEFINE_FIELD( CBasePlayer, m_save_allow, FIELD_INTEGER ),//�����浵
+
+	DEFINE_FIELD( CBasePlayer, m_air_oxyan, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_air_oxyan_max, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_air_show, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_Fast_RTP_Show, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_barnacle_draw_time, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_barnacle_god_time, FIELD_TIME ),
+	DEFINE_FIELD( CBasePlayer, m_barnacle_RTP, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_barnacle_RTP_relase, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_barnacle_RTP_bar, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_barnacle_RTP_button, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_barnacle_Level, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_barnacle_catchme, FIELD_EHANDLE ),
+
+	DEFINE_FIELD( CBasePlayer, m_team_npc1, FIELD_EHANDLE ),//���
+	DEFINE_FIELD( CBasePlayer, m_team_npc2, FIELD_EHANDLE ),//���
+	DEFINE_FIELD( CBasePlayer, m_team_npc3, FIELD_EHANDLE ),//���
+	DEFINE_FIELD( CBasePlayer, m_team_npc4, FIELD_EHANDLE ),//���
+	DEFINE_FIELD( CBasePlayer, m_team_npc5, FIELD_EHANDLE ),//���
+	DEFINE_FIELD( CBasePlayer, m_team_npc6, FIELD_EHANDLE ),//���
+	DEFINE_FIELD( CBasePlayer, m_team_npc7, FIELD_EHANDLE ),//���
+	DEFINE_FIELD( CBasePlayer, m_team_npc8, FIELD_EHANDLE ),//���
+	DEFINE_FIELD( CBasePlayer, m_team_npc9, FIELD_EHANDLE ),//���
+	DEFINE_FIELD( CBasePlayer, m_team_npc10, FIELD_EHANDLE ),//���0
+	DEFINE_FIELD( CBasePlayer, m_team_npc11, FIELD_EHANDLE ),//���1
+	DEFINE_FIELD( CBasePlayer, m_team_npc12, FIELD_EHANDLE ),//���2
+
+	DEFINE_FIELD( CBasePlayer, m_team_prot, FIELD_EHANDLE ),//����
+	DEFINE_FIELD( CBasePlayer, m_player_camera, FIELD_EHANDLE ),//��ͷ
+
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_actor1, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_actor2, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_actor3, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_actor4, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_actor5, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item_e, FIELD_INTEGER ),//װ���ο��Ʒ
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item_t, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item1, FIELD_INTEGER ),//�Ʒ��
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item2, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item3, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item4, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item5, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item6, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item7, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item8, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item9, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item10, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item11, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_item12, FIELD_INTEGER ),
+	/*
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_skill1, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_skill2, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_skill3, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_skill4, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_skill5, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_skill6, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_skill7, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_skill8, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_skill9, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_menu_skill_chater, FIELD_INTEGER ),
+	*/
+
+	DEFINE_FIELD( CBasePlayer, m_rpg_password_on, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_password_select, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_password_light1, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_password_light2, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_password_light3, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_password_light4, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_password_light5, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_password_light6, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_password_light7, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_password_light8, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_rpg_password_light9, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_boss_find, FIELD_EHANDLE ),
+	DEFINE_FIELD( CBasePlayer, m_boss_pov_time, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_boss_on, FIELD_INTEGER ),
+	DEFINE_FIELD( CBasePlayer, m_boss_type, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_flash_mode, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBasePlayer, m_guard_mynpc, FIELD_INTEGER ),
 
 	//DEFINE_FIELD( CBasePlayer, m_fDeadTime, FIELD_FLOAT ), // only used in multiplayer games
 	//DEFINE_FIELD( CBasePlayer, m_fGameHUDInitialized, FIELD_INTEGER ), // only used in multiplayer games
@@ -185,6 +424,38 @@ int gmsgTeamNames = 0;
 int gmsgStatusText = 0;
 int gmsgStatusValue = 0;
 
+//============================
+int gmsgDarkHoles = 0;
+int gmsgHPbar = 0;
+int gmsgAPbar = 0;
+int gmsgNVG = 0;
+int gmsgGunScope = 0;
+int gmsgLifeLoad = 0;
+int gmsgAirBar    = 0;
+int gmsgRTPbar    = 0;
+int gmsgGameOver  = 0;
+int gmsgModeShow = 0;
+//int gmsgMoney	 = 0;
+
+int gmsgExplosion = 0;
+int gmsgWorldExp = 0;
+int gmsgImpBullet = 0;
+int gmsgImpRocket = 0;
+int gmsgImpBeam = 0;
+int gmsgRain = 0;
+int gmsgFireGun = 0;
+int gmsgFireBeam = 0;
+int gmsgBrassClip = 0;
+int gmsgPlrGib = 0;
+int gmsgTrail = 0;
+int gmsgBreakGib = 0;
+
+int gmsgVGUIMenu = 0; // VGUI
+int gmsgTbutton = 0;
+
+int gmsgRPGMenu = 0;//RPG״̬�˵�
+int gmsgPWBord = 0;//����
+
 void LinkUserMessages( void )
 {
 	// Already taken care of?
@@ -198,7 +469,7 @@ void LinkUserMessages( void )
 	gmsgGeigerRange = REG_USER_MSG( "Geiger", 1 );
 	gmsgFlashlight = REG_USER_MSG( "Flashlight", 2 );
 	gmsgFlashBattery = REG_USER_MSG( "FlashBat", 1 );
-	gmsgHealth = REG_USER_MSG( "Health", 1 );
+	gmsgHealth = REG_USER_MSG( "Health", 4 );
 	gmsgDamage = REG_USER_MSG( "Damage", 12 );
 	gmsgBattery = REG_USER_MSG( "Battery", 2);
 	gmsgTrain = REG_USER_MSG( "Train", 1 );
@@ -225,15 +496,70 @@ void LinkUserMessages( void )
 	gmsgShowMenu = REG_USER_MSG( "ShowMenu", -1 );
 	gmsgShake = REG_USER_MSG( "ScreenShake", sizeof(ScreenShake) );
 	gmsgFade = REG_USER_MSG( "ScreenFade", sizeof(ScreenFade) );
-	gmsgAmmoX = REG_USER_MSG( "AmmoX", 2 );
+	gmsgAmmoX = REG_USER_MSG( "AmmoX", 3 );
 	gmsgTeamNames = REG_USER_MSG( "TeamNames", -1 );
+
+	gmsgTbutton	= REG_USER_MSG( "Tbutton", 2 );
 
 	gmsgStatusText = REG_USER_MSG( "StatusText", -1 );
 	gmsgStatusValue = REG_USER_MSG( "StatusValue", 3 );
+
+	gmsgRPGMenu = REG_USER_MSG( "WRPGMenu", -1 );
+	gmsgPWBord = REG_USER_MSG( "WPWBord", -1 );
+
+   	gmsgHPbar = REG_USER_MSG("CheckHPbar", 5);
+	gmsgAPbar = REG_USER_MSG("CheckAPbar", 5);
+	gmsgDarkHoles = REG_USER_MSG( "FDarkHoles",3);
+
+    gmsgNVG = REG_USER_MSG("NVGActivate", 2); 
+	gmsgGunScope = REG_USER_MSG("FGunScope", 1); 
+	gmsgLifeLoad = REG_USER_MSG("FLoadLife", 8); 
+	gmsgAirBar    = REG_USER_MSG( "CheckAirbar",3);
+	gmsgRTPbar    = REG_USER_MSG( "CheckRTPbar",3);
+	gmsgGameOver  = REG_USER_MSG("FGameOver", 2); 
+	gmsgModeShow = REG_USER_MSG("FModeShow", 2);
+
+	gmsgRain = REG_USER_MSG("Rain", 15);
+	gmsgImpBullet = REG_USER_MSG("ImpBullet", 21);
+	gmsgImpRocket = REG_USER_MSG("ImpRocket", 15);
+	gmsgImpBeam = REG_USER_MSG("ImpBeam", 14);
+	gmsgExplosion = REG_USER_MSG("Explosion", 7);
+	gmsgWorldExp = REG_USER_MSG("WorldExp", 13);
+	gmsgFireBeam = REG_USER_MSG("FireBeam", 19);
+	gmsgFireGun = REG_USER_MSG("FireGun", 10);
+	gmsgBrassClip = REG_USER_MSG("BrassClip", 14);
+	gmsgPlrGib = REG_USER_MSG("PlrGib", 7);
+	gmsgTrail = REG_USER_MSG("Trail", 9);
+	gmsgBreakGib = REG_USER_MSG("BreakGib", 11);
+
+	gmsgVGUIMenu = REG_USER_MSG("VGUIMenu", 1);
 }
 
 LINK_ENTITY_TO_CLASS( player, CBasePlayer )
 
+void CBasePlayer::Blind(float flUntilTime, float flHoldTime, float flFadeTime, int iAlpha)
+{
+	m_blindUntilTime = flUntilTime + gpGlobals->time;
+	m_blindStartTime = gpGlobals->time;
+	m_blindHoldTime = flHoldTime;
+	m_blindFadeTime = flFadeTime;
+	m_blindAlpha = iAlpha;
+}
+
+
+// Start 
+void CBasePlayer::ShowVGUIMenu(int iMenuID)
+{
+	if(!m_fSelectMode && (iMenuID >= 31 && iMenuID <= 37) )
+		return;
+
+    MESSAGE_BEGIN(MSG_ONE, gmsgVGUIMenu, NULL, pev);
+        WRITE_BYTE( iMenuID );
+    MESSAGE_END();
+}
+// End 
+
+/*
 void CBasePlayer::Pain( void )
 {
 	float flRndSound;//sound randomizer
@@ -246,6 +572,3445 @@ void CBasePlayer::Pain( void )
 		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain6.wav", 1, ATTN_NORM );
 	else
 		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain7.wav", 1, ATTN_NORM );
+}*/
+
+void CBasePlayer :: MenuItem_use( int iMenu_Item)
+{
+	int used_item = 0;
+	int reset_item = 0;
+
+	reset_use:
+	if (iMenu_Item == 0)
+	{
+		used_item = m_rpg_menu_item1;
+		if(reset_item == 1)
+		{
+			m_rpg_menu_item1 = 0;
+		}
+	}
+	else if (iMenu_Item == 1)
+	{
+		used_item = m_rpg_menu_item2;
+		if(reset_item == 1)
+		{
+			m_rpg_menu_item2 = 0;
+		}
+	}
+	else if (iMenu_Item == 2)
+	{
+		used_item = m_rpg_menu_item3;
+		if(reset_item == 1)
+		{
+			m_rpg_menu_item3 = 0;
+		}
+	}
+	else if (iMenu_Item == 3)
+	{
+		used_item = m_rpg_menu_item4;
+		if(reset_item == 1)
+		{
+			m_rpg_menu_item4 = 0;
+		}
+	}
+	else if (iMenu_Item == 4)
+	{
+		used_item = m_rpg_menu_item5;
+		if(reset_item == 1)
+		{
+			m_rpg_menu_item5 = 0;
+		}
+	}
+	else if (iMenu_Item == 5)
+	{
+		used_item = m_rpg_menu_item6;
+		if(reset_item == 1)
+		{
+			m_rpg_menu_item6 = 0;
+		}
+	}
+	else if (iMenu_Item == 6)
+	{
+		used_item = m_rpg_menu_item7;
+		if(reset_item == 1)
+		{
+			m_rpg_menu_item7 = 0;
+		}
+	}
+	else if (iMenu_Item == 7)
+	{
+		used_item = m_rpg_menu_item8;
+		if(reset_item == 1)
+		{
+			m_rpg_menu_item8 = 0;
+		}
+	}
+	else if (iMenu_Item == 8)
+	{
+		used_item = m_rpg_menu_item9;
+		if(reset_item == 1)
+		{
+			m_rpg_menu_item9 = 0;
+		}
+	}
+	else if (iMenu_Item == 9)
+	{
+		used_item = m_rpg_menu_item10;
+		if(reset_item == 1)
+		{
+			m_rpg_menu_item10 = 0;
+		}
+	}
+	else if (iMenu_Item == 10)
+	{
+		used_item = m_rpg_menu_item11;
+		if(reset_item == 1)
+		{
+			m_rpg_menu_item11 = 0;
+		}
+	}
+	else if (iMenu_Item == 11)
+	{
+		used_item = m_rpg_menu_item12;
+		if(reset_item == 1)
+		{
+			m_rpg_menu_item12 = 0;
+		}
+	}
+
+	if(used_item != 0 && reset_item == 0)
+	{
+		if(used_item == 9 && m_skill_maxarmor < 300)
+		{
+			EMIT_SOUND_DYN( ENT(pev), CHAN_ITEM, "items/ammopickup.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
+
+			m_skill_maxarmor = 100;
+			pev->armorvalue = m_skill_maxarmor;
+			reset_item = 1;
+			m_rpg_menu_on = 0;
+			goto reset_use;
+		}
+		else if(used_item == 10 && m_skill_maxarmor < 300)
+		{
+			EMIT_SOUND_DYN( ENT(pev), CHAN_ITEM, "items/ammopickup.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
+
+			m_skill_maxarmor = 120;
+			pev->armorvalue = m_skill_maxarmor;
+			reset_item = 1;
+			m_rpg_menu_on = 0;
+			goto reset_use;
+		}
+		else if(used_item == 11 && m_skill_maxarmor < 300)
+		{
+			EMIT_SOUND_DYN( ENT(pev), CHAN_ITEM, "items/ammopickup.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
+
+			m_skill_maxarmor = 150;
+			pev->armorvalue = m_skill_maxarmor;
+			reset_item = 1;
+			m_rpg_menu_on = 0;
+			goto reset_use;
+		}
+		else if(used_item == 12 && m_skill_maxarmor < 300)
+		{
+			EMIT_SOUND_DYN( ENT(pev), CHAN_ITEM, "items/ammopickup.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
+
+			m_skill_maxarmor = 200;
+			pev->armorvalue = m_skill_maxarmor;
+			reset_item = 1;
+			m_rpg_menu_on = 0;
+			goto reset_use;
+		}
+		else if(used_item == 13)
+		{
+			FX_Explosion( Center(), 45);
+
+			pev->health = pev->max_health;
+			if (m_team_npc1 != NULL && m_team_npc1->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc1->pev->health = m_team_npc1->pev->max_health;
+				FX_Explosion( m_team_npc1->Center(), 45);
+			}
+			if (m_team_npc2 != NULL && m_team_npc2->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc2->pev->health = m_team_npc2->pev->max_health;
+				FX_Explosion( m_team_npc2->Center(), 45);
+			}
+			if (m_team_npc3 != NULL && m_team_npc3->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc3->pev->health = m_team_npc3->pev->max_health;
+				FX_Explosion( m_team_npc3->Center(), 45);
+			}
+			if (m_team_npc4 != NULL && m_team_npc4->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc4->pev->health = m_team_npc4->pev->max_health;
+				FX_Explosion( m_team_npc4->Center(), 45);
+			}
+			if (m_team_npc5 != NULL && m_team_npc5->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc5->pev->health = m_team_npc5->pev->max_health;
+			}
+			if (m_team_npc6 != NULL && m_team_npc6->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc6->pev->health = m_team_npc6->pev->max_health;
+			}
+			if (m_team_npc7 != NULL && m_team_npc7->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc7->pev->health = m_team_npc7->pev->max_health;
+			}
+			if (m_team_npc8 != NULL && m_team_npc8->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc8->pev->health = m_team_npc8->pev->max_health;
+			}
+			if (m_team_npc9 != NULL && m_team_npc9->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc9->pev->health = m_team_npc9->pev->max_health;
+			}
+			if (m_team_npc10 != NULL && m_team_npc10->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc10->pev->health = m_team_npc10->pev->max_health;
+			}
+			if (m_team_npc11 != NULL && m_team_npc11->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc11->pev->health = m_team_npc11->pev->max_health;
+			}
+			if (m_team_npc12 != NULL && m_team_npc12->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc12->pev->health = m_team_npc12->pev->max_health;
+			}
+					
+			reset_item = 1;
+					
+			if(m_rpg_menu_on > 1)
+			{
+				m_rpg_menu_on = 1;
+			}
+			goto reset_use;
+		}
+		else if(used_item == 21)
+		{
+			EMIT_SOUND_DYN( ENT(pev), CHAN_ITEM, "newadd/shrinebuff.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
+			m_god_time = gpGlobals->time + 15.0;
+
+			if(m_darkposion > 0)
+			{
+				m_skill_darkhide_on = FALSE;
+				m_darkposion = 0;
+				m_iClientHealth = -1;
+				m_iClient_oxyan = -1;
+				pev->flags &= ~FL_NOTARGET;
+				m_fldarkhideTime = gpGlobals->time + 35;
+			}
+
+			m_godposion = 1;
+			m_iClientHealth = -1;
+			reset_item = 1;
+			m_rpg_menu_on = 0;
+			goto reset_use;
+		}
+		else if(used_item == 22)
+		{
+			CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "info_player_coop" );
+			if ( pEntity )
+			{
+				pev->origin = pEntity->pev->origin;
+				UTIL_ScreenFade( this, Vector(32,255,32), 1, 1, 255, FFADE_IN );
+				EMIT_SOUND(ENT(pev), CHAN_NETWORKVOICE_BASE, "debris/beamstart10.wav", 1, 0.7);
+				reset_item = 1;
+				m_rpg_menu_on = 0;
+				goto reset_use;
+			}
+		}
+	}
+}
+
+void CBasePlayer :: MenuItem_equip( int iMenu_Item)
+{
+	int equip_item = 0;
+	if (iMenu_Item == 0)
+	{
+		equip_item = m_rpg_menu_item1;
+	}
+	else if (iMenu_Item == 1)
+	{
+		equip_item = m_rpg_menu_item2;
+	}
+	else if (iMenu_Item == 2)
+	{
+		equip_item = m_rpg_menu_item3;
+	}
+	else if (iMenu_Item == 3)
+	{
+		equip_item = m_rpg_menu_item4;
+	}
+	else if (iMenu_Item == 4)
+	{
+		equip_item = m_rpg_menu_item5;
+	}
+	else if (iMenu_Item == 5)
+	{
+		equip_item = m_rpg_menu_item6;
+	}
+	else if (iMenu_Item == 6)
+	{
+		equip_item = m_rpg_menu_item7;
+	}
+	else if (iMenu_Item == 7)
+	{
+		equip_item = m_rpg_menu_item8;
+	}
+	else if (iMenu_Item == 8)
+	{
+		equip_item = m_rpg_menu_item9;
+	}
+	else if (iMenu_Item == 9)
+	{
+		equip_item = m_rpg_menu_item10;
+	}
+	else if (iMenu_Item == 10)
+	{
+		equip_item = m_rpg_menu_item11;
+	}
+	else if (iMenu_Item == 11)
+	{
+		equip_item = m_rpg_menu_item12;
+	}
+
+	if(equip_item == 13 || equip_item == 21 || equip_item == 22 || equip_item == 12 || equip_item == 11 || equip_item == 9 || equip_item == 10)
+	{
+		if(m_rpg_menu_item_e == iMenu_Item && m_rpg_menu_item_t == equip_item)
+		{
+			m_rpg_menu_item_e = -1;
+			m_rpg_menu_item_t = -1;
+		}
+		else
+		{
+			m_rpg_menu_item_e = iMenu_Item;
+			m_rpg_menu_item_t = equip_item;
+		}
+		m_iClient_mynpc = -1;
+	}
+}
+
+void CBasePlayer :: MenuItem_drop( int iMenu_Item)
+{
+	int drop_item = 0;
+	int can_drop = 0;
+
+	redrop:
+	if (iMenu_Item == 0)
+	{
+		drop_item = m_rpg_menu_item1;
+		if(can_drop == 1)
+		{
+			m_rpg_menu_item1 = 0;
+		}
+	}
+	else if (iMenu_Item == 1)
+	{
+		drop_item = m_rpg_menu_item2;
+		if(can_drop == 1)
+		{
+			m_rpg_menu_item2 = 0;
+		}
+	}
+	else if (iMenu_Item == 2)
+	{
+		drop_item = m_rpg_menu_item3;
+		if(can_drop == 1)
+		{
+			m_rpg_menu_item3 = 0;
+		}
+	}
+	else if (iMenu_Item == 3)
+	{
+		drop_item = m_rpg_menu_item4;
+		if(can_drop == 1)
+		{
+			m_rpg_menu_item4 = 0;
+		}
+	}
+	else if (iMenu_Item == 4)
+	{
+		drop_item = m_rpg_menu_item5;
+		if(can_drop == 1)
+		{
+			m_rpg_menu_item5 = 0;
+		}
+	}
+	else if (iMenu_Item == 5)
+	{
+		drop_item = m_rpg_menu_item6;
+		if(can_drop == 1)
+		{
+			m_rpg_menu_item6 = 0;
+		}
+	}
+	else if (iMenu_Item == 6)
+	{
+		drop_item = m_rpg_menu_item7;
+		if(can_drop == 1)
+		{
+			m_rpg_menu_item7 = 0;
+		}
+	}
+	else if (iMenu_Item == 7)
+	{
+		drop_item = m_rpg_menu_item8;
+		if(can_drop == 1)
+		{
+			m_rpg_menu_item8 = 0;
+		}
+	}
+	else if (iMenu_Item == 8)
+	{
+		drop_item = m_rpg_menu_item9;
+		if(can_drop == 1)
+		{
+			m_rpg_menu_item9 = 0;
+		}
+	}
+	else if (iMenu_Item == 9)
+	{
+		drop_item = m_rpg_menu_item10;
+		if(can_drop == 1)
+		{
+			m_rpg_menu_item10 = 0;
+		}
+	}
+	else if (iMenu_Item == 10)
+	{
+		drop_item = m_rpg_menu_item11;
+		if(can_drop == 1)
+		{
+			m_rpg_menu_item11 = 0;
+		}
+	}
+	else if (iMenu_Item == 11)
+	{
+		drop_item = m_rpg_menu_item12;
+		if(can_drop == 1)
+		{
+			m_rpg_menu_item12 = 0;
+		}
+	}
+
+	if(drop_item != 0 && can_drop == 0)
+	{
+		if(drop_item >= 9 && drop_item <= 13 || drop_item == 21 || drop_item == 2)
+		{
+			can_drop = 1;
+
+			if(m_rpg_menu_item_e == iMenu_Item)
+			{
+				m_rpg_menu_item_e = -1;
+				m_rpg_menu_item_t = -1;
+				m_iClient_mynpc   = -1;
+			}
+
+			CBaseEntity *pDropItem = Create("item_dropusekey", pev->origin, Vector(0,pev->angles.y,0) );
+			if(drop_item == 13)
+			{
+				pDropItem->pev->frags = 1;
+			}
+			else if(drop_item == 21)
+			{
+				pDropItem->pev->frags = 2;
+			}
+			else if(drop_item == 12)
+			{
+				pDropItem->pev->frags = 3;
+			}
+			else if(drop_item == 11)
+			{
+				pDropItem->pev->frags = 4;
+			}
+			else if(drop_item == 9)
+			{
+				pDropItem->pev->frags = 5;
+			}
+			else if(drop_item == 10)
+			{
+				pDropItem->pev->frags = 6;
+			}
+			else if(drop_item == 2)
+			{
+				pDropItem->pev->frags = 7;
+				m_fMask = FALSE;
+			}
+			
+			goto redrop;
+		}
+	}
+}
+
+void CBasePlayer :: MenuItem_add( int iMenu_Item )
+{
+	if (m_rpg_menu_item1 == 0)
+	{
+		m_rpg_menu_item1 = iMenu_Item;
+	}
+	else if (m_rpg_menu_item2 == 0){
+		m_rpg_menu_item2 = iMenu_Item;
+	}
+	else if (m_rpg_menu_item3 == 0)
+	{
+		m_rpg_menu_item3 = iMenu_Item;
+	}
+	else if (m_rpg_menu_item4 == 0)
+	{
+		m_rpg_menu_item4 = iMenu_Item;
+	}
+	else if (m_rpg_menu_item5 == 0)
+	{
+		m_rpg_menu_item5 = iMenu_Item;
+	}
+	else if (m_rpg_menu_item6 == 0)
+	{
+		m_rpg_menu_item6 = iMenu_Item;
+	}
+	else if (m_rpg_menu_item7 == 0)
+	{
+		m_rpg_menu_item7 = iMenu_Item;
+	}
+	else if (m_rpg_menu_item8 == 0)
+	{
+		m_rpg_menu_item8 = iMenu_Item;
+	}
+	else if (m_rpg_menu_item9 == 0)
+	{
+		m_rpg_menu_item9 = iMenu_Item;
+	}
+	else if (m_rpg_menu_item10 == 0)
+	{
+		m_rpg_menu_item10 = iMenu_Item;
+	}
+	else if (m_rpg_menu_item11 == 0)
+	{
+		m_rpg_menu_item11 = iMenu_Item;
+	}
+	else if (m_rpg_menu_item12 == 0)
+	{
+		m_rpg_menu_item12 = iMenu_Item;
+	}
+}
+
+void CBasePlayer :: MenuItem_remove( int iMenu_Item_ID )
+{
+	if (m_rpg_menu_item1 == iMenu_Item_ID)
+	{
+		m_rpg_menu_item1 = 0;
+	}
+	else if (m_rpg_menu_item2 == iMenu_Item_ID)
+	{
+		m_rpg_menu_item2 = 0;
+	}
+	else if (m_rpg_menu_item3 == iMenu_Item_ID)
+	{
+		m_rpg_menu_item3 = 0;
+	}
+	else if (m_rpg_menu_item4 == iMenu_Item_ID)
+	{
+		m_rpg_menu_item4 = 0;
+	}
+	else if (m_rpg_menu_item5 == iMenu_Item_ID)
+	{
+		m_rpg_menu_item5 = 0;
+	}
+	else if (m_rpg_menu_item6 == iMenu_Item_ID)
+	{
+		m_rpg_menu_item6 = 0;
+	}
+	else if (m_rpg_menu_item7 == iMenu_Item_ID)
+	{
+		m_rpg_menu_item7 = 0;
+	}
+	else if (m_rpg_menu_item8 == iMenu_Item_ID)
+	{
+		m_rpg_menu_item8 = 0;
+	}
+	else if (m_rpg_menu_item9 == iMenu_Item_ID)
+	{
+		m_rpg_menu_item9 = 0;
+	}
+	else if (m_rpg_menu_item10 == iMenu_Item_ID)
+	{
+		m_rpg_menu_item10 = 0;
+	}
+	else if (m_rpg_menu_item11 == iMenu_Item_ID)
+	{
+		m_rpg_menu_item11 = 0;
+	}
+	else if (m_rpg_menu_item12 == iMenu_Item_ID)
+	{
+		m_rpg_menu_item12 = 0;
+	}
+}
+
+
+void CBasePlayer :: TeamMate_expadd( CBaseMonster *pAllynpc , CBaseMonster *pKillnpc)
+{
+	if(!pKillnpc->m_killed_exp)
+		return;
+
+	int get_exp = 0;
+	int level_fabs = pKillnpc->m_rpgms_level - m_kadoma_level;
+
+	if(m_rpg_menu_actor1 == 1)
+	{
+		if(pKillnpc->m_flPlayerDamage_exp >= pKillnpc->pev->max_health * 0.5 || pKillnpc->m_is_the_boss || pAllynpc == NULL)
+		{
+			get_exp = pKillnpc->m_killed_exp;
+		}
+		else if(pKillnpc->m_flPlayerDamage_exp >= pKillnpc->pev->max_health * 0.2 || !FNullEnt(m_wdoor_mynpc))
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.5;
+		}
+		else
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.3;
+		}
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else
+		{
+			get_exp *= 0.3;
+		}
+
+		if(get_exp >= 1)
+		{
+			m_kadoma_exp += get_exp;
+			m_enemy_kills += 1;
+		}
+		//ALERT ( at_console, "Player Exp %d\n", get_exp );
+	}
+	else
+	{
+		get_exp = pKillnpc->m_killed_exp * 0.2;
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else
+		{
+			get_exp *= 0.3;
+		}
+
+
+		if(get_exp >= 1)
+		{
+			m_kadoma_exp += get_exp;
+			m_enemy_kills += 1;
+		}
+		//ALERT ( at_console, "Player Exp %d\n", get_exp );
+	}
+
+	if(pAllynpc != NULL)
+	{
+		level_fabs = pKillnpc->m_rpgms_level - pAllynpc->m_rpgms_level;
+	}
+
+	CBaseMonster *pEnemyMonster;
+	if(m_team_npc1 != NULL)
+	{
+		get_exp = 0;
+		if(pKillnpc->m_flPlayerTeamMateDamage_exp1 >= pKillnpc->pev->max_health * 0.5  || pKillnpc->m_is_the_boss || pAllynpc == m_team_npc1)
+		{
+			get_exp = pKillnpc->m_killed_exp;
+		}
+		else if(pKillnpc->m_flPlayerTeamMateDamage_exp1 >= pKillnpc->pev->max_health * 0.2)
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.5;
+		}
+		else if(m_team_npc1->pev->deadflag == DEAD_NO)
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.3;
+		}
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else
+		{
+			get_exp *= 0.3;
+		}
+
+		if(get_exp >= 1)
+		{
+			pEnemyMonster = m_team_npc1->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_exp += get_exp;
+			pEnemyMonster->m_rpgms_maxexp += get_exp;
+		}
+		//ALERT ( at_console, "TeamNPC1 Exp %d\n", get_exp );
+	}
+	if(m_team_npc2 != NULL)
+	{
+		get_exp = 0;
+		if(pKillnpc->m_flPlayerTeamMateDamage_exp2 >= pKillnpc->pev->max_health * 0.5 || pKillnpc->m_is_the_boss || pAllynpc == m_team_npc2)
+		{
+			get_exp = pKillnpc->m_killed_exp;
+		}
+		else if(pKillnpc->m_flPlayerTeamMateDamage_exp2 >= pKillnpc->pev->max_health * 0.2)
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.5;
+		}
+		else if(m_team_npc2->pev->deadflag == DEAD_NO)
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.3;
+		}
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else{
+			get_exp *= 0.3;
+		}
+
+
+		if(get_exp >= 1)
+		{
+			pEnemyMonster = m_team_npc2->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_exp += get_exp;
+			pEnemyMonster->m_rpgms_maxexp += get_exp;
+		}
+		//ALERT ( at_console, "TeamNPC2 Exp %d\n", get_exp );
+	}
+	if(m_team_npc3 != NULL)
+	{
+		get_exp = 0;
+		if(pKillnpc->m_flPlayerTeamMateDamage_exp3 >= pKillnpc->pev->max_health * 0.5 || pKillnpc->m_is_the_boss || pAllynpc == m_team_npc3)
+		{
+			get_exp = pKillnpc->m_killed_exp;
+		}
+		else if(pKillnpc->m_flPlayerTeamMateDamage_exp3 >= pKillnpc->pev->max_health * 0.2)
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.5;
+		}
+		else if(m_team_npc3->pev->deadflag == DEAD_NO)
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.3;
+		}
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else
+		{
+			get_exp *= 0.3;
+		}
+
+
+		if(get_exp >= 1)
+		{
+			pEnemyMonster = m_team_npc3->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_exp += get_exp;
+			pEnemyMonster->m_rpgms_maxexp += get_exp;
+		}
+		//ALERT ( at_console, "TeamNPC3 Exp %d\n", get_exp );
+	}
+	if(m_team_npc4 != NULL)
+	{
+		get_exp = 0;
+		if(pKillnpc->m_flPlayerTeamMateDamage_exp4 >= pKillnpc->pev->max_health * 0.5 || pKillnpc->m_is_the_boss || pAllynpc == m_team_npc4)
+		{
+			get_exp = pKillnpc->m_killed_exp;
+		}
+		else if(pKillnpc->m_flPlayerTeamMateDamage_exp4 >= pKillnpc->pev->max_health * 0.2)
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.5;
+		}
+		else if(m_team_npc4->pev->deadflag == DEAD_NO)
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.3;
+		}
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else
+		{
+			get_exp *= 0.3;
+		}
+
+
+		if(get_exp >= 1)
+		{
+			pEnemyMonster = m_team_npc4->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_exp += get_exp;
+			pEnemyMonster->m_rpgms_maxexp += get_exp;
+		}
+		//ALERT ( at_console, "TeamNPC4 Exp %d\n", get_exp );
+	}
+	if(m_team_npc5 != NULL)
+	{
+		get_exp = 0;
+		if(pKillnpc->m_is_the_boss)
+		{
+			get_exp = pKillnpc->m_killed_exp;
+		}
+		else
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.2;
+		}
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else
+		{
+			get_exp *= 0.3;
+		}
+
+
+		if(get_exp >= 1)
+		{
+			pEnemyMonster = m_team_npc5->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_exp += get_exp;
+			pEnemyMonster->m_rpgms_maxexp += get_exp;
+		}
+		//ALERT ( at_console, "TeamNPC5-12 Exp %d\n", get_exp );
+	}
+	if(m_team_npc6 != NULL)
+	{
+		get_exp = 0;
+		if(pKillnpc->m_is_the_boss)
+		{
+			get_exp = pKillnpc->m_killed_exp;
+		}
+		else
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.2;
+		}
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else
+		{
+			get_exp *= 0.3;
+		}
+
+
+		if(get_exp >= 1)
+		{
+			pEnemyMonster = m_team_npc6->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_exp += get_exp;
+			pEnemyMonster->m_rpgms_maxexp += get_exp;
+		}
+	}
+	if(m_team_npc7 != NULL)
+	{
+		get_exp = 0;
+		if(pKillnpc->m_is_the_boss)
+		{
+			get_exp = pKillnpc->m_killed_exp;
+		}
+		else
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.2;
+		}
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else
+		{
+			get_exp *= 0.3;
+		}
+
+
+		if(get_exp >= 1)
+		{
+			pEnemyMonster = m_team_npc7->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_exp += get_exp;
+			pEnemyMonster->m_rpgms_maxexp += get_exp;
+		}
+	}
+	if(m_team_npc8 != NULL)
+	{
+		get_exp = 0;
+		if(pKillnpc->m_is_the_boss)
+		{
+			get_exp = pKillnpc->m_killed_exp;
+		}
+		else
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.2;
+		}
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else
+		{
+			get_exp *= 0.3;
+		}
+
+
+		if(get_exp >= 1)
+		{
+			pEnemyMonster = m_team_npc8->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_exp += get_exp;
+			pEnemyMonster->m_rpgms_maxexp += get_exp;
+		}
+	}
+	if(m_team_npc9 != NULL)
+	{
+		get_exp = 0;
+		if(pKillnpc->m_is_the_boss)
+		{
+			get_exp = pKillnpc->m_killed_exp;
+		}
+		else
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.2;
+		}
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else
+		{
+			get_exp *= 0.3;
+		}
+
+
+		if(get_exp >= 1)
+		{
+			pEnemyMonster = m_team_npc9->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_exp += get_exp;
+			pEnemyMonster->m_rpgms_maxexp += get_exp;
+		}
+	}
+	if(m_team_npc10 != NULL)
+	{
+		get_exp = 0;
+		if(pKillnpc->m_is_the_boss)
+		{
+			get_exp = pKillnpc->m_killed_exp;
+		}
+		else
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.2;
+		}
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else
+		{
+			get_exp *= 0.3;
+		}
+
+
+		if(get_exp >= 1)
+		{
+			pEnemyMonster = m_team_npc10->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_exp += get_exp;
+			pEnemyMonster->m_rpgms_maxexp += get_exp;
+		}
+	}
+	if(m_team_npc11 != NULL)
+	{
+		get_exp = 0;
+		if(pKillnpc->m_is_the_boss)
+		{
+			get_exp = pKillnpc->m_killed_exp;
+		}
+		else
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.2;
+		}
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else{
+			get_exp *= 0.3;
+		}
+
+
+		if(get_exp >= 1)
+		{
+			pEnemyMonster = m_team_npc11->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_exp += get_exp;
+			pEnemyMonster->m_rpgms_maxexp += get_exp;
+		}
+	}
+	if(m_team_npc12 != NULL)
+	{
+		get_exp = 0;
+		if(pKillnpc->m_is_the_boss)
+		{
+			get_exp = pKillnpc->m_killed_exp;
+		}
+		else
+		{
+			get_exp = pKillnpc->m_killed_exp * 0.2;
+		}
+
+		if(level_fabs >= 40)
+		{
+			get_exp *= 1.5;
+		}
+		else if(level_fabs > -20)
+		{
+			get_exp *= 1.0;
+		}
+		else if(level_fabs > -40)
+		{
+			get_exp *= 0.5;
+		}
+		else
+		{
+			get_exp *= 0.3;
+		}
+
+
+		if(get_exp >= 1)
+		{
+			pEnemyMonster = m_team_npc12->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_exp += get_exp;
+			pEnemyMonster->m_rpgms_maxexp += get_exp;
+		}
+	}
+}
+
+void CBasePlayer :: TeamMate_add( CBaseMonster *pAllynpc )
+{
+	if(pAllynpc->m_lovehate <= 0 || pAllynpc->m_lovehate == 810)
+		return;
+	
+
+	if (m_team_npc1 == NULL)
+	{
+		m_team_npc1 = pAllynpc;
+		m_rpg_menu_actor2 = pAllynpc->m_rpgms_actor;
+		pAllynpc->m_rpgms_inteam = 1;
+	}
+	else if (m_team_npc2 == NULL)
+	{
+		m_team_npc2 = pAllynpc;
+		m_rpg_menu_actor3 = pAllynpc->m_rpgms_actor;
+		pAllynpc->m_rpgms_inteam = 2;
+	}
+	else if (m_team_npc3 == NULL)
+	{
+		m_team_npc3 = pAllynpc;
+		m_rpg_menu_actor4 = pAllynpc->m_rpgms_actor;
+		pAllynpc->m_rpgms_inteam = 3;
+	}
+	else if (m_team_npc4 == NULL)
+	{
+		m_team_npc4 = pAllynpc;
+		m_rpg_menu_actor5 = pAllynpc->m_rpgms_actor;
+		pAllynpc->m_rpgms_inteam = 4;
+	}
+	else if (m_team_npc5 == NULL)
+	{
+		m_team_npc5 = pAllynpc;
+		pAllynpc->m_rpgms_inteam = 5;
+		pAllynpc->Hunt_Stand_Set(0);
+	}
+	else if (m_team_npc6 == NULL)
+	{
+		m_team_npc6 = pAllynpc;
+		pAllynpc->m_rpgms_inteam = 5;
+		pAllynpc->Hunt_Stand_Set(0);
+	}
+	else if (m_team_npc7 == NULL)
+	{
+		m_team_npc7 = pAllynpc;
+		pAllynpc->m_rpgms_inteam = 5;
+		pAllynpc->Hunt_Stand_Set(0);
+	}
+	else if (m_team_npc8 == NULL)
+	{
+		m_team_npc8 = pAllynpc;
+		pAllynpc->m_rpgms_inteam = 5;
+		pAllynpc->Hunt_Stand_Set(0);
+	}
+	else if (m_team_npc9 == NULL)
+	{
+		m_team_npc9 = pAllynpc;
+		pAllynpc->m_rpgms_inteam = 5;
+		pAllynpc->Hunt_Stand_Set(0);
+	}
+	else if (m_team_npc10 == NULL)
+	{
+		m_team_npc10 = pAllynpc;
+		pAllynpc->m_rpgms_inteam = 5;
+		pAllynpc->Hunt_Stand_Set(0);
+	}
+	else if (m_team_npc11 == NULL)
+	{
+		m_team_npc11 = pAllynpc;
+		pAllynpc->m_rpgms_inteam = 5;
+		pAllynpc->Hunt_Stand_Set(0);
+	}
+	else if (m_team_npc12 == NULL)
+	{
+		m_team_npc12 = pAllynpc;
+		pAllynpc->m_rpgms_inteam = 5;
+		pAllynpc->Hunt_Stand_Set(0);
+	}
+
+	CBaseMonster *pMonster;
+	if (m_team_npc1 != NULL)
+	{
+		pMonster = m_team_npc1->MyMonsterPointer();
+		TeamMate_NPC_add(pMonster);
+		if(pMonster->m_hPlayer == NULL)
+		{
+			pMonster->m_hPlayer = this;
+		}
+	}
+	if (m_team_npc2 != NULL)
+	{
+		pMonster = m_team_npc2->MyMonsterPointer();
+		TeamMate_NPC_add(pMonster);
+		if(pMonster->m_hPlayer == NULL)
+		{
+			pMonster->m_hPlayer = this;
+		}
+	}
+	if (m_team_npc3 != NULL)
+	{
+		pMonster = m_team_npc3->MyMonsterPointer();
+		TeamMate_NPC_add(pMonster);
+		if(pMonster->m_hPlayer == NULL)
+		{
+			pMonster->m_hPlayer = this;
+		}
+	}
+	if (m_team_npc4 != NULL)
+	{
+		pMonster = m_team_npc4->MyMonsterPointer();
+		TeamMate_NPC_add(pMonster);
+		if(pMonster->m_hPlayer == NULL)
+		{
+			pMonster->m_hPlayer = this;
+		}
+	}
+}
+
+void CBasePlayer :: TeamMate_NPC_add( CBaseMonster *pAllynpc )
+{
+	if(m_team_npc1 != NULL && m_team_npc1 != pAllynpc)
+	{
+		pAllynpc->m_hTeamMate1 = m_team_npc1;
+	}
+	if(m_team_npc2 != NULL && m_team_npc2 != pAllynpc)
+	{
+		pAllynpc->m_hTeamMate2 = m_team_npc2;
+	}
+	if(m_team_npc3 != NULL && m_team_npc3 != pAllynpc)
+	{
+		pAllynpc->m_hTeamMate3 = m_team_npc3;
+	}
+	if(m_team_npc4 != NULL && m_team_npc4 != pAllynpc)
+	{
+		pAllynpc->m_hTeamMate4 = m_team_npc4;
+	}
+}
+
+void CBasePlayer :: PassWordBordUse( int use )
+{
+	if(m_rpg_password_on == 20)
+	{
+		EnableControl(TRUE);
+		m_rpg_password_on = 0;
+		return;
+	}
+
+	if(m_rpg_password_on == 0 || m_rpg_password_on > 10)
+		return;
+
+	if(m_rpg_password_select == 0)
+		m_rpg_password_select = 1;
+
+	if(use == 1)
+	{
+		EMIT_SOUND( ENT(pev), CHAN_ITEM, "common/ace_enter.wav", 0.4, ATTN_NORM);
+		if(m_rpg_password_select == 1)
+		{
+			if(m_rpg_password_light1 == 1)
+				m_rpg_password_light1 = 0;
+			else
+				m_rpg_password_light1 = 1;
+
+			if(m_rpg_password_light2 == 1)
+				m_rpg_password_light2 = 0;
+			else
+				m_rpg_password_light2 = 1;
+
+			if(m_rpg_password_light4 == 1)
+				m_rpg_password_light4 = 0;
+			else
+				m_rpg_password_light4 = 1;
+		}
+		else if(m_rpg_password_select == 2)
+		{
+			if(m_rpg_password_light1 == 1)
+				m_rpg_password_light1 = 0;
+			else
+				m_rpg_password_light1 = 1;
+
+			if(m_rpg_password_light2 == 1)
+				m_rpg_password_light2 = 0;
+			else
+				m_rpg_password_light2 = 1;
+
+			if(m_rpg_password_light3 == 1)
+				m_rpg_password_light3 = 0;
+			else
+				m_rpg_password_light3 = 1;
+
+			if(m_rpg_password_light5 == 1)
+				m_rpg_password_light5 = 0;
+			else
+				m_rpg_password_light5 = 1;
+		}
+		else if(m_rpg_password_select == 3)
+		{
+			if(m_rpg_password_light3 == 1)
+				m_rpg_password_light3 = 0;
+			else
+				m_rpg_password_light3 = 1;
+
+			if(m_rpg_password_light2 == 1)
+				m_rpg_password_light2 = 0;
+			else
+				m_rpg_password_light2 = 1;
+
+			if(m_rpg_password_light6 == 1)
+				m_rpg_password_light6 = 0;
+			else
+				m_rpg_password_light6 = 1;
+		}
+		else if(m_rpg_password_select == 4)
+		{
+			if(m_rpg_password_light1 == 1)
+				m_rpg_password_light1 = 0;
+			else
+				m_rpg_password_light1 = 1;
+
+			if(m_rpg_password_light4 == 1)
+				m_rpg_password_light4 = 0;
+			else
+				m_rpg_password_light4 = 1;
+
+			if(m_rpg_password_light5 == 1)
+				m_rpg_password_light5 = 0;
+			else
+				m_rpg_password_light5 = 1;
+
+			if(m_rpg_password_light7 == 1)
+				m_rpg_password_light7 = 0;
+			else
+				m_rpg_password_light7 = 1;
+		}
+		else if(m_rpg_password_select == 5)
+		{
+			if(m_rpg_password_light2 == 1)
+				m_rpg_password_light2 = 0;
+			else
+				m_rpg_password_light2 = 1;
+
+			if(m_rpg_password_light4 == 1)
+				m_rpg_password_light4 = 0;
+			else
+				m_rpg_password_light4 = 1;
+
+			if(m_rpg_password_light5 == 1)
+				m_rpg_password_light5 = 0;
+			else
+				m_rpg_password_light5 = 1;
+
+			if(m_rpg_password_light6 == 1)
+				m_rpg_password_light6 = 0;
+			else
+				m_rpg_password_light6 = 1;
+
+			if(m_rpg_password_light8 == 1)
+				m_rpg_password_light8 = 0;
+			else
+				m_rpg_password_light8 = 1;
+		}
+		else if(m_rpg_password_select == 6)
+		{
+			if(m_rpg_password_light3 == 1)
+				m_rpg_password_light3 = 0;
+			else
+				m_rpg_password_light3 = 1;
+
+			if(m_rpg_password_light5 == 1)
+				m_rpg_password_light5 = 0;
+			else
+				m_rpg_password_light5 = 1;
+
+			if(m_rpg_password_light6 == 1)
+				m_rpg_password_light6 = 0;
+			else
+				m_rpg_password_light6 = 1;
+
+			if(m_rpg_password_light9 == 1)
+				m_rpg_password_light9 = 0;
+			else
+				m_rpg_password_light9 = 1;
+		}
+		else if(m_rpg_password_select == 7)
+		{
+			if(m_rpg_password_light4 == 1)
+				m_rpg_password_light4 = 0;
+			else
+				m_rpg_password_light4 = 1;
+
+			if(m_rpg_password_light7 == 1)
+				m_rpg_password_light7 = 0;
+			else
+				m_rpg_password_light7 = 1;
+
+			if(m_rpg_password_light8 == 1)
+				m_rpg_password_light8 = 0;
+			else
+				m_rpg_password_light8 = 1;
+		}
+		else if(m_rpg_password_select == 8)
+		{
+			if(m_rpg_password_light5 == 1)
+				m_rpg_password_light5 = 0;
+			else
+				m_rpg_password_light5 = 1;
+
+			if(m_rpg_password_light7 == 1)
+				m_rpg_password_light7 = 0;
+			else
+				m_rpg_password_light7 = 1;
+
+			if(m_rpg_password_light8 == 1)
+				m_rpg_password_light8 = 0;
+			else
+				m_rpg_password_light8 = 1;
+
+			if(m_rpg_password_light9 == 1)
+				m_rpg_password_light9 = 0;
+			else
+				m_rpg_password_light9 = 1;
+		}
+		else if(m_rpg_password_select == 9)
+		{
+			if(m_rpg_password_light6 == 1)
+				m_rpg_password_light6 = 0;
+			else
+				m_rpg_password_light6 = 1;
+
+			if(m_rpg_password_light8 == 1)
+				m_rpg_password_light8 = 0;
+			else
+				m_rpg_password_light8 = 1;
+
+			if(m_rpg_password_light9 == 1)
+				m_rpg_password_light9 = 0;
+			else
+				m_rpg_password_light9 = 1;
+		}
+
+		if(m_rpg_password_light1 == 1 && m_rpg_password_light2 == 1
+		&& m_rpg_password_light3 == 1 && m_rpg_password_light4 == 1
+		&& m_rpg_password_light5 == 1 && m_rpg_password_light6 == 1
+		&& m_rpg_password_light7 == 1 && m_rpg_password_light8 == 1
+		&& m_rpg_password_light9 == 1)
+		{
+			m_rpg_password_on = 20;
+			m_rpg_password_select = 0;
+		}
+	}
+	if(use == 2)
+	{
+		EMIT_SOUND( ENT(pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+		if(m_rpg_password_select == 1)
+		{
+			m_rpg_password_select = 7;
+		}
+		else if(m_rpg_password_select == 2)
+		{
+			m_rpg_password_select = 8;
+		}
+		else if(m_rpg_password_select == 3)
+		{
+			m_rpg_password_select = 9;
+		}
+		else
+		{
+			m_rpg_password_select -= 3;
+		}
+	}
+	if(use == 3){
+		EMIT_SOUND( ENT(pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+		if(m_rpg_password_select == 7)
+		{
+			m_rpg_password_select = 1;
+		}
+		else if(m_rpg_password_select == 8)
+		{
+			m_rpg_password_select = 2;
+		}
+		else if(m_rpg_password_select == 9)
+		{
+			m_rpg_password_select = 3;
+		}
+		else
+		{
+			m_rpg_password_select += 3;
+		}
+	}
+	if(use == 4)
+	{
+		EMIT_SOUND( ENT(pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+		if(m_rpg_password_select == 1)
+		{
+			m_rpg_password_select = 3;
+		}
+		else if(m_rpg_password_select == 4)
+		{
+			m_rpg_password_select = 6;
+		}
+		else if(m_rpg_password_select == 7)
+		{
+			m_rpg_password_select = 9;
+		}
+		else
+		{
+			m_rpg_password_select -= 1;
+		}
+	}
+	if(use == 5)
+	{
+		EMIT_SOUND( ENT(pev), CHAN_ITEM, "common/ace_select.wav", 0.4, ATTN_NORM);
+		if(m_rpg_password_select == 3)
+		{
+			m_rpg_password_select = 1;
+		}
+		else if(m_rpg_password_select == 6)
+		{
+			m_rpg_password_select = 4;
+		}
+		else if(m_rpg_password_select == 9)
+		{
+			m_rpg_password_select = 7;
+		}
+		else
+		{
+			m_rpg_password_select += 1;
+		}
+	}
+}
+
+void CBasePlayer :: TeamMate_GetSkill( CBaseMonster *pMonster )
+{
+	m_rpg_menu_skill_chater = pMonster->m_rpgms_actor;
+	m_rpg_menu_skill1 = pMonster->m_rpgms_skill1_learn;
+	m_rpg_menu_skill2 = pMonster->m_rpgms_skill2_learn;
+	m_rpg_menu_skill3 = pMonster->m_rpgms_skill3_learn;
+	m_rpg_menu_skill4 = pMonster->m_rpgms_skill4_learn;
+	m_rpg_menu_skill5 = pMonster->m_rpgms_skill5_learn;
+	m_rpg_menu_skill6 = pMonster->m_rpgms_skill6_learn;
+	m_rpg_menu_skill7 = pMonster->m_rpgms_skill7_learn;
+	m_rpg_menu_skill8 = pMonster->m_rpgms_skill8_learn;
+	m_rpg_menu_skill9 = pMonster->m_rpgms_skill9_learn;
+	m_rpg_menu_skill10 = pMonster->m_rpgms_skill10_learn;
+	m_rpg_menu_skill11 = pMonster->m_rpgms_skill11_learn;
+	m_rpg_menu_skill12 = pMonster->m_rpgms_skill12_learn;
+}
+
+void CBasePlayer :: GetGame_Playcvar( void )
+{
+	float gtime = m_player_time;
+	float gtime_h = m_player_time / 3600;
+	if(gtime_h >= 1)
+	{
+		gtime -= (int)gtime_h * 3600;
+	}
+	float gtime_m = gtime / 60;
+	if(gtime_m >= 1)
+	{
+		gtime -= (int)gtime_m * 60;
+	}
+	float gtime_s = gtime;
+
+	m_rpg_menu_skill1 = (int)gtime_h;
+	m_rpg_menu_skill2 = (int)gtime_m;
+	m_rpg_menu_skill3 = (int)gtime_s;
+	m_rpg_menu_skill4 = g_iSkillLevel;
+	m_rpg_menu_skill5 = m_game_rate;
+	m_rpg_menu_skill6 = m_enemy_kills;
+	m_rpg_menu_skill7 = m_player_diamonds;
+	m_rpg_menu_skill8 = m_ending_frags;
+}
+
+void CBasePlayer :: TeamMate_Nagamatagi_Switch_Auto( CBaseMonster *pMonster )
+{
+	if(m_rpg_menu_actor1 != 1)
+		return;
+
+	int ally1 = 0;
+	int ally2 = 0;
+	if(pMonster->m_rpgms_inteam == 1)
+	{
+		ally1 = 1;
+	}
+	else if(pMonster->m_rpgms_inteam == 2)
+	{
+		ally1 = 2;
+	}
+	else if(pMonster->m_rpgms_inteam == 3)
+	{
+		ally1 = 3;
+	}
+	else if(pMonster->m_rpgms_inteam == 4)
+	{
+		ally1 = 4;
+	}
+
+	if(m_team_npc5 != NULL && m_team_npc5->pev->deadflag == DEAD_NO)
+	{
+		ally2 = 5;
+	}
+	else if(m_team_npc6 != NULL && m_team_npc6->pev->deadflag == DEAD_NO)
+	{
+		ally2 = 6;
+	}
+	else if(m_team_npc7 != NULL && m_team_npc7->pev->deadflag == DEAD_NO)
+	{
+		ally2 = 7;
+	}
+	else if(m_team_npc8 != NULL && m_team_npc8->pev->deadflag == DEAD_NO)
+	{
+		ally2 = 8;
+	}
+	else if(m_team_npc9 != NULL && m_team_npc9->pev->deadflag == DEAD_NO)
+	{
+		ally2 = 9;
+	}
+	else if(m_team_npc10 != NULL && m_team_npc10->pev->deadflag == DEAD_NO)
+	{
+		ally2 = 10;
+	}
+	else if(m_team_npc11 != NULL && m_team_npc11->pev->deadflag == DEAD_NO)
+	{
+		ally2 = 11;
+	}
+	else if(m_team_npc12 != NULL && m_team_npc12->pev->deadflag == DEAD_NO)
+	{
+		ally2 = 12;
+	}
+
+	if(ally1 > 0 && ally2 > 0)
+	{
+		TeamMate_Nagamatagi_Switch(ally1,ally2);
+	}
+}
+
+void CBasePlayer :: TeamMate_Nagamatagi_Teleport( int mode )
+{
+	CBaseMonster *pEnemyMonster;
+	if(mode == 1)
+	{
+		if (m_team_npc1 != NULL)
+		{
+			pEnemyMonster = m_team_npc1->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(0,96,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+		if (m_team_npc2 != NULL)
+		{
+			pEnemyMonster = m_team_npc2->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(0,192,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+		if (m_team_npc3 != NULL)
+		{
+			pEnemyMonster = m_team_npc3->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(0,-96,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+		if (m_team_npc4 != NULL)
+		{
+			pEnemyMonster = m_team_npc4->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(0,-192,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+	}
+	if(mode == 2)
+	{
+		if (m_team_npc1 != NULL)
+		{
+			pEnemyMonster = m_team_npc1->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(0,0,8192) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+		}
+		if (m_team_npc2 != NULL)
+		{
+			pEnemyMonster = m_team_npc2->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(0,0,8192) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+		}
+		if (m_team_npc3 != NULL)
+		{
+			pEnemyMonster = m_team_npc3->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(0,0,8192) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+		}
+		if (m_team_npc4 != NULL)
+		{
+			pEnemyMonster = m_team_npc4->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(0,0,8192) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+		}
+	}
+	if(mode == 3)
+	{
+		if (m_team_npc1 != NULL)
+		{
+			pEnemyMonster = m_team_npc1->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(96,0,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+		if (m_team_npc2 != NULL)
+		{
+			pEnemyMonster = m_team_npc2->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(192,0,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+		if (m_team_npc3 != NULL)
+		{
+			pEnemyMonster = m_team_npc3->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(-96,0,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+		if (m_team_npc4 != NULL)
+		{
+			pEnemyMonster = m_team_npc4->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(-192,0,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+	}
+	if(mode == 4)
+	{
+		if (m_team_npc1 != NULL)
+		{
+			pEnemyMonster = m_team_npc1->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(64,0,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+		if (m_team_npc2 != NULL)
+		{
+			pEnemyMonster = m_team_npc2->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(128,0,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+		if (m_team_npc3 != NULL)
+		{
+			pEnemyMonster = m_team_npc3->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(-64,0,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+		if (m_team_npc4 != NULL)
+		{
+			pEnemyMonster = m_team_npc4->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(-128,0,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+	}
+	if(mode == 5)
+	{
+		if (m_team_npc1 != NULL)
+		{
+			pEnemyMonster = m_team_npc1->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(0,64,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+		if (m_team_npc2 != NULL)
+		{
+			pEnemyMonster = m_team_npc2->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(0,128,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+		if (m_team_npc3 != NULL)
+		{
+			pEnemyMonster = m_team_npc3->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(0,-64,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);//ս��
+		}
+		if (m_team_npc4 != NULL)
+		{
+			pEnemyMonster = m_team_npc4->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(0,-128,-36) );
+			pEnemyMonster->Hunt_Stand_Set(2);
+		}
+	}
+	if(mode == 6)
+	{
+		if (m_team_npc1 != NULL)
+		{
+			pEnemyMonster = m_team_npc1->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(-64,0,-36) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+			pEnemyMonster->pev->angles.y = 90;
+		}
+		if (m_team_npc2 != NULL)
+		{
+			pEnemyMonster = m_team_npc2->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(-128,0,-36) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+			pEnemyMonster->pev->angles.y = 90;
+		}
+		if (m_team_npc3 != NULL)
+		{
+			pEnemyMonster = m_team_npc3->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(-192,0,-36) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+			pEnemyMonster->pev->angles.y = 90;
+		}
+		if (m_team_npc4 != NULL)
+		{
+			pEnemyMonster = m_team_npc4->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(-256,0,-36) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+			pEnemyMonster->pev->angles.y = 90;
+		}
+	}
+	if(mode == 7)
+	{
+		if (m_team_npc1 != NULL)
+		{
+			if (m_team_npc1->pev->deadflag == DEAD_NO)
+			{
+				pEnemyMonster = m_team_npc1->MyMonsterPointer();
+				UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(0,96,-36) );
+			}
+		}
+		if (m_team_npc2 != NULL)
+		{
+			if (m_team_npc2->pev->deadflag == DEAD_NO)
+			{
+				pEnemyMonster = m_team_npc2->MyMonsterPointer();
+				UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(0,192,-36) );
+			}
+		}
+		if (m_team_npc3 != NULL)
+		{
+			if (m_team_npc3->pev->deadflag == DEAD_NO)
+			{
+				pEnemyMonster = m_team_npc3->MyMonsterPointer();
+				UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(0,-96,-36) );
+			}
+		}
+		if (m_team_npc4 != NULL)
+		{
+			if (m_team_npc4->pev->deadflag == DEAD_NO)
+			{
+				pEnemyMonster = m_team_npc4->MyMonsterPointer();
+				UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(0,-192,-36) );
+			}
+		}
+	}
+	if(mode == 8)
+	{
+		if (m_team_npc1 != NULL)
+		{
+			if (m_team_npc1->pev->deadflag == DEAD_NO)
+			{
+				pEnemyMonster = m_team_npc1->MyMonsterPointer();
+				UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(96,0,-36) );
+				pEnemyMonster->Hunt_Stand_Set(2);
+			}
+		}
+		if (m_team_npc2 != NULL)
+		{
+			if (m_team_npc2->pev->deadflag == DEAD_NO)
+			{
+				pEnemyMonster = m_team_npc2->MyMonsterPointer();
+				UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(192,0,-36) );
+				pEnemyMonster->Hunt_Stand_Set(2);
+			}
+		}
+		if (m_team_npc3 != NULL)
+		{
+			if (m_team_npc3->pev->deadflag == DEAD_NO)
+			{
+				pEnemyMonster = m_team_npc3->MyMonsterPointer();
+				UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(-96,0,-36) );
+				pEnemyMonster->Hunt_Stand_Set(2);
+			}
+		}
+		if (m_team_npc4 != NULL)
+		{
+			if (m_team_npc4->pev->deadflag == DEAD_NO)
+			{
+				pEnemyMonster = m_team_npc4->MyMonsterPointer();
+				UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(-192,0,-36) );
+				pEnemyMonster->Hunt_Stand_Set(2);
+			}
+		}
+	}
+	if(mode == 9)
+	{
+		if (m_team_npc1 != NULL)
+		{
+			if (m_team_npc1->pev->deadflag == DEAD_NO)
+			{
+				pEnemyMonster = m_team_npc1->MyMonsterPointer();
+				UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(96,0,-36) );
+				pEnemyMonster->Hunt_Stand_Set(0);
+				pEnemyMonster->pev->angles.y = 270;
+			}
+		}
+		if (m_team_npc2 != NULL)
+		{
+			if (m_team_npc2->pev->deadflag == DEAD_NO)
+			{
+				pEnemyMonster = m_team_npc2->MyMonsterPointer();
+				UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(192,0,-36) );
+				pEnemyMonster->Hunt_Stand_Set(0);
+				pEnemyMonster->pev->angles.y = 270;
+			}
+		}
+		if (m_team_npc3 != NULL)
+		{
+			if (m_team_npc3->pev->deadflag == DEAD_NO)
+			{
+				pEnemyMonster = m_team_npc3->MyMonsterPointer();
+				UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(-96,0,-36) );
+				pEnemyMonster->Hunt_Stand_Set(0);
+				pEnemyMonster->pev->angles.y = 270;
+			}
+		}
+		if (m_team_npc4 != NULL)
+		{
+			if (m_team_npc4->pev->deadflag == DEAD_NO)
+			{
+				pEnemyMonster = m_team_npc4->MyMonsterPointer();
+				UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(-192,0,-36) );
+				pEnemyMonster->Hunt_Stand_Set(0);
+				pEnemyMonster->pev->angles.y = 270;
+			}
+		}
+	}
+	if(mode == 10)
+	{
+		if (m_team_npc1 != NULL)
+		{
+			UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(80,0,-36) );
+			m_team_npc1->pev->angles.y = 0;
+			pEnemyMonster = m_team_npc1->MyMonsterPointer();
+			pEnemyMonster->SetActivity ( ACT_DIESIMPLE );
+			pEnemyMonster->pev->velocity = g_vecZero;
+			FX_Explosion( pEnemyMonster->Center(), 236 );
+		}
+		if (m_team_npc2 != NULL)
+		{
+			UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(160,0,-36) );
+			m_team_npc2->pev->angles.y = 90;
+			pEnemyMonster = m_team_npc2->MyMonsterPointer();
+			pEnemyMonster->SetActivity ( ACT_DIESIMPLE );
+			pEnemyMonster->pev->velocity = g_vecZero;
+			FX_Explosion( pEnemyMonster->Center(), 236 );
+		}
+		if (m_team_npc3 != NULL)
+		{
+			UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(-80,0,-36) );
+			m_team_npc3->pev->angles.y = 180;
+			pEnemyMonster = m_team_npc3->MyMonsterPointer();
+			pEnemyMonster->SetActivity ( ACT_DIESIMPLE );
+			pEnemyMonster->pev->velocity = g_vecZero;
+			FX_Explosion( pEnemyMonster->Center(), 236 );
+		}
+		if (m_team_npc4 != NULL)
+		{
+			UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(-160,0,-36) );
+			m_team_npc4->pev->angles.y = 270;
+			pEnemyMonster = m_team_npc4->MyMonsterPointer();
+			pEnemyMonster->SetActivity ( ACT_DIESIMPLE );
+			pEnemyMonster->pev->velocity = g_vecZero;
+			FX_Explosion( pEnemyMonster->Center(), 236 );
+		}
+		if (m_team_npc5 != NULL)
+		{
+			UTIL_SetOrigin( m_team_npc5->pev, pev->origin + Vector(80,-80,-36) );
+			m_team_npc5->pev->angles.y = 180;
+			pEnemyMonster = m_team_npc5->MyMonsterPointer();
+			pEnemyMonster->SetActivity ( ACT_DIESIMPLE );
+			pEnemyMonster->pev->velocity = g_vecZero;
+			FX_Explosion( pEnemyMonster->Center(), 236 );
+		}
+		if (m_team_npc6 != NULL)
+		{
+			UTIL_SetOrigin( m_team_npc6->pev, pev->origin + Vector(160,-80,-36) );
+			m_team_npc6->pev->angles.y = 90;
+			pEnemyMonster = m_team_npc6->MyMonsterPointer();
+			pEnemyMonster->SetActivity ( ACT_DIESIMPLE );
+			pEnemyMonster->pev->velocity = g_vecZero;
+			FX_Explosion( pEnemyMonster->Center(), 236 );
+		}
+		if (m_team_npc7 != NULL)
+		{
+			UTIL_SetOrigin( m_team_npc7->pev, pev->origin + Vector(-80,-80,-36) );
+			m_team_npc7->pev->angles.y = 0;
+			pEnemyMonster = m_team_npc7->MyMonsterPointer();
+			pEnemyMonster->SetActivity ( ACT_DIESIMPLE );
+			pEnemyMonster->pev->velocity = g_vecZero;
+			FX_Explosion( pEnemyMonster->Center(), 236 );
+		}
+		if (m_team_npc8 != NULL)
+		{
+			UTIL_SetOrigin( m_team_npc8->pev, pev->origin + Vector(-160,-80,-36) );
+			m_team_npc8->pev->angles.y = 90;
+			pEnemyMonster = m_team_npc8->MyMonsterPointer();
+			pEnemyMonster->SetActivity ( ACT_DIESIMPLE );
+			pEnemyMonster->pev->velocity = g_vecZero;
+			FX_Explosion( pEnemyMonster->Center(), 236 );
+		}
+		if (m_team_npc9 != NULL)
+		{
+			UTIL_SetOrigin( m_team_npc9->pev, pev->origin + Vector(80,-160,-36) );
+			m_team_npc9->pev->angles.y = 180;
+			pEnemyMonster = m_team_npc9->MyMonsterPointer();
+			pEnemyMonster->SetActivity ( ACT_DIESIMPLE );
+			pEnemyMonster->pev->velocity = g_vecZero;
+			FX_Explosion( pEnemyMonster->Center(), 236 );
+		}
+		if (m_team_npc10 != NULL)
+		{
+			UTIL_SetOrigin( m_team_npc10->pev, pev->origin + Vector(160,-160,-36) );
+			m_team_npc10->pev->angles.y = 270;
+			pEnemyMonster = m_team_npc10->MyMonsterPointer();
+			pEnemyMonster->SetActivity ( ACT_DIESIMPLE );
+			pEnemyMonster->pev->velocity = g_vecZero;
+			FX_Explosion( pEnemyMonster->Center(), 236 );
+		}
+		if (m_team_npc11 != NULL)
+		{
+			UTIL_SetOrigin( m_team_npc11->pev, pev->origin + Vector(-80,-160,-36) );
+			m_team_npc11->pev->angles.y = 45;
+			pEnemyMonster = m_team_npc11->MyMonsterPointer();
+			pEnemyMonster->SetActivity ( ACT_DIESIMPLE );
+			pEnemyMonster->pev->velocity = g_vecZero;
+			FX_Explosion( pEnemyMonster->Center(), 236 );
+		}
+		if (m_team_npc12 != NULL)
+		{
+			UTIL_SetOrigin( m_team_npc12->pev, pev->origin + Vector(-160,-160,-36) );
+			m_team_npc12->pev->angles.y = 135;
+			pEnemyMonster = m_team_npc12->MyMonsterPointer();
+			pEnemyMonster->SetActivity ( ACT_DIESIMPLE );
+			pEnemyMonster->pev->velocity = g_vecZero;
+			FX_Explosion( pEnemyMonster->Center(), 236 );
+		}
+	}
+	if(mode == 11)
+	{
+		if (m_team_npc1 != NULL)
+		{
+			if (m_team_npc1->pev->deadflag == DEAD_NO)
+			{
+				UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(96,0,-36) );
+			}
+			else
+			{
+				UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(96,0,8192) );
+			}
+		}
+		if (m_team_npc2 != NULL)
+		{
+			if (m_team_npc2->pev->deadflag == DEAD_NO)
+			{
+				UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(0,96,-36) );
+			}
+			else
+			{
+				UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(0,96,8192) );
+			}
+		}
+		if (m_team_npc3 != NULL)
+		{
+			if (m_team_npc3->pev->deadflag == DEAD_NO)
+			{
+				UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(-96,0,-36) );
+			}
+			else
+			{
+				UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(-96,0,8192) );
+			}
+		}
+		if (m_team_npc4 != NULL){
+			if (m_team_npc4->pev->deadflag == DEAD_NO)
+			{
+				UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(0,-96,-36) );
+			}
+			else
+			{
+				UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(0,-96,8192) );
+			}
+		}
+	}
+
+	if(mode == 1 || mode == 2 || mode == 3 || mode == 6)
+	{
+		if (m_team_npc5 != NULL)
+		{
+			pEnemyMonster = m_team_npc5->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc5->pev, pev->origin + Vector(0,0,8192) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+		}
+		if (m_team_npc6 != NULL)
+		{
+			pEnemyMonster = m_team_npc6->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc6->pev, pev->origin + Vector(0,0,8192) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+		}
+		if (m_team_npc7 != NULL)
+		{
+			pEnemyMonster = m_team_npc7->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc7->pev, pev->origin + Vector(0,0,8192) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+		}
+		if (m_team_npc8 != NULL){
+			pEnemyMonster = m_team_npc8->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc8->pev, pev->origin + Vector(0,0,8192) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+		}
+		if (m_team_npc9 != NULL)
+		{
+			pEnemyMonster = m_team_npc9->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc9->pev, pev->origin + Vector(0,0,8192) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+		}
+		if (m_team_npc10 != NULL)
+		{
+			pEnemyMonster = m_team_npc10->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc10->pev, pev->origin + Vector(0,0,8192) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+		}
+		if (m_team_npc11 != NULL)
+		{
+			pEnemyMonster = m_team_npc11->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc11->pev, pev->origin + Vector(0,0,8192) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+		}
+		if (m_team_npc12 != NULL)
+		{
+			pEnemyMonster = m_team_npc12->MyMonsterPointer();
+			UTIL_SetOrigin( m_team_npc12->pev, pev->origin + Vector(0,0,8192) );
+			pEnemyMonster->Hunt_Stand_Set(0);
+		}
+	}
+}
+
+void CBasePlayer :: TeamMate_Nagamatagi_Allclear( int mode )
+{
+	if(mode == 10)
+	{
+		CBaseEntity *pEntity2 = UTIL_FindEntityByClassname( NULL, "monster_saintna");
+		CBaseMonster *pEnemyMonster = pEntity2->MyMonsterPointer();
+		if ( pEntity2 )
+		{
+			TeamMate_add(pEnemyMonster);
+			pEntity2->pev->frags = 2;
+		}
+		pEntity2 = UTIL_FindEntityByClassname( NULL, "monster_giant");
+		if ( pEntity2 )
+		{
+			pEnemyMonster = pEntity2->MyMonsterPointer();
+			TeamMate_add(pEnemyMonster);
+		}
+		pEntity2 = UTIL_FindEntityByClassname( NULL, "monster_blues");
+		if ( pEntity2 )
+		{
+			pEnemyMonster = pEntity2->MyMonsterPointer();
+			TeamMate_add(pEnemyMonster);
+		}
+		pEntity2 = UTIL_FindEntityByClassname( NULL, "monster_dengor");
+		if ( pEntity2 )
+		{
+			pEnemyMonster = pEntity2->MyMonsterPointer();
+			TeamMate_add(pEnemyMonster);
+		}
+		pEntity2 = UTIL_FindEntityByClassname( NULL, "monster_andylow");
+		if ( pEntity2 )
+		{
+			pEnemyMonster = pEntity2->MyMonsterPointer();
+			TeamMate_add(pEnemyMonster);
+		}
+		pEntity2 = UTIL_FindEntityByClassname( NULL, "monster_nobita");
+		if ( pEntity2 )
+		{
+			pEnemyMonster = pEntity2->MyMonsterPointer();
+			TeamMate_add(pEnemyMonster);
+		}
+		pEntity2 = UTIL_FindEntityByClassname( NULL, "monster_dragon");
+		if ( pEntity2 )
+		{
+			pEnemyMonster = pEntity2->MyMonsterPointer();
+			TeamMate_add(pEnemyMonster);
+		}
+		pEntity2 = UTIL_FindEntityByClassname( NULL, "monster_willam");
+		if ( pEntity2 )
+		{
+			pEnemyMonster = pEntity2->MyMonsterPointer();
+			TeamMate_add(pEnemyMonster);
+		}
+		pEntity2 = UTIL_FindEntityByClassname( NULL, "monster_wisebeast");
+		if ( pEntity2 )
+		{
+			pEnemyMonster = pEntity2->MyMonsterPointer();
+			TeamMate_add(pEnemyMonster);
+			pEntity2->pev->frags = 2;
+		}
+		pEntity2 = UTIL_FindEntityByClassname( NULL, "monster_mario");
+		if ( pEntity2 )
+		{
+			pEnemyMonster = pEntity2->MyMonsterPointer();
+			TeamMate_add(pEnemyMonster);
+		}
+		pEntity2 = UTIL_FindEntityByClassname( NULL, "monster_hime");
+		if ( pEntity2 )
+		{
+			pEnemyMonster = pEntity2->MyMonsterPointer();
+			TeamMate_add(pEnemyMonster);
+		}
+		pEntity2 = UTIL_FindEntityByClassname( NULL, "monster_misaliya");
+		if ( pEntity2 )
+		{
+			pEnemyMonster = pEntity2->MyMonsterPointer();
+			TeamMate_add(pEnemyMonster);
+			pEntity2->pev->frags = 2;
+		}
+		return;
+	}
+	else if(mode == 4)
+	{
+		if(m_team_npc1 != NULL)
+		{
+			if(m_team_npc1->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc1->Killed( m_team_npc1->pev, GIB_NEVER );
+			}
+		}
+		if(m_team_npc2 != NULL)
+		{
+			if(m_team_npc2->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc2->Killed( m_team_npc2->pev, GIB_NEVER );
+			}
+		}
+		if(m_team_npc3 != NULL)
+		{
+			if(m_team_npc3->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc3->Killed( m_team_npc3->pev, GIB_NEVER );
+			}
+		}
+		if(m_team_npc4 != NULL){
+
+			if(m_team_npc4->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc4->Killed( m_team_npc4->pev, GIB_NEVER );
+			}
+		}
+		if(m_team_npc5 != NULL)
+		{
+			if(m_team_npc5->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc5->Killed( m_team_npc5->pev, GIB_NEVER );
+			}
+		}
+		if(m_team_npc6 != NULL)
+		{
+			if(m_team_npc6->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc6->Killed( m_team_npc6->pev, GIB_NEVER );
+			}
+		}
+		if(m_team_npc7 != NULL)
+		{
+			if(m_team_npc7->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc7->Killed( m_team_npc7->pev, GIB_NEVER );
+			}
+		}
+		if(m_team_npc8 != NULL)
+		{
+			if(m_team_npc8->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc8->Killed( m_team_npc8->pev, GIB_NEVER );
+			}
+		}
+		if(m_team_npc9 != NULL)
+		{
+			if(m_team_npc9->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc9->Killed( m_team_npc9->pev, GIB_NEVER );
+			}
+		}
+		if(m_team_npc10 != NULL)
+		{
+			if(m_team_npc10->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc10->Killed( m_team_npc10->pev, GIB_NEVER );
+			}
+		}
+		if(m_team_npc11 != NULL)
+		{
+			if(m_team_npc11->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc11->Killed( m_team_npc11->pev, GIB_NEVER );
+			}
+		}
+		if(m_team_npc12 != NULL)
+		{
+			if(m_team_npc12->pev->deadflag == DEAD_NO)
+			{
+				m_team_npc12->Killed( m_team_npc12->pev, GIB_NEVER );
+			}
+		}
+		return;
+	}
+	else if(mode == 5)
+	{
+		if(m_team_npc1 != NULL)
+		{
+			m_team_npc1->SUB_StartFadeOut3();
+		}
+		if(m_team_npc2 != NULL)
+		{
+			m_team_npc2->SUB_StartFadeOut3();
+		}
+		if(m_team_npc3 != NULL)
+		{
+			m_team_npc3->SUB_StartFadeOut3();
+		}
+		if(m_team_npc4 != NULL)
+		{
+			m_team_npc4->SUB_StartFadeOut3();
+		}
+		if(m_team_npc5 != NULL)
+		{
+			m_team_npc5->SUB_StartFadeOut3();
+		}
+		if(m_team_npc6 != NULL)
+		{
+			m_team_npc6->SUB_StartFadeOut3();
+		}
+		if(m_team_npc7 != NULL)
+		{
+			m_team_npc7->SUB_StartFadeOut3();
+		}
+		if(m_team_npc8 != NULL)
+		{
+			m_team_npc8->SUB_StartFadeOut3();
+		}
+		if(m_team_npc9 != NULL)
+		{
+			m_team_npc9->SUB_StartFadeOut3();
+		}
+		if(m_team_npc10 != NULL)
+		{
+			m_team_npc10->SUB_StartFadeOut3();
+		}
+		if(m_team_npc11 != NULL)
+		{
+			m_team_npc11->SUB_StartFadeOut3();
+		}
+		if(m_team_npc12 != NULL)
+		{
+			m_team_npc12->SUB_StartFadeOut3();
+		}
+		return;
+	}
+	else if(mode == 99)
+	{
+		CBaseMonster *pEnemyMonster;
+		if(m_team_npc1 != NULL)
+		{
+			pEnemyMonster = m_team_npc1->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_level = 99;
+		}
+		if(m_team_npc2 != NULL)
+		{
+			pEnemyMonster = m_team_npc2->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_level = 99;
+		}
+		if(m_team_npc3 != NULL)
+		{
+			pEnemyMonster = m_team_npc3->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_level = 99;
+		}
+		if(m_team_npc4 != NULL)
+		{
+			pEnemyMonster = m_team_npc4->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_level = 99;
+		}
+		if(m_team_npc5 != NULL)
+		{
+			pEnemyMonster = m_team_npc5->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_level = 99;
+		}
+		if(m_team_npc6 != NULL)
+		{
+			pEnemyMonster = m_team_npc6->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_level = 99;
+		}
+		if(m_team_npc7 != NULL)
+		{
+			pEnemyMonster = m_team_npc7->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_level = 99;
+		}
+		if(m_team_npc8 != NULL)
+		{
+			pEnemyMonster = m_team_npc8->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_level = 99;
+		}
+		if(m_team_npc9 != NULL)
+		{
+			pEnemyMonster = m_team_npc9->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_level = 99;
+		}
+		if(m_team_npc10 != NULL)
+		{
+			pEnemyMonster = m_team_npc10->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_level = 99;
+		}
+		if(m_team_npc11 != NULL)
+		{
+			pEnemyMonster = m_team_npc11->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_level = 99;
+		}
+		if(m_team_npc12 != NULL)
+		{
+			pEnemyMonster = m_team_npc12->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_level = 99;
+			}
+		return;
+	}
+
+	if(m_guard_mynpc == 1 || !FNullEnt(m_wdoor_mynpc))
+	{
+		m_wdoor_mynpc = NULL;
+		m_guard_mynpc = 0;
+	}
+
+	if(mode >= 1)
+	{
+		CBaseMonster *pEnemyMonster;
+		if (m_team_npc1 != NULL)
+		{
+			pEnemyMonster = m_team_npc1->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_inteam = 0;
+			pEnemyMonster->m_hPlayer = NULL;
+			if(mode == 2)
+			{
+				if(pEnemyMonster->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster->Killed( pEnemyMonster->pev, GIB_NEVER );
+				}
+			}
+			if(mode == 3)
+			{
+				if(pEnemyMonster->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster->Hunt_Stand_Set(0);
+				}
+			}
+		}
+		if (m_team_npc2 != NULL)
+		{
+			pEnemyMonster = m_team_npc2->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_inteam = 0;
+			pEnemyMonster->m_hPlayer = NULL;
+			if(mode == 2)
+			{
+				if(pEnemyMonster->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster->Killed( pEnemyMonster->pev, GIB_NEVER );
+				}
+			}
+			if(mode == 3)
+			{
+				if(pEnemyMonster->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster->Hunt_Stand_Set(0);
+				}
+			}
+		}
+		if (m_team_npc3 != NULL)
+		{
+			pEnemyMonster = m_team_npc3->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_inteam = 0;
+			pEnemyMonster->m_hPlayer = NULL;
+			if(mode == 2)
+			{
+				if(pEnemyMonster->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster->Killed( pEnemyMonster->pev, GIB_NEVER );
+				}
+			}
+			if(mode == 3)
+			{
+				if(pEnemyMonster->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster->Hunt_Stand_Set(0);
+				}
+			}
+		}
+		if (m_team_npc4 != NULL)
+		{
+			pEnemyMonster = m_team_npc4->MyMonsterPointer();
+			pEnemyMonster->m_rpgms_inteam = 0;
+			pEnemyMonster->m_hPlayer = NULL;
+			if(mode == 2)
+			{
+				if(pEnemyMonster->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster->Killed( pEnemyMonster->pev, GIB_NEVER );
+				}
+			}
+			if(mode == 3)
+			{
+				if(pEnemyMonster->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster->Hunt_Stand_Set(0);
+				}
+			}
+		}
+	}
+
+	m_team_npc1 = NULL;
+	m_rpg_menu_actor2 = 0;
+	m_team_npc2 = NULL;
+	m_rpg_menu_actor3 = 0;
+	m_team_npc3 = NULL;
+	m_rpg_menu_actor4 = 0;
+	m_team_npc4 = NULL;
+	m_rpg_menu_actor5 = 0;
+
+	m_team_npc5 = NULL;
+	m_team_npc6 = NULL;
+	m_team_npc7 = NULL;
+	m_team_npc8 = NULL;
+	m_team_npc9 = NULL;
+	m_team_npc10 = NULL;
+	m_team_npc11 = NULL;
+	m_team_npc12 = NULL;
+}
+
+void CBasePlayer :: TeamMate_Nagamatagi_RespawnStone( int mode )
+{
+	CBaseMonster *pEnemyMonster;
+	if (m_team_npc1 != NULL)
+	{
+		pEnemyMonster = m_team_npc1->MyMonsterPointer();
+		pEnemyMonster->Hunt_Stand_Set(mode);
+	}
+	if (m_team_npc2 != NULL)
+	{
+		pEnemyMonster = m_team_npc2->MyMonsterPointer();
+		pEnemyMonster->Hunt_Stand_Set(mode);
+	}
+	if (m_team_npc3 != NULL)
+	{
+		pEnemyMonster = m_team_npc3->MyMonsterPointer();
+		pEnemyMonster->Hunt_Stand_Set(mode);
+	}
+	if (m_team_npc4 != NULL)
+	{
+		pEnemyMonster = m_team_npc4->MyMonsterPointer();
+		pEnemyMonster->Hunt_Stand_Set(mode);
+	}
+
+	if(mode != 2 && mode != 3)
+	{
+		if (m_team_npc5 != NULL)
+		{
+			pEnemyMonster = m_team_npc5->MyMonsterPointer();
+			pEnemyMonster->Hunt_Stand_Set(mode);
+		}
+		if (m_team_npc6 != NULL)
+		{
+			pEnemyMonster = m_team_npc6->MyMonsterPointer();
+			pEnemyMonster->Hunt_Stand_Set(mode);
+		}
+		if (m_team_npc7 != NULL)
+		{
+			pEnemyMonster = m_team_npc7->MyMonsterPointer();
+			pEnemyMonster->Hunt_Stand_Set(mode);
+		}
+		if (m_team_npc8 != NULL)
+		{
+			pEnemyMonster = m_team_npc8->MyMonsterPointer();
+			pEnemyMonster->Hunt_Stand_Set(mode);
+		}
+		if (m_team_npc9 != NULL)
+		{
+			pEnemyMonster = m_team_npc9->MyMonsterPointer();
+			pEnemyMonster->Hunt_Stand_Set(mode);
+		}
+		if (m_team_npc10 != NULL)
+		{
+			pEnemyMonster = m_team_npc10->MyMonsterPointer();
+			pEnemyMonster->Hunt_Stand_Set(mode);
+		}
+		if (m_team_npc11 != NULL)
+		{
+			pEnemyMonster = m_team_npc11->MyMonsterPointer();
+			pEnemyMonster->Hunt_Stand_Set(mode);
+		}
+		if (m_team_npc12 != NULL)
+		{
+			pEnemyMonster = m_team_npc12->MyMonsterPointer();
+			pEnemyMonster->Hunt_Stand_Set(mode);
+		}
+	}
+}
+
+void CBasePlayer :: TeamMate_Nagamatagi_Switch( int ally1,int ally2 )
+{
+	if(ally1 == ally2)
+		return;
+	
+	EHANDLE	 combat_target;
+	EHANDLE	 switch_target;
+	CBaseMonster *pEnemyMonster_combat;
+	CBaseMonster *pEnemyMonster_switch;
+	Vector combat_origin;
+	Vector switch_origin;
+	combat_target = NULL;
+    switch_target = NULL;
+	int switch_redive = 0;
+
+	nagama_switch_redive:
+	
+	if(ally1 == 1 && m_team_npc1 != NULL)
+	{
+		if(switch_target != NULL)
+		{
+			m_team_npc1 = switch_target;
+		}
+		else
+		{
+			combat_target = m_team_npc1;
+			pEnemyMonster_combat = m_team_npc1->MyMonsterPointer();
+			combat_origin = m_team_npc1->pev->origin;
+		}
+	}
+	else if(ally1 == 2 && m_team_npc2 != NULL)
+	{
+		if(switch_target != NULL)
+		{
+			m_team_npc2 = switch_target;
+		}
+		else
+		{
+			combat_target = m_team_npc2;
+			pEnemyMonster_combat = m_team_npc2->MyMonsterPointer();
+			combat_origin = m_team_npc2->pev->origin;
+		}
+	}
+	else if(ally1 == 3 && m_team_npc3 != NULL)
+	{
+		if(switch_target != NULL)
+		{
+			m_team_npc3 = switch_target;
+		}
+		else
+		{
+			combat_target = m_team_npc3;
+			pEnemyMonster_combat = m_team_npc3->MyMonsterPointer();
+			combat_origin = m_team_npc3->pev->origin;
+		}
+	}
+	else if(ally1 == 4 && m_team_npc4 != NULL)
+	{
+		if(switch_target != NULL)
+		{
+			m_team_npc4 = switch_target;
+		}
+		else
+		{
+			combat_target = m_team_npc4;
+			pEnemyMonster_combat = m_team_npc4->MyMonsterPointer();
+			combat_origin = m_team_npc4->pev->origin;
+		}
+	}
+	else if(ally1 == 5 && m_team_npc5 != NULL)
+	{
+		combat_target = m_team_npc5;
+		pEnemyMonster_combat = m_team_npc5->MyMonsterPointer();
+		combat_origin = m_team_npc5->pev->origin;
+		if(switch_target != NULL)
+		{
+			m_team_npc5 = switch_target;
+		}
+	}
+	else if(ally1 == 6 && m_team_npc6 != NULL)
+	{
+		if(switch_target != NULL)
+		{
+			m_team_npc6 = switch_target;
+		}
+		else
+		{
+			combat_target = m_team_npc6;
+			pEnemyMonster_combat = m_team_npc6->MyMonsterPointer();
+			combat_origin = m_team_npc6->pev->origin;
+		}
+	}
+	else if(ally1 == 7 && m_team_npc7 != NULL)
+	{
+		if(switch_target != NULL)
+		{
+			m_team_npc7 = switch_target;
+		}
+		else
+		{
+			combat_target = m_team_npc7;
+			pEnemyMonster_combat = m_team_npc7->MyMonsterPointer();
+			combat_origin = m_team_npc7->pev->origin;
+		}
+	}
+	else if(ally1 == 8 && m_team_npc8 != NULL)
+	{
+		if(switch_target != NULL)
+		{
+			m_team_npc8 = switch_target;
+		}
+		else
+		{
+			combat_target = m_team_npc8;
+			pEnemyMonster_combat = m_team_npc8->MyMonsterPointer();
+			combat_origin = m_team_npc8->pev->origin;
+		}
+	}
+	else if(ally1 == 9 && m_team_npc9 != NULL)
+	{
+		if(switch_target != NULL)
+		{
+			m_team_npc9 = switch_target;
+		}
+		else
+		{
+			combat_target = m_team_npc9;
+			pEnemyMonster_combat = m_team_npc9->MyMonsterPointer();
+			combat_origin = m_team_npc9->pev->origin;
+		}
+	}
+	else if(ally1 == 10 && m_team_npc10 != NULL)
+	{
+		if(switch_target != NULL)
+		{
+			m_team_npc10 = switch_target;
+		}
+		else
+		{
+			combat_target = m_team_npc10;
+			pEnemyMonster_combat = m_team_npc10->MyMonsterPointer();
+			combat_origin = m_team_npc10->pev->origin;
+		}
+	}
+	else if(ally1 == 11 && m_team_npc11 != NULL)
+	{
+		if(switch_target != NULL)
+		{
+			m_team_npc11 = switch_target;
+		}
+		else
+		{
+			combat_target = m_team_npc11;
+			pEnemyMonster_combat = m_team_npc11->MyMonsterPointer();
+			combat_origin = m_team_npc11->pev->origin;
+		}
+	}
+	else if(ally1 == 12 && m_team_npc12 != NULL)
+	{
+		if(switch_target != NULL)
+		{
+			m_team_npc12 = switch_target;
+		}
+		else
+		{
+			combat_target = m_team_npc12;
+			pEnemyMonster_combat = m_team_npc12->MyMonsterPointer();
+			combat_origin = m_team_npc12->pev->origin;
+		}
+	}
+
+	if(combat_target == NULL)
+		return;
+
+	if(switch_redive == 0)
+	{
+		if(ally2 == 1 && m_team_npc1 != NULL)
+		{
+			if(combat_target->pev->deadflag != DEAD_NO && ally1 >= 5)
+				return;
+			
+			switch_target = m_team_npc1;
+			pEnemyMonster_switch = m_team_npc1->MyMonsterPointer();
+			if ( pEnemyMonster_switch->m_MonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_IdealMonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_freezetime > 0)
+				return;
+			
+			switch_origin = m_team_npc1->pev->origin;
+			m_team_npc1 = combat_target;
+			if(ally1 >= 5)
+			{
+				UTIL_SetOrigin (combat_target->pev, switch_origin);
+				UTIL_SetOrigin (switch_target->pev, combat_origin);
+				FX_Explosion( combat_target->Center(), 102);
+				pEnemyMonster_switch->m_rpgms_inteam = 5;
+				if(pEnemyMonster_switch->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_switch->Hunt_Stand_Set(0);
+				}
+				if(pEnemyMonster_combat->pev->deadflag == DEAD_NO){
+
+					pEnemyMonster_combat->Hunt_Stand_Set(2);
+				}
+			}
+		}
+		else if(ally2 == 2 && m_team_npc2 != NULL)
+		{
+			if(combat_target->pev->deadflag != DEAD_NO && ally1 >= 5)
+				return;
+			
+			switch_target = m_team_npc2;
+			pEnemyMonster_switch = m_team_npc2->MyMonsterPointer();
+			if ( pEnemyMonster_switch->m_MonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_IdealMonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_freezetime > 0)
+				return;
+			
+			switch_origin = m_team_npc2->pev->origin;
+			m_team_npc2 = combat_target;
+			if(ally1 >= 5)
+			{
+				UTIL_SetOrigin (combat_target->pev, switch_origin);
+				UTIL_SetOrigin (switch_target->pev, combat_origin);
+				FX_Explosion( combat_target->Center(), 102);
+				pEnemyMonster_switch->m_rpgms_inteam = 5;
+				if(pEnemyMonster_switch->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_switch->Hunt_Stand_Set(0);
+				}
+				if(pEnemyMonster_combat->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_combat->Hunt_Stand_Set(2);
+				}
+			}
+		}
+		else if(ally2 == 3 && m_team_npc3 != NULL)
+		{
+			if(combat_target->pev->deadflag != DEAD_NO && ally1 >= 5)
+				return;
+			
+			switch_target = m_team_npc3;
+			pEnemyMonster_switch = m_team_npc3->MyMonsterPointer();
+			if ( pEnemyMonster_switch->m_MonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_IdealMonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_freezetime > 0)
+				return;
+			
+			switch_origin = m_team_npc3->pev->origin;
+			m_team_npc3 = combat_target;
+			if(ally1 >= 5)
+			{
+				UTIL_SetOrigin (combat_target->pev, switch_origin);
+				UTIL_SetOrigin (switch_target->pev, combat_origin);
+				FX_Explosion( combat_target->Center(), 102);
+				pEnemyMonster_switch->m_rpgms_inteam = 5;
+				if(pEnemyMonster_switch->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_switch->Hunt_Stand_Set(0);
+				}
+				if(pEnemyMonster_combat->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_combat->Hunt_Stand_Set(2);
+				}
+			}
+		}
+		else if(ally2 == 4 && m_team_npc4 != NULL)
+		{
+			if(combat_target->pev->deadflag != DEAD_NO && ally1 >= 5)
+				return;
+			
+			switch_target = m_team_npc4;
+			pEnemyMonster_switch = m_team_npc4->MyMonsterPointer();
+			if ( pEnemyMonster_switch->m_MonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_IdealMonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_freezetime > 0)
+				return;
+			
+			switch_origin = m_team_npc4->pev->origin;
+			m_team_npc4 = combat_target;
+			if(ally1 >= 5)
+			{
+				UTIL_SetOrigin (combat_target->pev, switch_origin);
+				UTIL_SetOrigin (switch_target->pev, combat_origin);
+				FX_Explosion( combat_target->Center(), 102);
+				pEnemyMonster_switch->m_rpgms_inteam = 5;
+				if(pEnemyMonster_switch->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_switch->Hunt_Stand_Set(0);
+				}
+				if(pEnemyMonster_combat->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_combat->Hunt_Stand_Set(2);
+				}
+			}
+		}
+		else if(ally2 == 5 && m_team_npc5 != NULL)
+		{
+			if(m_team_npc5->pev->deadflag != DEAD_NO && ally1 <= 4)
+				return;
+			switch_target = m_team_npc5;
+			pEnemyMonster_switch = m_team_npc5->MyMonsterPointer();
+			if ( pEnemyMonster_switch->m_MonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_IdealMonsterState == MONSTERSTATE_PRONE )
+				return;
+			
+			switch_origin = m_team_npc5->pev->origin;
+			m_team_npc5 = combat_target;
+			if(ally1 <= 4)
+			{
+				UTIL_SetOrigin (combat_target->pev, switch_origin);
+				UTIL_SetOrigin (switch_target->pev, combat_origin);
+				FX_Explosion( switch_target->Center(), 102);
+				if(pEnemyMonster_switch->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_switch->Hunt_Stand_Set(2);
+				}
+				if(pEnemyMonster_combat->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_combat->Hunt_Stand_Set(0);
+				}
+				pEnemyMonster_combat->m_rpgms_inteam = 5;
+			}
+		}
+		else if(ally2 == 6 && m_team_npc6 != NULL)
+		{
+			if(m_team_npc6->pev->deadflag != DEAD_NO && ally1 <= 4)
+				return;
+
+			switch_target = m_team_npc6;
+			pEnemyMonster_switch = m_team_npc6->MyMonsterPointer();
+			if ( pEnemyMonster_switch->m_MonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_IdealMonsterState == MONSTERSTATE_PRONE )
+				return;
+
+			switch_origin = m_team_npc6->pev->origin;
+			m_team_npc6 = combat_target;
+			if(ally1 <= 4)
+			{
+				UTIL_SetOrigin (combat_target->pev, switch_origin);
+				UTIL_SetOrigin (switch_target->pev, combat_origin);
+				FX_Explosion( switch_target->Center(), 102);
+				if(pEnemyMonster_switch->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_switch->Hunt_Stand_Set(2);
+				}
+				if(pEnemyMonster_combat->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_combat->Hunt_Stand_Set(0);
+				}
+				pEnemyMonster_combat->m_rpgms_inteam = 5;
+			}
+		}
+		else if(ally2 == 7 && m_team_npc7 != NULL)
+		{
+			if(m_team_npc7->pev->deadflag != DEAD_NO && ally1 <= 4)
+				return;
+			
+			switch_target = m_team_npc7;
+			pEnemyMonster_switch = m_team_npc7->MyMonsterPointer();
+			if ( pEnemyMonster_switch->m_MonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_IdealMonsterState == MONSTERSTATE_PRONE )
+				return;
+			
+			switch_origin = m_team_npc7->pev->origin;
+			m_team_npc7 = combat_target;
+			if(ally1 <= 4)
+			{
+				UTIL_SetOrigin (combat_target->pev, switch_origin);
+				UTIL_SetOrigin (switch_target->pev, combat_origin);
+				FX_Explosion( switch_target->Center(), 102);
+				if(pEnemyMonster_switch->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_switch->Hunt_Stand_Set(2);
+				}
+				if(pEnemyMonster_combat->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_combat->Hunt_Stand_Set(0);
+				}
+				pEnemyMonster_combat->m_rpgms_inteam = 5;
+			}
+		}
+		else if(ally2 == 8 && m_team_npc8 != NULL)
+		{
+			if(m_team_npc8->pev->deadflag != DEAD_NO && ally1 <= 4)
+				return;
+			
+			switch_target = m_team_npc8;
+			pEnemyMonster_switch = m_team_npc8->MyMonsterPointer();
+			if ( pEnemyMonster_switch->m_MonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_IdealMonsterState == MONSTERSTATE_PRONE )
+				return;
+			
+			switch_origin = m_team_npc8->pev->origin;
+			m_team_npc8 = combat_target;
+			if(ally1 <= 4)
+			{
+				UTIL_SetOrigin (combat_target->pev, switch_origin);
+				UTIL_SetOrigin (switch_target->pev, combat_origin);
+				FX_Explosion( switch_target->Center(), 102);
+				if(pEnemyMonster_switch->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_switch->Hunt_Stand_Set(2);
+				}
+				if(pEnemyMonster_combat->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_combat->Hunt_Stand_Set(0);
+				}
+				pEnemyMonster_combat->m_rpgms_inteam = 5;
+			}
+		}
+		else if(ally2 == 9 && m_team_npc9 != NULL)
+		{
+			if(m_team_npc9->pev->deadflag != DEAD_NO && ally1 <= 4)
+				return;
+			
+			switch_target = m_team_npc9;
+			pEnemyMonster_switch = m_team_npc9->MyMonsterPointer();
+			if ( pEnemyMonster_switch->m_MonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_IdealMonsterState == MONSTERSTATE_PRONE )
+				return;
+			
+			switch_origin = m_team_npc9->pev->origin;
+			m_team_npc9 = combat_target;
+			if(ally1 <= 4)
+			{
+				UTIL_SetOrigin (combat_target->pev, switch_origin);
+				UTIL_SetOrigin (switch_target->pev, combat_origin);
+				FX_Explosion( switch_target->Center(), 102);
+				if(pEnemyMonster_switch->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_switch->Hunt_Stand_Set(2);
+				}
+				if(pEnemyMonster_combat->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_combat->Hunt_Stand_Set(0);
+				}
+					pEnemyMonster_combat->m_rpgms_inteam = 5;
+			}
+		}
+		else if(ally2 == 10 && m_team_npc10 != NULL)
+		{
+			if(m_team_npc10->pev->deadflag != DEAD_NO && ally1 <= 4)
+				return;
+			
+			switch_target = m_team_npc10;
+			pEnemyMonster_switch = m_team_npc10->MyMonsterPointer();
+			if ( pEnemyMonster_switch->m_MonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_IdealMonsterState == MONSTERSTATE_PRONE )
+				return;
+			
+			switch_origin = m_team_npc10->pev->origin;
+			m_team_npc10 = combat_target;
+			if(ally1 <= 4)
+			{
+				UTIL_SetOrigin (combat_target->pev, switch_origin);
+				UTIL_SetOrigin (switch_target->pev, combat_origin);
+				FX_Explosion( switch_target->Center(), 102);
+				if(pEnemyMonster_switch->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_switch->Hunt_Stand_Set(2);
+				}
+				if(pEnemyMonster_combat->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_combat->Hunt_Stand_Set(0);
+				}
+				pEnemyMonster_combat->m_rpgms_inteam = 5;
+			}
+		}
+		else if(ally2 == 11 && m_team_npc11 != NULL)
+		{
+			if(m_team_npc11->pev->deadflag != DEAD_NO && ally1 <= 4)
+				return;
+			
+			switch_target = m_team_npc11;
+			pEnemyMonster_switch = m_team_npc11->MyMonsterPointer();
+			if ( pEnemyMonster_switch->m_MonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_IdealMonsterState == MONSTERSTATE_PRONE )
+				return;
+			
+			switch_origin = m_team_npc11->pev->origin;
+			m_team_npc11 = combat_target;
+			if(ally1 <= 4)
+			{
+				UTIL_SetOrigin (combat_target->pev, switch_origin);
+				UTIL_SetOrigin (switch_target->pev, combat_origin);
+				FX_Explosion( switch_target->Center(), 102);
+				if(pEnemyMonster_switch->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_switch->Hunt_Stand_Set(2);
+				}
+				if(pEnemyMonster_combat->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_combat->Hunt_Stand_Set(0);
+				}
+				pEnemyMonster_combat->m_rpgms_inteam = 5;
+			}
+		}
+		else if(ally2 == 12 && m_team_npc12 != NULL)
+		{
+			if(m_team_npc12->pev->deadflag != DEAD_NO && ally1 <= 4)
+				return;
+			
+			switch_target = m_team_npc12;
+			pEnemyMonster_switch = m_team_npc12->MyMonsterPointer();
+			if ( pEnemyMonster_switch->m_MonsterState == MONSTERSTATE_PRONE || pEnemyMonster_switch->m_IdealMonsterState == MONSTERSTATE_PRONE )
+				return;
+			
+			switch_origin = m_team_npc12->pev->origin;
+			m_team_npc12 = combat_target;
+			if(ally1 <= 4)
+			{
+				UTIL_SetOrigin (combat_target->pev, switch_origin);
+				UTIL_SetOrigin (switch_target->pev, combat_origin);
+				FX_Explosion( switch_target->Center(), 102);
+				if(pEnemyMonster_switch->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_switch->Hunt_Stand_Set(2);
+				}
+				if(pEnemyMonster_combat->pev->deadflag == DEAD_NO)
+				{
+					pEnemyMonster_combat->Hunt_Stand_Set(0);
+				}
+				pEnemyMonster_combat->m_rpgms_inteam = 5;
+			}
+		}
+
+		if(switch_target == NULL)
+			return;
+		
+		switch_redive = 1;
+		goto nagama_switch_redive;
+	}
+
+	if (m_team_npc1 != NULL)
+	{
+		pEnemyMonster_combat = m_team_npc1->MyMonsterPointer();
+		pEnemyMonster_combat->m_rpgms_inteam = 1;
+		TeamMate_NPC_add(pEnemyMonster_combat);
+		m_rpg_menu_actor2 = pEnemyMonster_combat->m_rpgms_actor;
+	}
+	if (m_team_npc2 != NULL)
+	{
+		pEnemyMonster_combat = m_team_npc2->MyMonsterPointer();
+		pEnemyMonster_combat->m_rpgms_inteam = 2;
+		TeamMate_NPC_add(pEnemyMonster_combat);
+		m_rpg_menu_actor3 = pEnemyMonster_combat->m_rpgms_actor;
+	}
+	if (m_team_npc3 != NULL)
+	{
+		pEnemyMonster_combat = m_team_npc3->MyMonsterPointer();
+		pEnemyMonster_combat->m_rpgms_inteam = 3;
+		TeamMate_NPC_add(pEnemyMonster_combat);
+		m_rpg_menu_actor4 = pEnemyMonster_combat->m_rpgms_actor;
+	}
+	if (m_team_npc4 != NULL)
+	{
+		pEnemyMonster_combat = m_team_npc4->MyMonsterPointer();
+		pEnemyMonster_combat->m_rpgms_inteam = 4;
+		TeamMate_NPC_add(pEnemyMonster_combat);
+		m_rpg_menu_actor5 = pEnemyMonster_combat->m_rpgms_actor;
+	}
+}
+
+void CBasePlayer :: TeamMate_GetNagamatagi( void )
+{
+	CBaseMonster *pEnemyMonster;
+	m_rpg_menu_skill1 = 0;
+	if (m_team_npc1 != NULL)
+	{
+		pEnemyMonster = m_team_npc1->MyMonsterPointer();
+		m_rpg_menu_skill1 = pEnemyMonster->m_rpgms_actor;
+		if(m_team_npc1->pev->deadflag == DEAD_DEAD)
+		{
+			m_rpg_menu_skill1 += 100;
+		}
+		m_rpg_menu_actor2 = pEnemyMonster->m_rpgms_actor;
+	}
+	m_rpg_menu_skill2 = 0;
+	if (m_team_npc2 != NULL)
+	{
+		pEnemyMonster = m_team_npc2->MyMonsterPointer();
+		m_rpg_menu_skill2 = pEnemyMonster->m_rpgms_actor;
+		if(m_team_npc2->pev->deadflag == DEAD_DEAD)
+		{
+			m_rpg_menu_skill2 += 100;
+		}
+		m_rpg_menu_actor3 = pEnemyMonster->m_rpgms_actor;
+	}
+	m_rpg_menu_skill3 = 0;
+	if (m_team_npc3 != NULL)
+	{
+		pEnemyMonster = m_team_npc3->MyMonsterPointer();
+		m_rpg_menu_skill3 = pEnemyMonster->m_rpgms_actor;
+		if(m_team_npc3->pev->deadflag == DEAD_DEAD)
+		{
+			m_rpg_menu_skill3 += 100;
+		}
+		m_rpg_menu_actor4 = pEnemyMonster->m_rpgms_actor;
+	}
+	m_rpg_menu_skill4 = 0;
+	if (m_team_npc4 != NULL)
+	{
+		pEnemyMonster = m_team_npc4->MyMonsterPointer();
+		m_rpg_menu_skill4 = pEnemyMonster->m_rpgms_actor;
+		if(m_team_npc4->pev->deadflag == DEAD_DEAD)
+		{
+			m_rpg_menu_skill4 += 100;
+		}
+		m_rpg_menu_actor5 = pEnemyMonster->m_rpgms_actor;
+	}
+	m_rpg_menu_skill5 = 0;
+	if (m_team_npc5 != NULL)
+	{
+		pEnemyMonster = m_team_npc5->MyMonsterPointer();
+		m_rpg_menu_skill5 = pEnemyMonster->m_rpgms_actor;
+		if(m_team_npc5->pev->deadflag == DEAD_DEAD)
+		{
+			m_rpg_menu_skill5 += 100;
+		}
+	}
+	m_rpg_menu_skill6 = 0;
+	if (m_team_npc6 != NULL)
+	{
+		pEnemyMonster = m_team_npc6->MyMonsterPointer();
+		m_rpg_menu_skill6 = pEnemyMonster->m_rpgms_actor;
+		if(m_team_npc6->pev->deadflag == DEAD_DEAD)
+		{
+			m_rpg_menu_skill6 += 100;
+		}
+	}
+	m_rpg_menu_skill7 = 0;
+	if (m_team_npc7 != NULL)
+	{
+		pEnemyMonster = m_team_npc7->MyMonsterPointer();
+		m_rpg_menu_skill7 = pEnemyMonster->m_rpgms_actor;
+		if(m_team_npc7->pev->deadflag == DEAD_DEAD)
+		{
+			m_rpg_menu_skill7 += 100;
+		}
+	}
+	m_rpg_menu_skill8 = 0;
+	if (m_team_npc8 != NULL)
+	{
+		pEnemyMonster = m_team_npc8->MyMonsterPointer();
+		m_rpg_menu_skill8 = pEnemyMonster->m_rpgms_actor;
+		if(m_team_npc8->pev->deadflag == DEAD_DEAD)
+		{
+			m_rpg_menu_skill8 += 100;
+		}
+	}
+	m_rpg_menu_skill9 = 0;
+	if (m_team_npc9 != NULL)
+	{
+		pEnemyMonster = m_team_npc9->MyMonsterPointer();
+		m_rpg_menu_skill9 = pEnemyMonster->m_rpgms_actor;
+		if(m_team_npc9->pev->deadflag == DEAD_DEAD)
+		{
+			m_rpg_menu_skill9 += 100;
+		}
+	}
+	m_rpg_menu_skill10 = 0;
+	if (m_team_npc10 != NULL)
+	{
+		pEnemyMonster = m_team_npc10->MyMonsterPointer();
+		m_rpg_menu_skill10 = pEnemyMonster->m_rpgms_actor;
+		if(m_team_npc10->pev->deadflag == DEAD_DEAD)
+		{
+			m_rpg_menu_skill10 += 100;
+		}
+	}
+	m_rpg_menu_skill11 = 0;
+	if (m_team_npc11 != NULL)
+	{
+		pEnemyMonster = m_team_npc11->MyMonsterPointer();
+		m_rpg_menu_skill11 = pEnemyMonster->m_rpgms_actor;
+		if(m_team_npc11->pev->deadflag == DEAD_DEAD)
+		{
+			m_rpg_menu_skill11 += 100;
+		}
+	}
+	m_rpg_menu_skill12 = 0;
+	if (m_team_npc12 != NULL)
+	{
+		pEnemyMonster = m_team_npc12->MyMonsterPointer();
+		m_rpg_menu_skill12 = pEnemyMonster->m_rpgms_actor;
+		if(m_team_npc12->pev->deadflag == DEAD_DEAD)
+		{
+			m_rpg_menu_skill12 += 100;
+		}
+	}
+}
+
+void CBasePlayer :: TeamMate_remove( CBaseMonster *pAllynpc )
+{
+	if (m_team_npc1 == pAllynpc)
+	{
+		m_team_npc1 = NULL;
+		m_rpg_menu_actor2 = 0;
+		pAllynpc->m_rpgms_inteam = 0;
+	}
+	else if (m_team_npc2 == pAllynpc)
+	{
+		m_team_npc2 = NULL;
+		m_rpg_menu_actor3 = 0;
+		pAllynpc->m_rpgms_inteam = 0;
+	}
+	else if (m_team_npc3 == pAllynpc)
+	{
+		m_team_npc3 = NULL;
+		m_rpg_menu_actor4 = 0;
+		pAllynpc->m_rpgms_inteam = 0;
+	}
+	else if (m_team_npc4 == pAllynpc)
+	{
+		m_team_npc4 = NULL;
+		m_rpg_menu_actor5 = 0;
+		pAllynpc->m_rpgms_inteam = 0;
+	}
+	else if (m_team_npc5 == pAllynpc)
+	{
+		m_team_npc5 = NULL;
+		pAllynpc->m_rpgms_inteam = 0;
+	}
+	else if (m_team_npc6 == pAllynpc)
+	{
+		m_team_npc6 = NULL;
+		pAllynpc->m_rpgms_inteam = 0;
+	}
+	else if (m_team_npc7 == pAllynpc)
+	{
+		m_team_npc7 = NULL;
+		pAllynpc->m_rpgms_inteam = 0;
+	}
+	else if (m_team_npc8 == pAllynpc)
+	{
+		m_team_npc8 = NULL;
+		pAllynpc->m_rpgms_inteam = 0;
+	}
+	else if (m_team_npc9 == pAllynpc)
+	{
+		m_team_npc9 = NULL;
+		pAllynpc->m_rpgms_inteam = 0;
+	}
+	else if (m_team_npc10 == pAllynpc)
+	{
+		m_team_npc10 = NULL;
+		pAllynpc->m_rpgms_inteam = 0;
+	}
+	else if (m_team_npc11 == pAllynpc)
+	{
+		m_team_npc11 = NULL;
+		pAllynpc->m_rpgms_inteam = 0;
+	}
+	else if (m_team_npc12 == pAllynpc)
+	{
+		m_team_npc12 = NULL;
+		pAllynpc->m_rpgms_inteam = 0;
+	}
+}
+
+
+BOOL CBasePlayer::HasTeamMate_CanAdd( CBaseMonster *pAllynpc )
+{
+	if(m_team_npc1 != NULL && m_team_npc2 != NULL 
+	&& m_team_npc3 != NULL && m_team_npc4 != NULL
+	&& m_team_npc5 != NULL && m_team_npc6 != NULL
+	&& m_team_npc7 != NULL && m_team_npc8 != NULL
+	&& m_team_npc9 != NULL && m_team_npc10 != NULL
+	&& m_team_npc11 != NULL && m_team_npc12 != NULL)
+	{
+		return FALSE;
+	}
+
+	if(m_team_npc1 == pAllynpc || m_team_npc2 == pAllynpc
+	|| m_team_npc3 == pAllynpc || m_team_npc4 == pAllynpc
+	|| m_team_npc5 == pAllynpc || m_team_npc6 == pAllynpc
+	|| m_team_npc7 == pAllynpc || m_team_npc8 == pAllynpc
+	|| m_team_npc9 == pAllynpc || m_team_npc10 == pAllynpc
+	|| m_team_npc11 == pAllynpc || m_team_npc12 == pAllynpc)
+	{
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+BOOL CBasePlayer::HasMenuItem_Full( void )
+{
+	if(m_rpg_menu_item1 != 0 && m_rpg_menu_item2 != 0 
+	&& m_rpg_menu_item3 != 0 && m_rpg_menu_item4 != 0
+	&& m_rpg_menu_item5 != 0 && m_rpg_menu_item6 != 0
+	&& m_rpg_menu_item7 != 0 && m_rpg_menu_item8 != 0
+	&& m_rpg_menu_item9 != 0 && m_rpg_menu_item10 != 0
+	&& m_rpg_menu_item11 != 0 && m_rpg_menu_item12 != 0)
+	{
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+void CBasePlayer :: BOSS_Find( void )
+{
+	CBaseEntity *pEntity = NULL;
+	CBaseMonster *pEnemyMonster;
+						
+	while ((pEntity = UTIL_FindEntityInSphere( pEntity, pev->origin, 8192 )) != NULL)
+	{
+		if ( (pEntity->pev->flags & FL_MONSTER) && pEntity->IsAlive() )
+		{
+			pEnemyMonster = pEntity->MyMonsterPointer();
+			if(pEnemyMonster)
+			{
+				if(pEnemyMonster->m_is_the_boss)
+				{
+					m_boss_find = pEntity;
+					m_boss_on = 1;
+					break;
+				}
+			}
+		}
+	}
+
+}
+
+void CBasePlayer :: Clear_SayText( void )
+{
+	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
+		WRITE_BYTE( ENTINDEX(edict()) );
+		WRITE_STRING( NULL );
+		WRITE_BYTE( 1 );
+	MESSAGE_END();
+
+	m_fNextClearTextTime = -1;
 }
 
 Vector VecVelocityForDamage( float flDamage )
@@ -338,7 +4103,7 @@ void CBasePlayer::DeathSound( void )
 	*/
 
 	// temporarily using pain sounds for death sounds
-	switch( RANDOM_LONG( 1, 5 ) )
+	/*switch( RANDOM_LONG( 1, 5 ) )
 	{
 	case 1: 
 		EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_pain5.wav", 1, ATTN_NORM );
@@ -352,7 +4117,7 @@ void CBasePlayer::DeathSound( void )
 	}
 
 	// play one of the suit death alarms
-	EMIT_GROUPNAME_SUIT( ENT( pev ), "HEV_DEAD" );
+	EMIT_GROUPNAME_SUIT( ENT( pev ), "HEV_DEAD" );*/
 }
 
 // override takehealth
@@ -378,37 +4143,130 @@ Vector CBasePlayer::GetGunPosition()
 //=========================================================
 void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector vecDir, TraceResult *ptr, int bitsDamageType )
 {
+	if((pev->flags & FL_FROZEN) || m_trainning == 1 || m_god_time >= gpGlobals->time || m_rpg_menu_actor1 != 1 || (pev->flags & FL_GODMODE) )
+		return;
+
 	if( pev->takedamage )
 	{
 		m_LastHitGroup = ptr->iHitgroup;
 
-		switch( ptr->iHitgroup )
+		if (pevAttacker)
 		{
-		case HITGROUP_GENERIC:
-			break;
-		case HITGROUP_HEAD:
-			flDamage *= gSkillData.plrHead;
-			break;
-		case HITGROUP_CHEST:
-			flDamage *= gSkillData.plrChest;
-			break;
-		case HITGROUP_STOMACH:
-			flDamage *= gSkillData.plrStomach;
-			break;
-		case HITGROUP_LEFTARM:
-		case HITGROUP_RIGHTARM:
-			flDamage *= gSkillData.plrArm;
-			break;
-		case HITGROUP_LEFTLEG:
-		case HITGROUP_RIGHTLEG:
-			flDamage *= gSkillData.plrLeg;
-			break;
-		default:
-			break;
+			CBaseEntity *pEntity = GetClassPtr((CBaseEntity *)pevAttacker);
+			if(pEntity){
+				if (  (pEntity->pev->flags & FL_MONSTER) ){
+					CBaseMonster *pEnemyMonster;
+					pEnemyMonster = pEntity->MyMonsterPointer();
+					if(pEnemyMonster->m_rpgms_inteam > 0)
+						return;
+				}
+			}
 		}
 
-		SpawnBlood( ptr->vecEndPos, BloodColor(), flDamage );// a little surface blood.
-		TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
+		if( bitsDamageType & (DMG_ENERGYBEAM|DMG_BULLET|DMG_CLUB) )
+		{
+
+			switch( ptr->iHitgroup )
+			{
+			case HITGROUP_GENERIC:
+				break;
+			case HITGROUP_HEAD:
+				{
+					if(pev->armorvalue <= 0 && flDamage >= 5)
+					{
+						UTIL_BloodStream( ptr->vecEndPos, gpGlobals->v_forward * -5 + gpGlobals->v_up * 2, (unsigned short)73, 60 );	
+					}
+					else
+					{
+						MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, ptr->vecEndPos);
+						WRITE_BYTE(TE_STREAK_SPLASH);
+						WRITE_COORD(ptr->vecEndPos.x);
+						WRITE_COORD(ptr->vecEndPos.y);
+						WRITE_COORD(ptr->vecEndPos.z);
+						WRITE_COORD(ptr->vecPlaneNormal.x);
+						WRITE_COORD(ptr->vecPlaneNormal.y);
+						WRITE_COORD(ptr->vecPlaneNormal.z);
+						WRITE_BYTE(5);
+						WRITE_SHORT(22);
+						WRITE_SHORT(25);
+						WRITE_SHORT(65);
+						MESSAGE_END();
+					}
+
+					flDamage *= 1.5;
+					}
+				break;
+			case HITGROUP_CHEST:
+				flDamage *= 1;
+				break;
+			case HITGROUP_STOMACH:
+				flDamage *= 1;
+				break;
+			case HITGROUP_LEFTARM:
+			case HITGROUP_RIGHTARM:
+				flDamage *= 1;
+				break;
+			case HITGROUP_LEFTLEG:
+			case HITGROUP_RIGHTLEG:
+				flDamage *= 0.75;
+				break;
+			default:
+				break;
+			}
+		}
+		else
+		{
+			if( bitsDamageType & (DMG_SHOCK | DMG_SLASH | DMG_BURN | DMG_SONIC) )
+			{
+				if(ptr->iHitgroup == 1)
+				{
+					flDamage *= 1.25;
+					if(pev->armorvalue <= 0)
+					{
+						UTIL_BloodStream( ptr->vecEndPos, gpGlobals->v_forward * -5 + gpGlobals->v_up * 2, (unsigned short)73, 60 );	
+					}
+					else
+					{
+						MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, ptr->vecEndPos);
+						WRITE_BYTE(TE_STREAK_SPLASH);
+						WRITE_COORD(ptr->vecEndPos.x);
+						WRITE_COORD(ptr->vecEndPos.y);
+						WRITE_COORD(ptr->vecEndPos.z);
+						WRITE_COORD(ptr->vecPlaneNormal.x);
+						WRITE_COORD(ptr->vecPlaneNormal.y);
+						WRITE_COORD(ptr->vecPlaneNormal.z);
+						WRITE_BYTE(5);
+						WRITE_SHORT(22);
+						WRITE_SHORT(25);
+						WRITE_SHORT(65);
+						MESSAGE_END();
+					}
+				}
+			}
+		}
+
+
+		if(m_skill_maxarmor < 200 || pev->armorvalue <= 0)
+		{
+			if(flDamage >= 3 && bitsDamageType != DMG_BLOOD)
+			{
+				SpawnBlood( ptr->vecEndPos, BloodColor(), flDamage );// a little surface blood.
+				TraceBleed( flDamage, vecDir, ptr, bitsDamageType );
+				
+				if(flDamage >= 40)
+				{
+					FX_Explosion( ptr->vecEndPos, 236 );
+				}
+					else if(flDamage >= 20)
+				{
+				FX_Explosion( ptr->vecEndPos, 234 );
+				}
+				else if(flDamage >= 10)
+				{
+					FX_Explosion( ptr->vecEndPos, 232 );
+				}
+			}
+		}
 		AddMultiDamage( pevAttacker, this, flDamage, bitsDamageType );
 	}
 }
@@ -425,6 +4283,27 @@ void CBasePlayer::TraceAttack( entvars_t *pevAttacker, float flDamage, Vector ve
 
 int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, float flDamage, int bitsDamageType )
 {
+	if((pev->flags & FL_FROZEN) || m_trainning == 1 || m_god_time >= gpGlobals->time || m_rpg_menu_actor1 != 1 || (pev->flags & FL_GODMODE) )
+		return 0;
+	
+	if (pevAttacker)
+	{
+		CBaseEntity *pEntity = GetClassPtr((CBaseEntity *)pevAttacker);
+		if(pEntity)
+		{
+			if (  (pEntity->pev->flags & FL_MONSTER) )
+			{
+				CBaseMonster *pEnemyMonster;
+				pEnemyMonster = pEntity->MyMonsterPointer();
+				if(pEnemyMonster->m_rpgms_inteam > 0)
+					return 0;
+			}
+		}
+	}
+
+	if(m_trainning == 1 || m_god_time >= gpGlobals->time)
+		return 0;
+
 	// have suit diagnose the problem - ie: report damage type
 	int bitsDamage = bitsDamageType;
 	int ffound = TRUE;
@@ -434,35 +4313,149 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 	int ftrivial;
 	float flRatio;
 	float flBonus;
+	float flArmor_origin = pev->armorvalue;
 	float flHealthPrev = pev->health;
 
-	flBonus = ARMOR_BONUS;
-	flRatio = ARMOR_RATIO;
-
-	if( ( bitsDamageType & DMG_BLAST ) && g_pGameRules->IsMultiplayer() )
+	if(m_skill_maxarmor == 300)
 	{
-		// blasts damage armor more.
-		flBonus *= 2;
+		flRatio = 0.0;
+		flBonus = 0.3;
+	}
+	else if(m_skill_maxarmor == 200)
+	{
+		flRatio = 0.0;
+		flBonus = 0.4;
+	}
+	else if(m_skill_maxarmor == 150)
+	{
+		flRatio = 0.2;
+		flBonus = 0.5;
+	}
+	else if(m_skill_maxarmor == 120)
+	{
+		flRatio = 0.4;
+		flBonus = 0.8;
+	}
+	else if(m_skill_maxarmor == 100)
+	{
+		flRatio = 0.5;
+		flBonus = 1.0;
 	}
 
-	// Already dead
-	if( !IsAlive() )
-		return 0;
+	CBaseEntity *pAttacker = CBaseEntity::Instance(pevAttacker);
 
-	// go take the damage first
-	CBaseEntity *pAttacker = CBaseEntity::Instance( pevAttacker );
-
-	if( !g_pGameRules->FPlayerCanTakeDamage( this, pAttacker ) )
+	if(m_guard_mynpc == 1)
 	{
-		// Refuse the damage
+		if(!FNullEnt(m_wdoor_mynpc))
+		{
+			if ( FClassnameIs( m_wdoor_mynpc, "monster_willam" ) )
+			{
+				flDamage *= 0.2;
+			}
+		}
+	}
+	if(FBitSet ( pev->flags, FL_ONGROUND ) && FBitSet(pev->flags,FL_DUCKING))
+	{
+		if(pev->velocity.Length() >= 750)
+		{
+			flDamage *= 0.3;
+		}
+	}
+	if(m_hPortecter != NULL && flDamage > 0)
+	{
+		if(m_hPortecter->pev->deadflag == DEAD_NO && m_hPortecter->pev->weapons > 0)
+		{
+			pev->armorvalue = flArmor_origin;
+			m_hPortecter->TakeDamage ( pevInflictor, pevAttacker, flDamage, bitsDamageType);
+			return 0;
+		}
+		else
+		{
+			m_hPortecter = NULL;
+		}
+	}
+
+	if(m_wrongdoor_time >= 1)
+	{
+		flDamage *= 0.5;
+	}
+
+	if(g_causality_add > 0)
+	{
+		flDamage *= 1.0 - (0.1 * g_causality_add);
+	}
+
+	if( (bitsDamageType & DMG_BLAST)  )
+	{
+		flDamage *= 1.25;
+	}
+
+	if ( m_fMask )
+	{
+		if( bitsDamageType & DMG_NERVEGAS )
 		return 0;
+	}
+
+	if( (bitsDamageType & DMG_DARK) )
+		return 0;
+
+	if(bitsDamage & DMG_UNKNOWBLAST)
+	{
+		if(m_wrongdoor_time == 0)
+		{
+			if(m_concussion_time == 0)
+			{
+				pev->viewmodel = 0;
+				pev->punchangle.x += RANDOM_FLOAT(-60, 60);
+				pev->punchangle.y += RANDOM_FLOAT(-60, 60);
+				pev->punchangle.z += RANDOM_FLOAT(-60, 60);
+				if (m_pActiveItem)
+				{
+					m_pActiveItem->Holster();
+				}
+			}
+			m_concussion_time = gpGlobals->time + 4.0;
+		}
+		else
+		{
+			if(m_concussion_time == 0)
+			{
+				pev->viewmodel = 0;
+				pev->punchangle.x += RANDOM_FLOAT(-30, 30);
+				pev->punchangle.y += RANDOM_FLOAT(-30, 30);
+				pev->punchangle.z += RANDOM_FLOAT(-30, 30);
+				if (m_pActiveItem)
+				{
+					m_pActiveItem->Holster();
+				}
+			}
+			m_concussion_time = gpGlobals->time + 2.0;
+		}
+	}
+	else if (bitsDamage & DMG_CONCUSSION)
+	{
+		if(m_wrongdoor_time == 0)
+		{
+			if(m_concussion_time == 0)
+			{
+				pev->viewmodel = 0;
+				pev->punchangle.x += RANDOM_FLOAT(-30, 30);
+				pev->punchangle.y += RANDOM_FLOAT(-30, 30);
+				pev->punchangle.z += RANDOM_FLOAT(-30, 30);
+				if (m_pActiveItem)
+				{
+					m_pActiveItem->Holster();
+				}
+			}
+			m_concussion_time = gpGlobals->time + 2.0;
+		}
 	}
 
 	// keep track of amount of damage last sustained
 	m_lastDamageAmount = (int)flDamage;
 
 	// Armor. 
-	if( !( pev->flags & FL_GODMODE ) && pev->armorvalue && !( bitsDamageType & ( DMG_FALL | DMG_DROWN ) ) )// armor doesn't protect against fall or drown damage!
+	if( !( pev->flags & FL_GODMODE ) && pev->armorvalue && !( bitsDamageType & ( DMG_AIR | DMG_FALL | DMG_DROWN | DMG_NERVEGAS ) ) )// armor doesn't protect against fall or drown damage!
 	{
 		float flNew = flDamage * flRatio;
 
@@ -484,9 +4477,27 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		flDamage = flNew;
 	}
 
+	if(flDamage >= pev->health && m_skill_goddam && pev->deadflag == DEAD_NO)
+	{
+		if(pev->health > pev->max_health * 0.2)
+		{
+			pev->health = 1;
+			m_god_time = gpGlobals->time + 2;
+			UTIL_ScreenFade( this, Vector(255,0,0), 1.5, 0.5, 100, FFADE_IN );
+			return 0;
+		}
+	}
+
+	m_deadtakedmgkill = bitsDamageType;
+
 	// this cast to INT is critical!!! If a player ends up with 0.5 health, the engine will get that
 	// as an int (zero) and think the player is dead! (this will incite a clientside screentilt, etc)
 	fTookDamage = CBaseMonster::TakeDamage( pevInflictor, pevAttacker, flDamage >= 0.0f ? floor(flDamage) : ceil(flDamage), bitsDamageType );
+
+	if ( !IsAlive() )
+	{
+		return fTookDamage;
+	}
 
 	// reset damage time countdown for each type of time based damage player just sustained
 	{
@@ -530,17 +4541,17 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 		if( bitsDamage & DMG_CLUB )
 		{
-			if( fmajor )
-				SetSuitUpdate( "!HEV_DMG4", FALSE, SUIT_NEXT_IN_30SEC );	// minor fracture
+			/*if( fmajor )
+				SetSuitUpdate( "!HEV_DMG4", FALSE, SUIT_NEXT_IN_30SEC );	// minor fracture*/
 			bitsDamage &= ~DMG_CLUB;
 			ffound = TRUE;
 		}
 		if( bitsDamage & ( DMG_FALL | DMG_CRUSH ) )
 		{
-			if( fmajor )
+			/*if( fmajor )
 				SetSuitUpdate( "!HEV_DMG5", FALSE, SUIT_NEXT_IN_30SEC );	// major fracture
 			else
-				SetSuitUpdate( "!HEV_DMG4", FALSE, SUIT_NEXT_IN_30SEC );	// minor fracture
+				SetSuitUpdate( "!HEV_DMG4", FALSE, SUIT_NEXT_IN_30SEC );	// minor fracture*/
 
 			bitsDamage &= ~( DMG_FALL | DMG_CRUSH );
 			ffound = TRUE;
@@ -548,10 +4559,10 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 		if( bitsDamage & DMG_BULLET )
 		{
-			if( m_lastDamageAmount > 5 )
+			/*if( m_lastDamageAmount > 5 )
 				SetSuitUpdate( "!HEV_DMG6", FALSE, SUIT_NEXT_IN_30SEC );	// blood loss detected
 			//else
-			//	SetSuitUpdate( "!HEV_DMG0", FALSE, SUIT_NEXT_IN_30SEC );	// minor laceration
+			//	SetSuitUpdate( "!HEV_DMG0", FALSE, SUIT_NEXT_IN_30SEC );	// minor laceration*/
 
 			bitsDamage &= ~DMG_BULLET;
 			ffound = TRUE;
@@ -559,10 +4570,10 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 		if( bitsDamage & DMG_SLASH )
 		{
-			if( fmajor )
+			/*if( fmajor )
 				SetSuitUpdate( "!HEV_DMG1", FALSE, SUIT_NEXT_IN_30SEC );	// major laceration
 			else
-				SetSuitUpdate( "!HEV_DMG0", FALSE, SUIT_NEXT_IN_30SEC );	// minor laceration
+				SetSuitUpdate( "!HEV_DMG0", FALSE, SUIT_NEXT_IN_30SEC );	// minor laceration*/
 
 			bitsDamage &= ~DMG_SLASH;
 			ffound = TRUE;
@@ -570,36 +4581,36 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 
 		if( bitsDamage & DMG_SONIC )
 		{
-			if( fmajor )
-				SetSuitUpdate( "!HEV_DMG2", FALSE, SUIT_NEXT_IN_1MIN );	// internal bleeding
+			/*if( fmajor )
+				SetSuitUpdate( "!HEV_DMG2", FALSE, SUIT_NEXT_IN_1MIN );	// internal bleeding*/
 			bitsDamage &= ~DMG_SONIC;
 			ffound = TRUE;
 		}
 
 		if( bitsDamage & ( DMG_POISON | DMG_PARALYZE ) )
 		{
-			SetSuitUpdate( "!HEV_DMG3", FALSE, SUIT_NEXT_IN_1MIN );	// blood toxins detected
+			//SetSuitUpdate( "!HEV_DMG3", FALSE, SUIT_NEXT_IN_1MIN );	// blood toxins detected
 			bitsDamage &= ~( DMG_POISON | DMG_PARALYZE );
 			ffound = TRUE;
 		}
 
 		if( bitsDamage & DMG_ACID )
 		{
-			SetSuitUpdate( "!HEV_DET1", FALSE, SUIT_NEXT_IN_1MIN );	// hazardous chemicals detected
+			//SetSuitUpdate( "!HEV_DET1", FALSE, SUIT_NEXT_IN_1MIN );	// hazardous chemicals detected
 			bitsDamage &= ~DMG_ACID;
 			ffound = TRUE;
 		}
 
 		if( bitsDamage & DMG_NERVEGAS )
 		{
-			SetSuitUpdate( "!HEV_DET0", FALSE, SUIT_NEXT_IN_1MIN );	// biohazard detected
+			//SetSuitUpdate( "!HEV_DET0", FALSE, SUIT_NEXT_IN_1MIN );	// biohazard detected
 			bitsDamage &= ~DMG_NERVEGAS;
 			ffound = TRUE;
 		}
 
 		if( bitsDamage & DMG_RADIATION )
 		{
-			SetSuitUpdate( "!HEV_DET2", FALSE, SUIT_NEXT_IN_1MIN );	// radiation detected
+			//SetSuitUpdate( "!HEV_DET2", FALSE, SUIT_NEXT_IN_1MIN );	// radiation detected
 			bitsDamage &= ~DMG_RADIATION;
 			ffound = TRUE;
 		}
@@ -608,9 +4619,15 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 			bitsDamage &= ~DMG_SHOCK;
 			ffound = TRUE;
 		}
+
+		if (bitsDamage & DMG_CONCUSSION)
+		{
+			bitsDamage &= ~DMG_CONCUSSION;
+			ffound = TRUE;
+		}
 	}
 
-	pev->punchangle.x = -2;
+	/*pev->punchangle.x = -2;
 
 	if( fTookDamage && !ftrivial && fmajor && flHealthPrev >= 75 )
 	{
@@ -645,6 +4662,23 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 		}
 		else
 			SetSuitUpdate( "!HEV_HLTH1", FALSE, SUIT_NEXT_IN_10MIN );	// health dropping
+	}*/
+
+	if(flDamage >= 48 && pev->punchangle.x > -4)
+	{
+		pev->punchangle.x = -4;
+	}
+	else if(flDamage >= 24 && pev->punchangle.x > -3)
+	{
+		pev->punchangle.x = -3;
+	}
+	else if(flDamage >= 12 && pev->punchangle.x > -2)
+	{
+		pev->punchangle.x = -2;
+	}
+	else if(flDamage > 0 && pev->punchangle.x > -1)
+	{
+		pev->punchangle.x = -1;
 	}
 
 	return fTookDamage;
@@ -659,7 +4693,7 @@ int CBasePlayer::TakeDamage( entvars_t *pevInflictor, entvars_t *pevAttacker, fl
 //=========================================================
 void CBasePlayer::PackDeadPlayerItems( void )
 {
-	int iWeaponRules;
+	/*int iWeaponRules;
 	int iAmmoRules;
 	int i, j;
 	CBasePlayerWeapon *rgpPackWeapons[MAX_WEAPONS] = {0,};
@@ -815,12 +4849,29 @@ void CBasePlayer::PackDeadPlayerItems( void )
 		}
 
 		pWeaponBox->pev->velocity = pev->velocity * 1.2f;// weaponbox has player's velocity, then some.
-	}
+	}*/
 	RemoveAllItems( TRUE );// now strip off everything that wasn't handled by the code above.
 }
 
 void CBasePlayer::RemoveAllItems( BOOL removeSuit )
 {
+	m_rpg_menu_item1 = 0;
+	m_rpg_menu_item2 = 0;
+	m_rpg_menu_item3 = 0;
+	m_rpg_menu_item4 = 0;
+	m_rpg_menu_item5 = 0;
+	m_rpg_menu_item6 = 0;
+	m_rpg_menu_item7 = 0;
+	m_rpg_menu_item8 = 0;
+	m_rpg_menu_item9 = 0;
+	m_rpg_menu_item10 = 0;
+	m_rpg_menu_item11 = 0;
+	m_rpg_menu_item12 = 0;
+
+	m_rpg_menu_item_e = -1;
+	m_rpg_menu_item_t = -1;
+	m_iClient_mynpc = -1;
+
 	int i;
 	CBasePlayerItem *pPendingItem;
 
@@ -889,13 +4940,41 @@ entvars_t *g_pevLastInflictor;  // Set in combat.cpp.  Used to pass the damage i
 
 void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 {
+	if(pev->deadflag != DEAD_NO || m_player_died == TRUE)
+	{
+		if ( pev->solid != SOLID_NOT && ( pev->health < -pev->max_health * 1.5 && iGib != GIB_NEVER ) || iGib == GIB_ALWAYS )
+		{
+			m_fDeadRespawn = 0;
+			m_guard_mynpc = 0;
+			m_skill_respawn = 0;
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgTbutton, NULL, pev );
+			WRITE_SHORT( 0 );
+			MESSAGE_END();
+
+			UTIL_ScreenFade( this, Vector(0,0,0), 4, 12, 255, FFADE_OUT | FFADE_MODULATE );
+			m_flDeadTime = gpGlobals->time + 4.0;
+
+			pev->solid			= SOLID_NOT;
+			pev->origin.z		-= 114514;
+			EMIT_SOUND(ENT(pev), CHAN_BODY, "common/bodysplat.wav", 1, ATTN_NORM);		
+			return;
+		}
+
+		return;
+	}
+
+	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "dead_bugfix", "1" );
+	m_player_died = TRUE;
+
 	CSound *pSound;
 
 	// Holster weapon immediately, to allow it to cleanup
 	if( m_pActiveItem )
 		m_pActiveItem->Holster();
 
-	g_pGameRules->PlayerKilled( this, pevAttacker, g_pevLastInflictor );
+	//g_pGameRules->PlayerKilled( this, pevAttacker, g_pevLastInflictor );
+	g_pGameRules->DeathNotice( this, pevAttacker, g_pevLastInflictor, m_deadtakedmgkill );
 
 	if( m_pTank != 0 )
 		m_pTank->Use( this, this, USE_OFF, 0 );
@@ -909,14 +4988,18 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 		}
 	}
 
+	pev->punchangle.z += -60.0;
+
 	SetAnimation( PLAYER_DIE );
 
 	m_flRespawnTimer = 0;
 
 	pev->modelindex = g_ulModelIndexPlayer;    // don't use eyes
 
+	pev->viewmodel = 0;
+
 	pev->deadflag = DEAD_DYING;
-	pev->movetype = MOVETYPE_TOSS;
+	pev->movetype = MOVETYPE_BOUNCE;
 	ClearBits( pev->flags, FL_ONGROUND );
 	if( pev->velocity.z < 10 )
 		pev->velocity.z += RANDOM_FLOAT( 0, 300 );
@@ -926,39 +5009,134 @@ void CBasePlayer::Killed( entvars_t *pevAttacker, int iGib )
 
 	// send "health" update message to zero
 	m_iClientHealth = 0;
-	MESSAGE_BEGIN( MSG_ONE, gmsgHealth, NULL, pev );
-		WRITE_BYTE( m_iClientHealth );
-	MESSAGE_END();
-
-	// Tell Ammo Hud that the player is dead
-	MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
-		WRITE_BYTE( 0 );
-		WRITE_BYTE( 0XFF );
-		WRITE_BYTE( 0xFF );
-	MESSAGE_END();
+	m_iClient_mynpc = 0;
 
 	// reset FOV
-	pev->fov = m_iFOV = m_iClientFOV = 0;
+	pev->fov = 0;
+	m_iClientFOV = 0;
+	m_iFOV = 0;
 
 	MESSAGE_BEGIN( MSG_ONE, gmsgSetFOV, NULL, pev );
-		WRITE_BYTE( 0 );
+	WRITE_BYTE(0);
+	MESSAGE_END();
+
+	game_player_dead = 1;
+
+	pev->button = 0;
+
+	MESSAGE_BEGIN( MSG_ONE, gmsgGunScope, NULL, pev );
+	WRITE_BYTE( 0 );
 	MESSAGE_END();
 
 	// UNDONE: Put this in, but add FFADE_PERMANENT and make fade time 8.8 instead of 4.12
-	// UTIL_ScreenFade( edict(), Vector( 128, 0, 0 ), 6, 15, 255, FFADE_OUT | FFADE_MODULATE );
-
-	if( g_pGameRules->IsMultiplayer())
-		pev->solid = SOLID_NOT;
-
-	if( ( pev->health < -40 && iGib != GIB_NEVER ) || iGib == GIB_ALWAYS )
+	m_barnacle_RTP = 0;
+	if ( m_barnacle_catchme != NULL )
 	{
+		if(FClassnameIs( m_barnacle_catchme->pev, "monster_headcrab") 
+		|| FClassnameIs( m_barnacle_catchme->pev, "monster_headcrab_throw") )
+		{
+			m_barnacle_catchme->pev->owner = NULL;
+			m_barnacle_catchme->pev->movetype = MOVETYPE_STEP;
+		}
+	}
+
+	m_rpg_menu_on = 0;
+
+	CLIENT_COMMAND(edict(), "=cammousemove\n");
+
+	if(pev->armorvalue < 1)
+	{
+		if(m_skill_maxarmor < 300)
+		{
+			m_skill_maxarmor = 0;
+		}
+		m_iClientBattery = -1;
+	}
+
+	if(m_skill_reload && g_causality_add < 5)
+	{
+		g_causality_add++;
+	}
+
+	if ( pev->solid != SOLID_NOT && ( pev->health < -pev->max_health * 1.5 && iGib != GIB_NEVER ) || iGib == GIB_ALWAYS )
+	{
+		m_fDeadRespawn = 0;
+		m_guard_mynpc = 0;
+		m_skill_respawn = 0;
+		m_rpg_menu_item_e = -1;
+		m_rpg_menu_item_t = -1;
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgModeShow, NULL, pev );
+		WRITE_BYTE( m_guard_mynpc );
+		WRITE_BYTE( m_rpg_menu_item_t );
+		MESSAGE_END();
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgTbutton, NULL, pev );
+		WRITE_SHORT( 0 );
+		MESSAGE_END();
+
+		MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
+		WRITE_BYTE( ENTINDEX(edict()) );
+		WRITE_STRING( NULL );
+		WRITE_BYTE( 1 );
+		MESSAGE_END();
+
+		UTIL_ScreenFade( this, Vector(0,0,0), 5, 15, 255, FFADE_OUT | FFADE_MODULATE );
+
+		if(m_trainning == 3)
+		{
+			char text[256];
+			sprintf( text, "- Total: %d  Hits: %d  Miss: %d\n", (m_enemy_kills+m_game_rate),m_enemy_kills,m_game_rate);
+			UTIL_SayTextAll( text,this );
+			m_flDeadTime = gpGlobals->time + 12.0;
+		}
+		else
+		{
+			m_flDeadTime = gpGlobals->time + 4.0;
+		}
+
 		pev->solid = SOLID_NOT;
-		GibMonster();	// This clears pev->model
-		pev->effects |= EF_NODRAW;
+		pev->origin.z -= 114514;
+		EMIT_SOUND(ENT(pev), CHAN_BODY, "common/bodysplat.wav", 1, ATTN_NORM);		
 		return;
 	}
 
-	DeathSound();
+	if(m_skill_respawn == 0 || m_skill_respawn_time > gpGlobals->time)
+	{
+		// Tell Ammo Hud that the player is dead
+		MESSAGE_BEGIN( MSG_ONE, gmsgCurWeapon, NULL, pev );
+			WRITE_BYTE(0);
+			WRITE_BYTE(0XFF);
+			WRITE_BYTE(0xFF);
+		MESSAGE_END();
+
+		m_guard_mynpc = 0;
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgModeShow, NULL, pev );
+		WRITE_BYTE( m_guard_mynpc );
+		WRITE_BYTE( m_rpg_menu_item_t );
+		MESSAGE_END();
+
+		if(m_trainning == 3)
+		{
+			char text[256];
+			sprintf( text, "- Total: %d  Hits: %d  Miss: %d\n", (m_enemy_kills+m_game_rate),m_enemy_kills,m_game_rate);
+			UTIL_SayTextAll( text,this );
+			UTIL_ScreenFade( this, Vector(0,0,0), 8, 12, 255, FFADE_OUT | FFADE_MODULATE );
+			m_flDeadTime = gpGlobals->time + 12.0;
+		}
+		else
+		{
+			UTIL_ScreenFade( this, Vector(0,0,0), 4, 12, 255, FFADE_OUT | FFADE_MODULATE );
+			m_flDeadTime = gpGlobals->time + 4.0;
+		}
+
+		DeathSound();
+	}
+	else
+	{
+		m_flDeadTime = gpGlobals->time + 2.0;
+	}
 
 	pev->angles.x = 0;
 	pev->angles.z = 0;
@@ -992,7 +5170,7 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		break;
 	case PLAYER_DIE:
 		m_IdealActivity = ACT_DIESIMPLE;
-		m_IdealActivity = GetDeathActivity();
+		//m_IdealActivity = GetDeathActivity();
 		break;
 	case PLAYER_ATTACK1:
 		switch( m_Activity )
@@ -1150,6 +5328,11 @@ void CBasePlayer::TabulateAmmo()
 	ammo_rockets = AmmoInventory( GetAmmoIndex( "rockets" ) );
 	ammo_uranium = AmmoInventory( GetAmmoIndex( "uranium" ) );
 	ammo_hornets = AmmoInventory( GetAmmoIndex( "Hornets" ) );
+	ammo_762nato = AmmoInventory( GetAmmoIndex( "762nato" ) );
+	ammo_45acp = AmmoInventory( GetAmmoIndex( "45acp" ) );
+	ammo_556nato = AmmoInventory( GetAmmoIndex( "556nato" ) );
+	ammo_338mag = AmmoInventory( GetAmmoIndex( "338mag" ) );
+	ammo_762natobox = AmmoInventory( GetAmmoIndex( "762natobox" ) );
 }
 
 /*
@@ -1185,7 +5368,7 @@ void CBasePlayer::WaterMove()
 			EMIT_SOUND( ENT( pev ), CHAN_VOICE, "player/pl_wade2.wav", 1, ATTN_NORM );
 
 		pev->air_finished = gpGlobals->time + AIRTIME;
-		pev->dmg = 2;
+		pev->dmg = 0;
 
 		// if we took drowning damage, give it back slowly
 		if( m_idrowndmg > m_idrownrestored )
@@ -1216,7 +5399,7 @@ void CBasePlayer::WaterMove()
 				pev->dmg += 1;
 				if( pev->dmg > 5 )
 					pev->dmg = 5;
-				TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), pev->dmg, DMG_DROWN );
+				//TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), pev->dmg, DMG_DROWN );
 				pev->pain_finished = gpGlobals->time + 1;
 
 				// track drowning damage, give it back when
@@ -1266,13 +5449,18 @@ void CBasePlayer::WaterMove()
 
 	if( pev->watertype == CONTENT_LAVA )		// do damage
 	{
-		if( pev->dmgtime < gpGlobals->time )
-			TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), 10 * pev->waterlevel, DMG_BURN );
+		TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), 20, DMG_BURN );
 	}
 	else if( pev->watertype == CONTENT_SLIME )		// do damage
 	{
-		pev->dmgtime = gpGlobals->time + 1;
-		TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), 4 * pev->waterlevel, DMG_ACID );
+		TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), 10, DMG_ACID );
+	}
+	else if (m_flash_mode == 2)		// do damage
+	{
+		m_deadtakedmgkill = 0;
+		m_flash_mode = 3;
+		pev->health = 0;
+		Killed( pev, GIB_ALWAYS );
 	}
 
 	if( !FBitSet( pev->flags, FL_INWATER ) )
@@ -1301,14 +5489,19 @@ void CBasePlayer::PlayerDeathThink( void )
 			pev->velocity = flForward * pev->velocity.Normalize();
 	}
 
-	if( HasWeapons() )
+	/*if( HasWeapons() )
 	{
 		// we drop the guns here because weapons that have an area effect and can kill their user
 		// will sometimes crash coming back from CBasePlayer::Killed() if they kill their owner because the
 		// player class sometimes is freed. It's safer to manipulate the weapons once we know
 		// we aren't calling into any of their code anymore through the player pointer.
 		PackDeadPlayerItems();
-	}
+	}*/
+
+	if(pev->viewmodel != 0)
+		pev->viewmodel = 0;
+
+	g_engfuncs.pfnSetClientMaxspeed(ENT(pev), 1);
 
 	if( pev->modelindex && ( !m_fSequenceFinished ) && ( pev->deadflag == DEAD_DYING ))
 	{
@@ -1341,44 +5534,129 @@ void CBasePlayer::PlayerDeathThink( void )
 
 	BOOL fAnyButtonDown = ( pev->button & ~IN_SCORE );
 
-	// wait for all buttons released
-	if( pev->deadflag == DEAD_DEAD )
-	{
-		if( fAnyButtonDown )
-			return;
-
-		if( g_pGameRules->FPlayerCanRespawn( this ) )
-		{
-			m_fDeadTime = gpGlobals->time;
-			pev->deadflag = DEAD_RESPAWNABLE;
-		}
-
-		return;
-	}
-
-	// if the player has been dead for one second longer than allowed by forcerespawn,
-	// forcerespawn isn't on. Send the player off to an intermission camera until they
-	// choose to respawn.
-	if( g_pGameRules->IsMultiplayer() && ( gpGlobals->time > ( m_fDeadTime + 6 ) ) && !( m_afPhysicsFlags & PFLAG_OBSERVER ) )
-	{
-		// go to dead camera. 
-		StartDeathCam();
-	}
-
-	if( pev->iuser1 )	// player is in spectator mode
-		return;
-
-	// wait for any button down,  or mp_forcerespawn is set and the respawn time is up
-	if( !fAnyButtonDown && !( g_pGameRules->IsMultiplayer() && forcerespawn.value > 0 && ( gpGlobals->time > ( m_fDeadTime + 5 ) ) ) )
-		return;
-
 	pev->button = 0;
-	m_flRespawnTimer = 0;
 
-	//ALERT( at_console, "Respawn\n" );
+	//ALERT(at_console, "Respawn\n");
 
-	respawn( pev, !( m_afPhysicsFlags & PFLAG_OBSERVER ) );// don't copy a corpse if we're in deathcam.
-	pev->nextthink = -1;
+	if(m_flDeadTime <= gpGlobals->time && m_flDeadTime >= 0)
+	{
+		if(m_skill_respawn && m_fDeadRespawn == 0)
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgTbutton, NULL, pev );
+			WRITE_SHORT( 4 );
+			MESSAGE_END();
+			m_flDeadTime = gpGlobals->time + 4.0;
+			m_fDeadRespawn = 1;
+		}
+		else if(m_fDeadRespawn == 1)
+		{
+			if ( !(pev->flags & FL_FROZEN) )
+			{
+				CLIENT_COMMAND(edict(), "-cammousemove\n");
+			}
+			m_needleheal = 1;
+			m_needleuse_time = gpGlobals->time + 5.0;
+			m_air_oxyan = 1;
+			m_barnacle_god_time = gpGlobals->time + 6.0;
+			m_barnacle_RTP_relase = 0;
+
+			if (m_pActiveItem)
+			{
+				m_pActiveItem->Deploy();
+			}
+			pev->deadflag		= DEAD_NO;
+			pev->takedamage		= DAMAGE_AIM;
+			pev->solid			= SOLID_SLIDEBOX;
+			pev->movetype		= MOVETYPE_WALK;
+			//pev->health			= 1;
+			//m_needleheal2	   += pev->max_health;
+			pev->health			= pev->max_health;
+			pev->view_ofs = VEC_VIEW;
+			pev->velocity = g_vecZero;
+			m_flFallVelocity = 0;
+			m_god_time = gpGlobals->time + 6.0;
+			m_godposion = 1;
+			FX_Explosion( pev->origin, EXPLOSION_BIOMASS);
+
+			m_fDeadRespawn = 0;
+			m_flDeadTime = -1;
+
+			m_skill_respawn_time = gpGlobals->time + 120.0;
+
+			if ( !(pev->flags & FL_FROZEN) ){
+			UTIL_ScreenFade( this, Vector(255,255,255), 0.3, 0.5, 255, FFADE_IN );
+			}
+
+			m_flVelocityModifier = 0;
+
+			pev->dmg_take		= 0;
+			pev->dmg_save		= 0;
+			pev->friction		= 1.0;
+			pev->gravity		= 1.0;
+			m_bitsHUDDamage		= -1;
+			m_bitsDamageType	= 0;
+			m_afPhysicsFlags	= 0;
+
+			pev->fov = 0;
+			m_iFOV = 0;
+			m_iClientFOV		= -1; // make sure fov reset is sent
+
+			m_iClient_mynpc     = -1;
+
+			pev->sequence		= LookupActivity( ACT_IDLE );
+
+			if(g_causality_add > 0)
+			{
+				if(m_skill_reload)
+				{
+					MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pev );
+					if(g_causality_add == 1)
+					{
+						WRITE_STRING( "c_lv_1" );
+					}
+					else if(g_causality_add == 2)
+					{
+						WRITE_STRING( "c_lv_2" );
+					}
+					else if(g_causality_add == 3)
+					{
+						WRITE_STRING( "c_lv_3" );
+					}
+					else if(g_causality_add == 4)
+					{
+						WRITE_STRING( "c_lv_4" );
+					}
+					else if(g_causality_add == 5)
+					{
+						WRITE_STRING( "c_lv_5" );
+						pev->armorvalue = m_skill_maxarmor;
+					}
+					MESSAGE_END();
+				}
+				else
+				{
+					g_causality_add = 0;
+				}
+			}
+
+			//	m_pLastItem = NULL;
+			//	m_iClientHideHUD = -1;  // force this to be recalculated
+			//	m_fWeapon = FALSE;
+			//	m_fKnownItem = FALSE;
+			//	m_iClientBattery = -1;
+			//	m_fInitHUD = TRUE;
+
+			m_blindUntilTime = 0;
+			m_blindStartTime = 0;
+			m_blindHoldTime = 0;
+			m_blindFadeTime = 0;
+			m_blindAlpha = 0;
+		}
+		else
+		{
+			SERVER_COMMAND("reload\n");
+		}
+	}
 }
 
 //=========================================================
@@ -1558,7 +5836,7 @@ void CBasePlayer::PlayerUse( void )
 
 					if( pTrain->Classify() == CLASS_VEHICLE )
 					{
-						EMIT_SOUND( ENT( pev ), CHAN_ITEM, "plats/vehicle_ignition.wav", 0.8, ATTN_NORM );
+						EMIT_SOUND( ENT( pev ), CHAN_ITEM, "vehicle/vehicle_start1.wav", 0.8, ATTN_NORM );
 						( (CFuncVehicle *)pTrain )->m_pDriver = this;
 					}
 					else
@@ -1683,7 +5961,7 @@ void CBasePlayer::Jump()
 			pev->velocity = pev->velocity + pev->basevelocity;
 		}
 
-		if( FClassnameIs( pevGround, "func_vehicle" ))
+		if( FClassnameIs( pevGround, "func_tracktrain" ) || FClassnameIs( pevGround, "func_train" ) || FClassnameIs( pevGround, "func_door" ) || FClassnameIs( pevGround, "func_door_breaker" ) || FClassnameIs( pevGround, "func_vehicle" ) )
 		{
 			pev->velocity = pevGround->velocity + pev->velocity;
 		}
@@ -1773,6 +6051,88 @@ void CBasePlayer::AddPointsToTeam( int score, BOOL bAllowNegativeScore )
 	}
 }
 
+int CBasePlayer :: Game_Load_SecondData ()
+{
+    char    szFilename[MAX_PATH];
+    int     length;
+    byte    *aMemFile;
+    byte    *pMemFile;
+
+    snprintf( szFilename, sizeof(szFilename), "data/game_clear.%s", STRING(pev->netname) );
+
+    pMemFile = aMemFile = LOAD_FILE_FOR_ME(szFilename, &length);
+
+    if ( !aMemFile )
+    {
+    //  UTIL_SayTextAll( szFilename,this );
+    //  UTIL_CenterPrintAll( "Fuck You" );
+    //  fopen ( szFilename, "w+" );
+        return FALSE;
+    }
+    else
+    {
+        m_fSecondWorld = TRUE;
+        FREE_FILE(aMemFile);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+//=========================================================
+// CGraph - FSaveGraph - It's not rocket science.
+// this WILL overwrite existing files.
+//=========================================================
+int CBasePlayer::Game_Save_SecondData()
+{
+    FILE    *file;
+    char    szNrpFilename [MAX_PATH];// text node report filename
+
+    GET_GAME_DIR( szNrpFilename );
+    strcat( szNrpFilename, "/data/game_clear." );
+    strcat( szNrpFilename, STRING(pev->netname) );
+    file = fopen ( szNrpFilename, "w+" );
+
+    if ( file )
+    {
+        fprintf( file, "Game Clear Data:\n");
+        fprintf( file, "Kills: %d\n",m_enemy_kills);
+        fprintf( file, "Diamonds: %d\n",m_player_diamonds);
+        fprintf( file, "Friendly: %d\n",m_ending_frags);
+
+        int total_sec = (int)m_player_time;
+        int gtime_h = total_sec / 3600;
+        int gtime_m = (total_sec % 3600) / 60;
+        int gtime_s = total_sec % 60;
+
+        fprintf( file, "Play Time: %02d:%02d:%02d\n", gtime_h, gtime_m, gtime_s);
+        /*
+        if(g_fGameJumpCG == 11){
+        fprintf( file, "Ending: S");
+        }
+        else if(g_fGameJumpCG == 1){
+        fprintf( file, "Ending: A");
+        }
+        else if(g_fGameJumpCG == 2 || g_fGameJumpCG == 12){
+        fprintf( file, "Ending: B");
+        }
+        else if(g_fGameJumpCG == 3 || g_fGameJumpCG == 13){
+        fprintf( file, "Ending: C");
+        }
+        else if(g_fGameJumpCG == 4 || g_fGameJumpCG == 14){
+        fprintf( file, "Ending: D");
+        }
+        else if(g_fGameJumpCG == 5 || g_fGameJumpCG == 15){
+        fprintf( file, "Ending: E");
+        }
+        */
+        fclose ( file );
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 //Player ID
 void CBasePlayer::InitStatusBar()
 {
@@ -1802,19 +6162,24 @@ void CBasePlayer::UpdateStatusBar()
 		{
 			CBaseEntity *pEntity = CBaseEntity::Instance( tr.pHit );
 
-			if( pEntity->Classify() == CLASS_PLAYER )
+			if( pEntity->pev->flags & (FL_MONSTER) && pEntity->pev->deadflag == DEAD_NO && !(pEntity->pev->effects & EF_NODRAW ) )
 			{
-				newSBarState[SBAR_ID_TARGETNAME] = ENTINDEX( pEntity->edict() );
-				strcpy( sbuf1, "1 %p1\n2 Health: %i2%%\n3 Armor: %i3%%" );
-
-				// allies and medics get to see the targets health
-				if( g_pGameRules->PlayerRelationship( this, pEntity ) == GR_TEAMMATE )
+				if (pEntity->Classify() == CLASS_PLAYER_ALLY)
 				{
-					newSBarState[SBAR_ID_TARGETHEALTH] = (int)( 100 * ( pEntity->pev->health / pEntity->pev->max_health ) );
-					newSBarState[SBAR_ID_TARGETARMOR] = (int)pEntity->pev->armorvalue; //No need to get it % based since 100 it's the max.
+					CBaseMonster *pEnemyMonster;
+					pEnemyMonster = pEntity->MyMonsterPointer();
+					if(pEnemyMonster)
+					{
+						if(pEnemyMonster->m_rpgms_inteam > 0)
+						{
+							newSBarState[ SBAR_ID_TARGETHEALTH ] = (pEntity->pev->health / pEntity->pev->max_health) * 100;
+							//newSBarState[ SBAR_ID_TARGETARMOR ] = pEnemyMonster->m_lovehate;
+							strcpy( sbuf1, "1 %p1\n2[HP: %i2%%]" );
+							//strcpy( sbuf1, "1 %p1\n2[HP: %i2%%\n3 LP: %i3%%]" );
+							m_flStatusBarDisappearDelay = gpGlobals->time + 1.0;
+						}
+					}
 				}
-
-				m_flStatusBarDisappearDelay = gpGlobals->time + 1.0f;
 			}
 		}
 		else if( m_flStatusBarDisappearDelay > gpGlobals->time )
@@ -1828,7 +6193,7 @@ void CBasePlayer::UpdateStatusBar()
 
 	BOOL bForceResend = FALSE;
 
-	if( strcmp( sbuf0, m_SbarString0 ) )
+	if( strcmp( sbuf0, m_SbarString0 ) || g_restore_fix > 0 )
 	{
 		MESSAGE_BEGIN( MSG_ONE, gmsgStatusText, NULL, pev );
 			WRITE_BYTE( 0 );
@@ -1841,7 +6206,7 @@ void CBasePlayer::UpdateStatusBar()
 		bForceResend = TRUE;
 	}
 
-	if( strcmp( sbuf1, m_SbarString1 ) )
+	if( strcmp( sbuf1, m_SbarString1 ) || g_restore_fix > 0 )
 	{
 		MESSAGE_BEGIN( MSG_ONE, gmsgStatusText, NULL, pev );
 			WRITE_BYTE( 1 );
@@ -1891,23 +6256,1028 @@ void CBasePlayer::PreThink( void )
 
 	UTIL_MakeVectors( pev->v_angle );             // is this still used?
 
+	if(m_fNextClearTextTime > 0 && m_fNextClearTextTime < gpGlobals->time)
+	{
+		Clear_SayText();
+	}
+
+	if(m_player_time_now < gpGlobals->time)
+	{
+		m_player_time_now = gpGlobals->time + 1.0;
+		m_player_time += 1;
+	}
+
+	if(m_pActiveItem != NULL)
+	{
+		if(m_grenadeboomidle >= 0 && m_pActiveItem->m_iId != WEAPON_HANDGRENADE && m_grenadeboomtime != 0)
+		{
+			float time = m_grenadeboomtime - gpGlobals->time + 3.0;
+			if (time < 0){
+			SelectItem("weapon_handgrenade");
+			}
+		}
+		else if(m_grenadeboomidle2 >= 0 && m_pActiveItem->m_iId != WEAPON_DARKGRENADE && m_grenadeboomtime2 != 0)
+		{
+			float time = m_grenadeboomtime2 - gpGlobals->time + 3.0;
+			if (time < 0){
+			SelectItem("weapon_darkgrenade");
+			}
+		}
+	}
+
 	ItemPreFrame();
 	WaterMove();
 
-	if( g_pGameRules && g_pGameRules->FAllowFlashlight() )
-		m_iHideHUD &= ~HIDEHUD_FLASHLIGHT;
+	if(g_gibexp_max > 0)g_gibexp_max--;
+
+	if (!FNullEnt(m_boss_find))
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgLifeLoad, NULL, pev );
+		WRITE_BYTE( m_boss_on );
+		if(m_boss_find->pev->health > 0)
+		{
+			float hp = 520 * (m_boss_find->pev->health / m_boss_find->pev->max_health);
+			if(hp < 1){hp = 1;}
+			WRITE_SHORT( (int)hp  );
+			WRITE_BYTE( m_boss_type );
+			WRITE_LONG((int)m_boss_find->pev->health );
+		}
+		else
+		{
+			m_boss_find = NULL;
+			m_boss_type = 0;
+			m_boss_on = 0;
+			WRITE_SHORT( 1  );
+			WRITE_BYTE( 0 );
+			WRITE_LONG(0);
+		}
+		MESSAGE_END();
+	}
 	else
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgLifeLoad, NULL, pev );
+		WRITE_BYTE( 0 );
+		WRITE_SHORT( 1  );
+		WRITE_BYTE( 0 );
+		WRITE_LONG(0);
+		MESSAGE_END();
+	}
+		
+
+	if(m_new_spawner > 0)
+	{
+		m_new_spawner -= 1;
+	}
+	if(m_new_spawner == 1)
+	{
+		CLIENT_COMMAND(edict(), "-cammousemove\n");
+	}
+	
+	if ( FlashlightIsOn() )
+	{
+		int flash_dist = 2048;
+		int radius = 18;
+
+		if(m_flash_mode >= 2)
+		{
+			flash_dist = 136;
+			radius = 24;
+		}
+
+		TraceResult trf;
+		UTIL_MakeVectors(pev->v_angle);
+		UTIL_TraceLine(pev->origin + pev->view_ofs,pev->origin + pev->view_ofs + gpGlobals->v_forward * flash_dist,dont_ignore_monsters, edict(), &trf );
+
+		 MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+			  WRITE_BYTE( TE_DLIGHT );
+			  WRITE_COORD( trf.vecEndPos.x ); // origin
+			  WRITE_COORD( trf.vecEndPos.y );
+			  WRITE_COORD( trf.vecEndPos.z );
+			  WRITE_BYTE( radius );     // radius
+			  WRITE_BYTE( 240 );     // R
+			  WRITE_BYTE( 240 );     // G
+			  WRITE_BYTE( 240 );     // B
+			  WRITE_BYTE( 0 );     // life * 10
+			  WRITE_BYTE( 0 ); // decay
+		 MESSAGE_END();
+	}
+
+	if(m_barnacle_RTP == 0 && m_concussion_time <= gpGlobals->time)
+	{
+		if(pev->movetype == MOVETYPE_NOCLIP || m_skill_darkhide_on || m_trainning == 2)
+		{
+			g_engfuncs.pfnSetClientMaxspeed(ENT(pev), 400.0);
+		}
+		else if(m_wrongdoor_time >= 1)
+		{
+			g_engfuncs.pfnSetClientMaxspeed(ENT(pev), 200.0);
+		}
+		else if(m_fequip2 == TRUE)
+		{
+			g_engfuncs.pfnSetClientMaxspeed(ENT(pev), 330.0);
+		}
+		else{
+			g_engfuncs.pfnSetClientMaxspeed(ENT(pev), 300.0);
+		}
+	}
+	else
+	{
+		if(m_barnacle_Level == 1 && m_barnacle_catchme != NULL)
+		{
+			g_engfuncs.pfnSetClientMaxspeed(ENT(pev), 200.0);
+		}
+		else if(m_barnacle_RTP == 0 && m_concussion_time > 0)
+		{
+			g_engfuncs.pfnSetClientMaxspeed(ENT(pev), 100.0);
+		}
+		else
+		{
+			g_engfuncs.pfnSetClientMaxspeed(ENT(pev), 1);
+		}
+	}
+
+	if(pev->health > 0 && pev->health < 1)
+	{
+		pev->health = 1;
+	}
+
+	if(m_fMoveItem != NULL)
+	{
+		if(pev->viewmodel != 0)
+		{
+			pev->viewmodel = 0;
+			if (m_pActiveItem)
+			{
+				m_pActiveItem->Holster();
+			}
+		} 
+
+		if(m_fMoveItem->pev->armorvalue < 50)
+		{
+			m_fMoveItem->pev->armorvalue += 1;
+		}
+
+		if(m_barnacle_RTP != 0)
+		{
+			m_fMoveItem->pev->movetype = MOVETYPE_BOUNCE;
+
+			UTIL_MakeVectors(pev->v_angle);
+			Vector vecSrc = pev->origin + gpGlobals->v_forward * 16;
+			Vector vecThrow = gpGlobals->v_forward * 500 + pev->velocity;
+
+			m_fMoveItem->pev->velocity = vecThrow;
+
+			m_fMoveItem->pev->avelocity.x = pev->velocity.Length();
+			m_fMoveItem->pev->avelocity.y = RANDOM_FLOAT( -pev->velocity.Length(), pev->velocity.Length() );
+
+			m_fMoveItem->pev->armorvalue = 2;
+			m_fMoveItem->pev->owner = NULL;
+			m_fMoveItem = NULL;
+
+			if (m_pActiveItem)
+			{
+				m_pActiveItem->Deploy();
+			}
+		}
+		else
+		{
+			Vector moveorigin;
+			UTIL_MakeVectors(pev->angles);
+
+			m_fMoveItem->pev->avelocity = g_vecZero;
+			Vector vecsrc;
+
+			if(m_fMoveItem->pev->body == 0)
+			{
+				m_fMoveItem->pev->angles.x = 90;
+				m_fMoveItem->pev->angles.y = pev->angles.y;
+				m_fMoveItem->pev->angles.z = 0;
+				vecsrc = pev->origin + Vector(0,0,8) + gpGlobals->v_right * 8;
+			}
+			else
+			{
+				vecsrc = pev->origin - Vector(0,0,8) + gpGlobals->v_right * 8;
+			}
+			
+			TraceResult tr;
+			UTIL_TraceLine(vecsrc, vecsrc + gpGlobals->v_forward * 24, dont_ignore_monsters, ENT(pev), &tr);
+			if ( tr.flFraction < 1.0 )
+			{
+				moveorigin = tr.vecEndPos + (tr.vecPlaneNormal * 8);
+			}
+			else
+			{
+				moveorigin = vecsrc + gpGlobals->v_forward * 24;
+			}
+			UTIL_SetOrigin(m_fMoveItem->pev,moveorigin);
+		}
+	}
+
+	if(m_trainning == 0 && m_barnacle_RTP == 0 && m_barnacle_god_time <= gpGlobals->time && pev->movetype == MOVETYPE_WALK)
+	{
+		if(pev->iuser4 == 0)
+		{
+			m_stuck_inter = 0;
+			m_stuck_origin = pev->origin;
+		}
+		if(pev->iuser4 == 1 && pev->health > 0)
+		{
+			TraceResult trace;
+			Vector checkorigin;
+			int hull = human_hull;
+			if(m_stuck_inter == 0)
+			{
+				checkorigin = pev->origin + Vector(0,0,1);
+			}
+			else
+			{
+				checkorigin = pev->origin + Vector(RANDOM_LONG(-m_stuck_inter,m_stuck_inter),RANDOM_LONG(-m_stuck_inter,m_stuck_inter),RANDOM_LONG(-m_stuck_inter,m_stuck_inter));
+			}
+			if ( FBitSet( pev->flags, FL_DUCKING ) )
+			{
+				hull = head_hull;
+			}
+			UTIL_TraceHull(checkorigin, checkorigin, dont_ignore_monsters, hull, ENT(pev),&trace);
+			if (trace.fStartSolid == 0)
+			{
+				pev->origin = checkorigin;
+			}
+			if(m_stuck_inter > 512)
+			{
+				pev->origin = m_stuck_origin;
+				m_stuck_inter = 0;
+			}
+
+			m_stuck_inter++;
+			pev->iuser4 = 2;
+		}
+	}
+	else
+	{
+		//m_stuck_origin = pev->origin;
+		m_stuck_inter = 0;
+		pev->iuser4 = 0;
+	}
+
+	if ( pev->flags & FL_ONGROUND ) 
+	{	
+		if(g_StartDark)
+		{
+			m_flVelocityModifier -= 5;
+			g_StartDark = FALSE;
+		}
+
+		if (m_flVelocityModifier < 1)
+		{
+			if(m_flVelocityModifier < 1)
+			{
+				if(m_flVelocityModifier < -4)
+				{
+					m_flVelocityModifier = -4;
+				}
+				m_flVelocityModifier += 0.01;
+				if (m_flVelocityModifier < 0)
+				{
+					pev->velocity = pev->velocity * 0.01;
+				}
+				else{
+					pev->velocity = pev->velocity * m_flVelocityModifier;
+				}
+			}
+		}
+
+		if (m_flVelocityModifier > 1)
+		{
+			m_flVelocityModifier = 1;
+		}
+
+		if (m_flVelocityModifier2 != 1)
+		{
+			m_flVelocityModifier2 = 1;
+		}
+
+		if ( pev->flags & FL_DUCKING ) 
+		{
+			if( m_iWeaponFlash >=256)
+			{
+				m_newcross_size = 3;
+			}
+			else if ( m_iWeaponFlash >=128)
+			{
+				m_newcross_size = 2;
+			}
+			else
+			{
+				m_newcross_size = 1;
+			}
+		}
+		else // si no es porq esta parado
+		{
+			if ( (pev->velocity.Length2D() >= 100 && pev->velocity.Length2D() < 220 ) )//walk 220 //120-300
+			{
+				if( m_iWeaponFlash >=256)
+				{
+					m_newcross_size = 5;
+				}
+				else if ( m_iWeaponFlash >=128)
+				{
+					m_newcross_size = 4;
+				}
+				else
+				{
+					m_newcross_size = 3;
+				}
+			}
+			else if (pev->velocity.Length2D() >= 220 ) //RUN
+			{			
+				if ( m_iWeaponFlash >=128)
+				{
+					m_newcross_size = 5;
+				}
+				else
+				{
+					m_newcross_size = 4;
+				}
+			}
+			else//solo esta parado
+			{
+				if( m_iWeaponFlash >=256){
+					m_newcross_size = 4;
+				}
+				else if ( m_iWeaponFlash >=128)
+				{
+					m_newcross_size = 3;
+				}
+				else
+				{
+					m_newcross_size = 2;
+				}
+			}
+		}
+	}
+	else // si no esta en el suelo es porque esta en el aire
+	{
+		m_newcross_size = 5;
+		if (m_flVelocityModifier2 < 1)
+		{
+			if(m_climbspark >= 3)
+			{
+				UTIL_Sparks( m_vecClimb );
+				m_climbspark = 0;
+			}
+			else
+			{
+				m_climbspark += 1;
+			}
+
+			if(m_pActiveItem->m_iId != WEAPON_FIST)
+			{
+				m_flVelocityModifier2 += 0.2;
+			}
+
+			if(pev->origin.z - 36 > m_vecClimb.z)
+			{
+				m_flVelocityModifier2 += 0.1;
+			}
+
+			m_flVelocityModifier2 += 0.01;
+			if (m_flVelocityModifier2 < 0)
+			{
+				pev->velocity = pev->velocity * 0;
+			}
+			else
+			{
+				pev->velocity = pev->velocity * m_flVelocityModifier2;
+			}
+
+			if(gpGlobals->time >= m_ClimbWallTime && m_air_oxyan > 1)
+			{
+				m_air_oxyan -= 80;
+				m_ClimbWallTime = gpGlobals->time + 0.1;
+			}
+			else if(m_air_oxyan <= 1)
+			{
+				m_air_oxyan = 1;
+				m_flVelocityModifier2 += 0.1;
+			}
+
+			pev->velocity.z += 36 - (16 * m_flVelocityModifier2);
+
+			if(m_vecClimb.y > pev->origin.y)
+				pev->velocity.y += 24 - (8 * m_flVelocityModifier2);
+			else
+				pev->velocity.y -= 24 - (8 * m_flVelocityModifier2);
+
+			if(m_vecClimb.x > pev->origin.x)
+				pev->velocity.x += 24 - (8 * m_flVelocityModifier2);
+			else
+				pev->velocity.x -= 24 - (8 * m_flVelocityModifier2);
+
+		}
+		else if(m_ClimbWallTime != 0)
+		{
+			m_ClimbWallTime = 0;
+		}
+
+		if (m_flVelocityModifier2 > 1){
+			m_flVelocityModifier2 = 1;
+		}
+	}
+
+	if(pev->health > 0 && pev->deadflag == DEAD_NO)
+	{
+		if(m_barnacle_RTP > 0 || m_air_oxyan_stop_time > gpGlobals->time 
+		|| pev->waterlevel == 3 || m_MonsterCatchTime != 0 ||
+		(m_ClimbWallTime != 0 && !FBitSet( pev->flags, FL_ONGROUND ))
+		|| m_concussion_time > gpGlobals->time )
+		{
+			m_RecoverTime = 0;
+		}
+
+		if(m_barnacle_RTP_relase == 1)
+		{
+			m_barnacle_god_time = gpGlobals->time + 3.0;
+			m_barnacle_RTP_relase = 0;
+			if (m_pActiveItem)
+			{
+				m_pActiveItem->Deploy();
+			}
+		}
+
+		if(m_concussion_time < gpGlobals->time && m_concussion_time != 0)
+		{
+			if (m_pActiveItem)
+			{
+				m_pActiveItem->Deploy();
+			}
+			m_concussion_time = 0;
+		}
+
+		if(m_barnacle_RTP > 0)
+		{
+			if(pev->viewmodel != 0)
+			{
+				pev->viewmodel = 0;
+				if (m_pActiveItem)
+				{
+					m_pActiveItem->Holster();
+				}
+			} 
+			if(m_MonsterCatchTime == 0)
+			{
+				m_MonsterCatchTime = gpGlobals->time;
+			}
+			else if(gpGlobals->time >= m_MonsterCatchTime + 0.1)
+			{
+				if(m_barnacle_Level > 0)
+				{
+					m_air_oxyan -= (gpGlobals->time - m_MonsterCatchTime) * m_barnacle_Level * 500;
+				}
+
+				if(m_barnacle_RTP_bar > 0)
+				{
+					m_barnacle_RTP_bar -= (gpGlobals->time - m_MonsterCatchTime) * 20;
+				}
+
+				m_MonsterCatchTime = gpGlobals->time;
+			}
+
+			if ( m_barnacle_catchme != NULL )
+			{
+				if(FClassnameIs( m_barnacle_catchme->pev, "monster_headcrab") || FClassnameIs( m_barnacle_catchme->pev, "monster_headcrab_throw") )
+				{
+					if(m_barnacle_catchme->pev->health > 0)
+					{
+						if(m_barnacle_catchme->pev->owner != ENT(pev))
+						{
+							m_barnacle_catchme->pev->owner = ENT(pev);
+							m_barnacle_catchme->pev->movetype = MOVETYPE_FLY;
+						}
+						else if(pev->health <= 0)
+						{
+							m_barnacle_catchme->pev->owner = NULL;
+							m_barnacle_catchme->pev->movetype = MOVETYPE_STEP;
+						}
+						UTIL_MakeVectors(pev->v_angle);
+						m_barnacle_catchme->pev->sequence = 20;
+						UTIL_SetOrigin(m_barnacle_catchme->pev,pev->origin + Vector(0,0,16) + gpGlobals->v_forward * 16 + gpGlobals->v_up * 4);
+					}
+					else
+					{
+						m_barnacle_RTP_relase = 1;
+						m_barnacle_draw_time = gpGlobals->time + 0.5;
+						m_barnacle_RTP = 0;
+						m_barnacle_RTP_bar = 0;
+						m_barnacle_Level = 0;
+						m_barnacle_catchme = NULL;
+					}
+									
+					if(m_barnacle_RTP_bar >= 255)
+					{
+						UTIL_SetOrigin(m_barnacle_catchme->pev,pev->origin + Vector(0,0,16) + gpGlobals->v_forward * 32 + gpGlobals->v_up * 4);
+						m_barnacle_catchme->TakeDamage ( pev, pev, 60, DMG_NEVERGIB );
+						m_barnacle_RTP_relase = 1;
+						m_barnacle_draw_time = gpGlobals->time + 0.5;
+						m_barnacle_RTP = 0;
+						m_barnacle_RTP_bar = 0;
+						m_barnacle_Level = 0;
+						m_barnacle_catchme = NULL;
+					}
+				}
+				else if(FClassnameIs( m_barnacle_catchme->pev, "sciheadclaw") )
+				{
+					if(m_barnacle_RTP_bar >= 255 || m_barnacle_catchme->pev->health <= 2)
+					{
+						m_barnacle_catchme->pev->health = 0;
+						m_barnacle_catchme->pev->frags = -1;
+						m_barnacle_RTP_relase = 1;
+						m_barnacle_draw_time = gpGlobals->time + 0.5;
+						m_barnacle_RTP = 0;
+						m_barnacle_RTP_bar = 0;
+						m_barnacle_Level = 0;
+						m_barnacle_catchme = NULL;
+					}
+					else
+					{
+						pev->origin = m_barnacle_catchme->pev->origin + Vector(0,0,36);
+					}
+				}
+
+				if(m_air_oxyan <= 0)
+				{
+					if(FClassnameIs( m_barnacle_catchme->pev, "monster_bloodsucker") || FClassnameIs( m_barnacle_catchme->pev, "monster_vanlve"))
+					{
+					}
+					else if(FClassnameIs( m_barnacle_catchme->pev, "monster_barnacle") || FClassnameIs( m_barnacle_catchme->pev, "monster_barnacle_fantasy") || FClassnameIs( m_barnacle_catchme->pev, "monster_barnacle_fantasy_r"))
+					{
+						if(m_barnacle_Level == 3)
+						{
+							TakeDamage(pev, pev, 2, DMG_SLASH);
+						}
+					}
+					else
+					{
+						TakeDamage(pev, pev, m_barnacle_Level, DMG_AIR);
+					}
+					m_air_oxyan = 1;
+				}
+			}
+			else
+			{
+				m_barnacle_RTP_relase = 1;
+				m_barnacle_draw_time = gpGlobals->time + 0.5;
+				m_barnacle_RTP = 0;
+				m_barnacle_RTP_bar = 0;
+				m_barnacle_Level = 0;
+				m_barnacle_catchme = NULL;
+			}
+
+		}
+		
+		if(m_MonsterCatchTime != 0 && m_barnacle_RTP == 0)
+			m_MonsterCatchTime = 0;
+
+		if(m_barnacle_RTP == 1)
+		{
+			m_Fast_RTP_Show = 1;
+		}
+		else 
+		{
+			m_Fast_RTP_Show = 0;
+		}
+				
+		if(m_skill_darkhide_on)
+		{
+			if(m_RecoverTime == 0)
+			{
+				m_RecoverTime = gpGlobals->time;
+			}
+			else if(gpGlobals->time >= m_RecoverTime + 0.1)
+			{
+				m_darkposion -= (gpGlobals->time - m_RecoverTime) * 400;
+				m_RecoverTime = gpGlobals->time;
+			}
+			if(m_barnacle_RTP != 0 || m_iWeaponFlash >= 128)
+			{
+				m_darkposion = 0;
+			}
+			if(m_darkposion <= 0)
+			{
+				m_skill_darkhide_on = FALSE;
+				m_darkposion = 0;
+				m_iClientHealth = -1;
+				m_iClient_oxyan = -1;
+				pev->flags &= ~FL_NOTARGET;
+				m_fldarkhideTime = gpGlobals->time + 35;
+			}
+		}		
+
+		if(pev->waterlevel < 3)
+		{
+			if(m_IntoWaterTime > 0)
+			{
+				m_IntoWaterTime = 0;
+			}
+			if(m_barnacle_RTP == 0 && !m_skill_darkhide_on)
+			{
+				if(m_air_oxyan_stop_time <= gpGlobals->time && m_air_oxyan < m_air_oxyan_max)
+				{
+					if(m_RecoverTime == 0)
+					{
+						m_RecoverTime = gpGlobals->time;
+					}
+					else if(gpGlobals->time >= m_RecoverTime + 0.1)
+					{
+						if(m_air_oxyan_max <= 2000)
+						{
+							if(pev->velocity.Length() < 100)
+							{
+								m_air_oxyan += (gpGlobals->time - m_RecoverTime) * 330;
+							}
+							else
+							{
+								m_air_oxyan += (gpGlobals->time - m_RecoverTime) * 250;
+							}
+						}
+						else
+						{
+							if(pev->velocity.Length() < 100)
+							{
+								m_air_oxyan += (gpGlobals->time - m_RecoverTime) * 400;
+							}
+							else
+							{
+								m_air_oxyan += (gpGlobals->time - m_RecoverTime) * 300;
+							}
+						}
+						m_RecoverTime = gpGlobals->time;
+					}
+				}
+				
+				if(pev->fuser4 == 2)
+				{
+					m_air_oxyan_stop_time = gpGlobals->time + 3.5;
+					if(m_air_oxyan >= 900)
+					{
+						pev->fuser4 = 0;
+						m_air_oxyan -= 900;
+						EMIT_SOUND(ENT(pev), CHAN_VOICE, "newadd/pl_jump.wav", 1, ATTN_NORM);
+						//FX_Explosion( Center(), EXPLOSION_SPARKSHOWER );
+					}
+					else
+					{
+						pev->fuser4 = 1;
+					}
+				}
+				else
+				{
+					if(m_concussion_time > 0 || m_air_oxyan < 900 || m_darkposion > 0 || m_wrongdoor_time > 0)
+					{
+						pev->fuser4 = 1;
+					}
+					else
+					{
+						pev->fuser4 = 0;
+					}
+				}
+			}
+		}
+		else
+		{
+			if(pev->waterlevel == 3)
+			{
+				if(m_IntoWaterTime == 0)
+				{
+					m_IntoWaterTime = gpGlobals->time;
+				}
+				else if(gpGlobals->time >= m_IntoWaterTime + 0.1)
+				{
+					m_air_oxyan -= (gpGlobals->time - m_IntoWaterTime) * 60;
+					m_IntoWaterTime = gpGlobals->time;
+				}
+
+				if(m_darkposion > 0)
+				{
+					m_skill_darkhide_on = FALSE;
+					m_darkposion = 0;
+					m_iClientHealth = -1;
+					m_iClient_oxyan = -1;
+					pev->flags &= ~FL_NOTARGET;
+					m_fldarkhideTime = gpGlobals->time + 35;
+				}
+
+				if(m_air_oxyan <= 0)
+				{
+					m_air_oxyan = 1;
+					TakeDamage(VARS(eoNullEntity), VARS(eoNullEntity), 2, DMG_DROWN);
+				}
+			}
+		}
+				
+		if(m_air_oxyan < m_air_oxyan_max)
+		{
+			m_air_show = 1;
+		}
+		else
+		{
+			if(m_air_oxyan > m_air_oxyan_max)
+			{
+				m_air_oxyan = m_air_oxyan_max;
+			}
+			m_air_show = 0;
+		}
+	}
+
+	MESSAGE_BEGIN( MSG_ONE, gmsgHealth, NULL, pev );
+	WRITE_BYTE( 1 );
+	if(pev->viewmodel == 0)
+	{
+		WRITE_BYTE( 0 );
+	}
+	else
+	{
+		WRITE_BYTE( m_newcross_active );
+	}
+	WRITE_BYTE( m_newcross_size );
+	WRITE_BYTE( m_newcross_ontarget );
+	MESSAGE_END();
+
+	MESSAGE_BEGIN( MSG_ONE, gmsgRTPbar, NULL, pev );
+	WRITE_BYTE( m_Fast_RTP_Show );
+	if(m_barnacle_RTP_bar == 0)
+	{
+		WRITE_BYTE( 1 );
+	}
+	else
+	{
+		WRITE_BYTE( m_barnacle_RTP_bar );
+	}
+	WRITE_BYTE( 255 );
+	MESSAGE_END();
+
+	if(m_hasflashlight)
+	{
+		m_iHideHUD &= ~HIDEHUD_FLASHLIGHT;
+	}
+	else
+	{
 		m_iHideHUD |= HIDEHUD_FLASHLIGHT;
+	}
 
 	// JOHN: checks if new client data (for HUD and view control) needs to be sent to the client
 	UpdateClientData();
 
 	CheckTimeBasedDamage();
 
-	CheckSuitUpdate();
+	if (pev->deadflag != DEAD_NO)
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgNVG, NULL, pev );
+		WRITE_BYTE( 1 );
+		WRITE_BYTE( 0 );
+		MESSAGE_END();
+
+		if(m_flDeadTime <= gpGlobals->time + 3.0 && (!m_skill_respawn || m_skill_respawn_time > gpGlobals->time) )
+		{
+			m_skill_respawn_time = gpGlobals->time + 120.0;
+			m_skill_respawn = 0;
+
+			m_gameoveralpha += 1;
+			if(m_gameoveralpha > 255)
+			{
+				m_gameoveralpha = 255;
+			}
+
+			if(m_trainning == 3)
+			{
+				MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
+				WRITE_BYTE( ENTINDEX(edict()) );
+				WRITE_STRING( NULL );
+				WRITE_BYTE( 1 );
+				MESSAGE_END();
+			}
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgGameOver, NULL, pev );
+			WRITE_BYTE( m_gameoveralpha );//Alpha
+			WRITE_BYTE( 1 );
+			MESSAGE_END();
+		}
+
+		PlayerDeathThink();
+		return;
+	}
+	else
+	{
+		if(m_iClient_Gameover == 3)
+		{
+			if(m_fGameOverTime <= gpGlobals->time)
+			{
+				SERVER_COMMAND("disconnect\n");
+			}
+		}
+		else if(m_iClient_Gameover == 0)
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgGameOver, NULL, pev );
+			WRITE_BYTE( 0 );
+			WRITE_BYTE( 0 );
+			MESSAGE_END();
+
+			m_iClient_Gameover = 1;
+		}
+		else if(m_iClient_Gameover <= -1)
+		{
+			if(m_fGameOverTime <= gpGlobals->time + 4.0)
+			{
+				m_gameoveralpha += 1;
+				if(m_gameoveralpha > 255)
+				{
+					m_gameoveralpha = 255;
+				}
+
+				MESSAGE_BEGIN( MSG_ONE, gmsgGameOver, NULL, pev );
+				WRITE_BYTE( m_gameoveralpha );
+				WRITE_BYTE( 1 );
+				MESSAGE_END();
+			}
+			if(m_fGameOverTime <= gpGlobals->time)
+			{
+				SERVER_COMMAND("reload\n");
+			}
+		}
+		else if(m_iClient_Gameover == 2)
+		{
+			if(m_fGameOverTime <= gpGlobals->time)
+			{
+				m_gameoveralpha -= 2;
+				if(m_gameoveralpha <= 1)
+				{
+					m_iClient_Gameover = 0;
+				}
+			}
+			else if(m_fGameOverTime <= gpGlobals->time + 4.0)
+			{
+				m_gameoveralpha += 2;
+				if(m_gameoveralpha > 255)
+				{
+					m_gameoveralpha = 255;
+				}	
+			}
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgGameOver, NULL, pev );
+			WRITE_BYTE( m_gameoveralpha );
+			WRITE_BYTE( 2 );
+			MESSAGE_END();
+		}
+			
+		if ( m_iNVG == 1 )
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgNVG, NULL, pev );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( 2 );
+			MESSAGE_END();
+		}
+		else if (m_iNVG == 2)
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgNVG, NULL, pev );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( 1 );
+			MESSAGE_END();
+		}
+		else
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgNVG, NULL, pev );
+			WRITE_BYTE( 0 );
+			WRITE_BYTE( 0 );
+			MESSAGE_END();
+		}
+	}
+
+	if( g_pGameRules && g_pGameRules->FAllowFlashlight() )
+		m_iHideHUD &= ~HIDEHUD_FLASHLIGHT;
+	else
+		m_iHideHUD |= HIDEHUD_FLASHLIGHT;
+
+	if (pev->deadflag != DEAD_NO)
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgNVG, NULL, pev );
+		WRITE_BYTE( 1 );
+		WRITE_BYTE( 0 );
+		MESSAGE_END();
+
+		if(m_flDeadTime <= gpGlobals->time + 3.0 && (!m_skill_respawn || m_skill_respawn_time > gpGlobals->time) )
+		{
+			m_skill_respawn_time = gpGlobals->time + 120.0;
+			m_skill_respawn = 0;
+
+			m_gameoveralpha += 1;
+			if(m_gameoveralpha > 255){
+			m_gameoveralpha = 255;
+			}
+
+			if(m_trainning == 3){//Bug Fix 3.0 ͷзͶ����ʽ
+			MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
+			WRITE_BYTE( ENTINDEX(edict()) );
+			WRITE_STRING( NULL );
+			WRITE_BYTE( 1 );
+			MESSAGE_END();
+			}
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgGameOver, NULL, pev );
+			WRITE_BYTE( m_gameoveralpha );//Alpha
+			WRITE_BYTE( 1 );
+			MESSAGE_END();
+		}
+
+		PlayerDeathThink();
+		return;
+	}
+	else
+	{
+		if(m_iClient_Gameover == 3)
+		{
+			if(m_fGameOverTime <= gpGlobals->time)
+			{
+				SERVER_COMMAND("disconnect\n");
+			}
+		}
+		else if(m_iClient_Gameover == 0)
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgGameOver, NULL, pev );
+			WRITE_BYTE( 0 );
+			WRITE_BYTE( 0 );
+			MESSAGE_END();
+
+			m_iClient_Gameover = 1;
+		}
+		else if(m_iClient_Gameover <= -1)
+		{
+			if(m_fGameOverTime <= gpGlobals->time + 4.0)
+			{
+				m_gameoveralpha += 1;
+				if(m_gameoveralpha > 255)
+				{
+					m_gameoveralpha = 255;
+				}
+
+				MESSAGE_BEGIN( MSG_ONE, gmsgGameOver, NULL, pev );
+				WRITE_BYTE( m_gameoveralpha );
+				WRITE_BYTE( 1 );
+				MESSAGE_END();
+			}
+			if(m_fGameOverTime <= gpGlobals->time)
+			{
+				SERVER_COMMAND("reload\n");
+			}
+		}
+		else if(m_iClient_Gameover == 2)
+		{
+			if(m_fGameOverTime <= gpGlobals->time)
+			{
+				m_gameoveralpha -= 2;
+				if(m_gameoveralpha <= 1)
+				{
+					m_iClient_Gameover = 0;
+				}
+			}
+			else if(m_fGameOverTime <= gpGlobals->time + 4.0){
+				m_gameoveralpha += 2;
+				if(m_gameoveralpha > 255)
+				{
+					m_gameoveralpha = 255;
+				}	
+			}
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgGameOver, NULL, pev );
+			WRITE_BYTE( m_gameoveralpha );
+			WRITE_BYTE( 2 );
+			MESSAGE_END();
+		}
+
+			
+		if ( m_iNVG == 1 )
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgNVG, NULL, pev );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( 2 );
+			MESSAGE_END();
+		}
+		else if (m_iNVG == 2)
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgNVG, NULL, pev );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( 1 );
+			MESSAGE_END();
+		}
+		else
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgNVG, NULL, pev );
+			WRITE_BYTE( 0 );
+			WRITE_BYTE( 0 );
+			MESSAGE_END();
+		}
+	}
 
 	// Observer Button Handling
-	if( IsObserver() )
+	/*if( IsObserver() )
 	{
 		Observer_HandleButtons();
 		Observer_CheckTarget();
@@ -1920,7 +7290,7 @@ void CBasePlayer::PreThink( void )
 	{
 		PlayerDeathThink();
 		return;
-	}
+	}*/
 
 	// So the correct flags get sent to client asap.
 	//
@@ -1951,18 +7321,17 @@ void CBasePlayer::PreThink( void )
 				//ALERT( at_error, "In train mode with no train!\n" );
 				m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
 				m_iTrain = TRAIN_NEW|TRAIN_OFF;
-				if( pTrain )
-					( (CFuncVehicle *)pTrain )->m_pDriver = NULL;
+				/*if( pTrain )
+					( (CFuncVehicle *)pTrain )->m_pDriver = NULL;*/
 				return;
 			}
 		}
-		else if( !FBitSet( pev->flags, FL_ONGROUND ) || FBitSet( pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL )
-			|| ( ( pev->button & ( IN_MOVELEFT | IN_MOVERIGHT )) && pTrain->Classify() != CLASS_VEHICLE ))
+		else if( !FBitSet( pev->flags, FL_ONGROUND ) || FBitSet( pTrain->pev->spawnflags, SF_TRACKTRAIN_NOCONTROL ) )
 		{
 			// Turn off the train if you jump, strafe, or the train controls go dead
 			m_afPhysicsFlags &= ~PFLAG_ONTRAIN;
 			m_iTrain = TRAIN_NEW | TRAIN_OFF;
-			( (CFuncVehicle *)pTrain )->m_pDriver = NULL;
+			//( (CFuncVehicle *)pTrain )->m_pDriver = NULL;
 			return;
 		}
 
@@ -2028,6 +7397,54 @@ void CBasePlayer::PreThink( void )
 	// If trying to duck, already ducked, or in the process of ducking
 	if( ( pev->button & IN_DUCK ) || FBitSet( pev->flags,FL_DUCKING ) || ( m_afPhysicsFlags & PFLAG_DUCKING ) )
 		Duck();
+
+	if (m_skill_miss && m_air_oxyan >= 1500)
+	{
+		if((pev->button & IN_DUCK) && (pev->button & IN_SCORE) && FBitSet ( pev->flags, FL_ONGROUND ) && pev->fuser4 == 0 && !FBitSet(pev->flags,FL_DUCKING))
+		{
+			m_air_oxyan -= 1500;
+			EMIT_SOUND(ENT(pev), CHAN_VOICE, "newadd/pl_jump.wav", 1, ATTN_NORM);
+			m_air_oxyan_stop_time = gpGlobals->time + 3.5;
+			pev->fuser4 = 3;
+			UTIL_MakeVectors(pev->angles);
+			pev->velocity = gpGlobals->v_forward * 4500 + pev->velocity;
+			pev->velocity.z = 0;
+
+			TraceResult tr;
+			UTIL_TraceLine(pev->origin + pev->view_ofs, pev->origin + gpGlobals->v_forward * 256, dont_ignore_monsters, edict(), &tr);
+			if(tr.flFraction != 1)
+			{
+				// What the hell are you doing?
+				CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
+				if ( pEntity )
+				{
+					ClearMultiDamage( );
+					pEntity->TraceAttack(pev, 100, gpGlobals->v_forward, &tr, DMG_FALL); 
+					EMIT_SOUND(ENT(pev), CHAN_ITEM, "newadd/fist_hitbod3.wav", 1, ATTN_NORM); 
+					MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, tr.vecEndPos);
+					WRITE_BYTE(TE_STREAK_SPLASH);
+					WRITE_COORD(tr.vecEndPos.x);
+					WRITE_COORD(tr.vecEndPos.y);
+					WRITE_COORD(tr.vecEndPos.z);
+					WRITE_COORD(tr.vecPlaneNormal.x);
+					WRITE_COORD(tr.vecPlaneNormal.y);
+					WRITE_COORD(tr.vecPlaneNormal.z);
+					WRITE_BYTE(10);
+					WRITE_SHORT(30);
+					WRITE_SHORT(50);
+					WRITE_SHORT(300);
+					MESSAGE_END();
+					UTIL_Ricochet( tr.vecEndPos, 1 );
+					int tex = (int)TEXTURETYPE_Trace(&tr, pev->origin, tr.vecEndPos);
+					int surface = (int)SURFACETYPE_Trace(&tr, pev->origin, tr.vecEndPos,Classify(),0);
+					FX_ImpBullet( tr.vecEndPos, tr.vecPlaneNormal, pev->origin, surface, BULLET_CROWBAR, (float)tex );
+
+					ApplyMultiDamage( pev, pev );
+				}
+			}
+		}
+	}
+
 
 	if( !FBitSet( pev->flags, FL_ONGROUND ) )
 	{
@@ -2119,6 +7536,15 @@ void CBasePlayer::PreThink( void )
 
 void CBasePlayer::CheckTimeBasedDamage() 
 {
+	if (m_needleheal2 > 0)
+	{
+		m_bitsDamageType &= ~DMG_POISON;
+		m_rgbTimeBasedDamage[itbd_Poison] = 0;
+		
+		m_bitsDamageType &= ~DMG_NERVEGAS;
+		m_rgbTimeBasedDamage[itbd_NerveGas] = 0;
+	}
+
 	int i;
 	BYTE bDuration = 0;
 
@@ -2145,11 +7571,15 @@ void CBasePlayer::CheckTimeBasedDamage()
 				bDuration = PARALYZE_DURATION;
 				break;
 			case itbd_NerveGas:
+				if ( !m_fMask )
+				{
+					TakeDamage(pev, pev, NERVEGAS_DAMAGE, DMG_AIR);	
+				}
 				//TakeDamage( pev, pev, NERVEGAS_DAMAGE, DMG_GENERIC );
 				bDuration = NERVEGAS_DURATION;
 				break;
 			case itbd_Poison:
-				TakeDamage( pev, pev, POISON_DAMAGE, DMG_GENERIC );
+				TakeDamage( pev, pev, POISON_DAMAGE, DMG_AIR );
 				bDuration = POISON_DURATION;
 				break;
 			case itbd_Radiation:
@@ -2163,7 +7593,7 @@ void CBasePlayer::CheckTimeBasedDamage()
 				{
 					int idif = Q_min( m_idrowndmg - m_idrownrestored, 10 );
 
-					TakeHealth( idif, DMG_GENERIC );
+					//TakeHealth( idif, DMG_GENERIC );
 					m_idrownrestored += idif;
 				}
 				bDuration = 4;	// get up to 5*10 = 50 points back
@@ -2187,7 +7617,7 @@ void CBasePlayer::CheckTimeBasedDamage()
 			if( m_rgbTimeBasedDamage[i] )
 			{
 				// use up an antitoxin on poison or nervegas after a few seconds of damage					
-				if( ( ( i == itbd_NerveGas ) && ( m_rgbTimeBasedDamage[i] < NERVEGAS_DURATION ) ) ||
+				/*if( ( ( i == itbd_NerveGas ) && ( m_rgbTimeBasedDamage[i] < NERVEGAS_DURATION ) ) ||
 					( ( i == itbd_Poison ) && ( m_rgbTimeBasedDamage[i] < POISON_DURATION ) ) )
 				{
 					if( m_rgItems[ITEM_ANTIDOTE] )
@@ -2196,7 +7626,7 @@ void CBasePlayer::CheckTimeBasedDamage()
 						m_rgItems[ITEM_ANTIDOTE]--;
 						SetSuitUpdate( "!HEV_HEAL4", FALSE, SUIT_REPEAT_OK );
 					}
-				}
+				}*/
 
 				// decrement damage duration, detect when done.
 				if( !m_rgbTimeBasedDamage[i] || --m_rgbTimeBasedDamage[i] == 0 )
@@ -2324,7 +7754,7 @@ Play suit update if it's time
 
 void CBasePlayer::CheckSuitUpdate()
 {
-	int i;
+	/*int i;
 	int isentence = 0;
 	int isearch = m_iSuitPlayNext;
 
@@ -2374,7 +7804,9 @@ void CBasePlayer::CheckSuitUpdate()
 		else
 			// queue is empty, don't check 
 			m_flSuitUpdate = 0;
-	}
+	}*/
+
+	return;
 }
 
 // add sentence to suit playlist queue. if fgroup is true, then
@@ -2385,7 +7817,7 @@ void CBasePlayer::CheckSuitUpdate()
 
 void CBasePlayer::SetSuitUpdate( const char *name, int fgroup, int iNoRepeatTime )
 {
-	int i;
+	/*int i;
 	int isentence;
 	int iempty = -1;
 
@@ -2467,7 +7899,9 @@ void CBasePlayer::SetSuitUpdate( const char *name, int fgroup, int iNoRepeatTime
 			m_flSuitUpdate = gpGlobals->time + SUITFIRSTUPDATETIME;
 		else 
 			m_flSuitUpdate = gpGlobals->time + SUITUPDATETIME; 
-	}
+	}*/
+
+	return;
 }
 
 /*
@@ -2570,7 +8004,7 @@ void CBasePlayer::UpdatePlayerSound( void )
 		}
 	}
 
-	if( m_fNoPlayerSound )
+	if( m_fNoPlayerSound || m_skill_darkhide_on )
 	{
 		// debugging flag, lets players move around and shoot without monsters hearing.
 		iVolume = 0;
@@ -2609,8 +8043,568 @@ void CBasePlayer::PostThink()
 	if( g_fGameOver )
 		goto pt_end;	// intermission or finale
 
+	if( g_restore_fix > 0)
+	{
+		g_restore_fix--;
+		if(g_restore_fix == 99)
+		{
+			if(m_trainning != 1)
+			{
+				CLIENT_COMMAND(edict(), "-cammousemove\n");
+			}
+			if(FNullEnt(m_wdoor_mynpc) && m_guard_mynpc != 0)
+			{
+				m_flNPCguardTime = gpGlobals->time + 2.0;
+				m_wdoor_mynpc = NULL;
+				m_guard_mynpc = 0;
+			}
+			if(m_pActiveItem != NULL && pev->deadflag == DEAD_NO)
+			{
+				m_pActiveItem->Deploy();
+			}
+			pev->fov = 0;
+			m_iFOV = 0;
+			m_iClientFOV		= -1; // make sure fov reset is sent
+			m_iClient_mynpc     = -1;
+
+			if(m_player_camera != NULL)
+			{
+				SET_VIEW( edict(), m_player_camera->edict() );
+			}
+			if((pev->flags & FL_FROZEN))
+			{
+				CLIENT_COMMAND(edict(), "=cammousemove\n");
+			}
+		}
+		if(g_restore_fix == 44 && game_player_dead == 1)
+		{
+			game_player_dead = 0;
+			g_engfuncs.pfnSetPhysicsKeyValue( edict(), "dead_bugfix", "0" );//Xash 3D Debug Fix!
+		}
+
+		if(g_restore_fix == 25 && m_save_allow == 1)
+		{
+			if(m_load_check == 0)
+			{
+				//m_music_save = 0;
+				//pev->health = 0;
+				//Killed( pev, GIB_NEVER );
+				//�����ˣ���ؽ����ؿ�!
+				SERVER_COMMAND( "map wdoor_bonus_level\n" );
+			}
+		}
+
+		if(g_restore_fix == 20)
+		{
+			if(m_music_save == 1)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 4\n");
+				//SERVER_COMMAND("mp3 loop media/music8.mp3\n");
+			}
+			else if(m_music_save == 2)
+			{
+				SERVER_COMMAND("mp3 loop media/music12.mp3\n");
+			}
+			else if(m_music_save == 3)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 11\n");
+				//SERVER_COMMAND("mp3 loop media/music14.mp3\n");
+			}
+			else if(m_music_save == 4)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 20\n");
+				//SERVER_COMMAND("mp3 loop media/boss4.mp3\n");
+			}
+			else if(m_music_save == 5)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 10\n");
+				//SERVER_COMMAND("mp3 loop media/boss1.mp3\n");
+			}
+			else if(m_music_save == 6)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 17\n");
+				//SERVER_COMMAND("mp3 loop media/boss2.mp3\n");
+			}
+			else if(m_music_save == 7)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 12\n");
+				//SERVER_COMMAND("mp3 loop media/boss3.mp3\n");
+			}
+			else if(m_music_save == 8)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 14\n");
+				//SERVER_COMMAND("mp3 loop media/music17.mp3\n");
+			}
+			else if(m_music_save == 9)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 23\n");
+				//SERVER_COMMAND("mp3 loop media/boss5.mp3\n");
+			}
+			else if(m_music_save == 10)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 13\n");
+				//SERVER_COMMAND("mp3 loop media/music13.mp3\n");
+			}
+			else if(m_music_save == 11)
+			{
+				SERVER_COMMAND("mp3 loop media/music19.mp3\n");
+			}
+			else if(m_music_save == 12)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 3\n");
+				//SERVER_COMMAND("mp3 loop media/music20.mp3\n");
+			}
+			else if(m_music_save == 13)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 19\n");
+				//SERVER_COMMAND("mp3 loop media/music21.mp3\n");
+			}
+			else if(m_music_save == 14){
+				CLIENT_COMMAND(edict(), "cd loop 5\n");
+				//SERVER_COMMAND("mp3 loop media/boss6.mp3\n");
+			}
+			else if(m_music_save == 15)
+			{
+				SERVER_COMMAND("mp3 loop media/music22.mp3\n");
+			}
+			else if(m_music_save == 16)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 18\n");
+				//SERVER_COMMAND("mp3 loop media/boss7.mp3\n");
+			}
+			else if(m_music_save == 17)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 9\n");
+				//SERVER_COMMAND("mp3 loop media/boss8.mp3\n");
+			}
+			else if(m_music_save == 18)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 8\n");
+				//SERVER_COMMAND("mp3 loop media/music23.mp3\n");
+			}
+			else if(m_music_save == 19)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 24\n");
+				//SERVER_COMMAND("mp3 loop media/music24.mp3\n");
+			}
+			else if(m_music_save == 20)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 21\n");
+				//SERVER_COMMAND("mp3 loop media/music25.mp3\n");
+			}
+			else if(m_music_save == 21)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 6\n");
+				//SERVER_COMMAND("mp3 loop media/boss9.mp3\n");
+			}
+			else if(m_music_save == 22)
+			{
+				CLIENT_COMMAND(edict(), "cd loop 22\n");
+				//SERVER_COMMAND("mp3 loop media/boss10.mp3\n");
+			}
+		}
+		if(g_restore_fix == 10)
+		{
+			if(g_causality_add > 0)
+			{
+				if(m_skill_reload)
+				{
+					MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pev );
+					if(g_causality_add == 1)
+					{
+						WRITE_STRING( "c_lv_1" );
+					}
+					else if(g_causality_add == 2)
+					{
+						WRITE_STRING( "c_lv_2" );
+					}
+					else if(g_causality_add == 3)
+					{
+						WRITE_STRING( "c_lv_3" );
+					}
+					else if(g_causality_add == 4)
+					{
+						WRITE_STRING( "c_lv_4" );
+					}
+					else if(g_causality_add == 5)
+					{
+						WRITE_STRING( "c_lv_5" );
+					}
+					MESSAGE_END();
+				}
+				else
+				{
+					g_causality_add = 0;
+				}
+			}
+		}
+	}
+
+	if(CVAR_GET_FLOAT( "cshl623_debug_mode" ) != 1999)
+	{
+		if (FBitSet( pev->flags, FL_NOTARGET ) && !m_fPlayerHideMode && !m_skill_darkhide_on && m_rpg_menu_actor1 == 1)
+			pev->flags &= ~FL_NOTARGET;
+
+		if (FBitSet( pev->flags, FL_GODMODE ))
+			pev->flags &= ~FL_GODMODE;
+
+		if (pev->movetype == MOVETYPE_NOCLIP && m_rpg_menu_actor1 == 1)
+			pev->movetype = MOVETYPE_WALK;
+	}
+
+	if(CVAR_GET_FLOAT("sv_friction") != 6)
+	{
+		CVAR_SET_FLOAT("sv_friction", 6);
+	}
+
+	if(CVAR_GET_FLOAT("sv_stepsize") != 20)
+	{
+		CVAR_SET_FLOAT("sv_stepsize", 20);
+	}
+
+	if(CVAR_GET_FLOAT("sv_cheats") != 1)
+	{
+		CVAR_SET_FLOAT("sv_cheats", 1);
+	}
+
+	if(CVAR_GET_FLOAT("sv_maxspeed") != 400)
+	{
+		CVAR_SET_FLOAT("sv_maxspeed", 400);
+	}
+
+	if(CVAR_GET_FLOAT("sv_maxvelocity") != 9000)
+	{
+		CVAR_SET_FLOAT("sv_maxvelocity", 9000);
+	}
+
+	if(m_teleprort_in_xen == 0)
+	{
+		if(CVAR_GET_FLOAT("sv_gravity") != 800)
+		{
+			CVAR_SET_FLOAT("sv_gravity", 800);
+		}
+	}
+	else
+	{
+		//Xen 
+		if(CVAR_GET_FLOAT("sv_gravity") != 400)
+		{
+			CVAR_SET_FLOAT("sv_gravity", 400);
+		}
+	}
+
+	if (!FBitSet( pev->flags, FL_NOTARGET ) && (m_fPlayerHideMode || m_skill_darkhide_on) )
+		pev->flags |= FL_NOTARGET;
+
+	if( IsAlive() && m_player_died == TRUE)
+	{
+		g_engfuncs.pfnSetPhysicsKeyValue( edict(), "dead_bugfix", "0" );
+		m_player_died = FALSE;
+	}
+
 	if( !IsAlive() )
 		goto pt_end;
+
+	// do weapon stuff
+	ItemPostFrame( );
+
+	if(m_godposion > 0)
+	{
+		if(m_god_time < gpGlobals->time)
+		{
+			m_godposion = 0;
+			m_iClientHealth = -1;
+		}
+	}
+
+	if(m_wrongdoor_time >= 1 && m_wrongdoor_time < gpGlobals->time)
+	{
+		if (m_pActiveItem->m_iId != WEAPON_FIST)
+		{
+			m_wrongdoor_time = 0;
+		}
+		else
+		{
+			m_wrongdoor_time = 0;
+			m_wrongdoor_cover_time = gpGlobals->time + 60.0;
+			m_pActiveItem->Deploy();
+
+			m_newcross_active = 0;
+			m_newcross_ontarget = 0;
+
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "weapons/gluongun_fire.wav", 1, ATTN_NORM);
+
+			TraceResult tr;
+			UTIL_MakeVectors(pev->v_angle);
+			
+			UTIL_TraceLine(GetGunPosition(), GetGunPosition() + gpGlobals->v_forward * 2048, dont_ignore_monsters, edict(), &tr);
+			FX_Explosion( tr.vecEndPos + (tr.vecPlaneNormal * 15), 107 );
+			FireBeam(GetGunPosition(), tr.vecEndPos + (tr.vecPlaneNormal * 15), 24, 623, pev);
+
+			::RadiusDamage_limit( tr.vecEndPos + (tr.vecPlaneNormal * 15), pev, pev, 2000, 500, CLASS_PLAYER, DMG_MORTAR | DMG_CONCUSSION);
+			CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
+			if(pEntity)
+			{
+				if(pEntity->pev->deadflag == DEAD_NO && pEntity->pev->takedamage)
+				{
+					if ( pEntity->pev->flags & FL_MONSTER )
+					{
+						CBaseMonster *pEnemyMonster;
+						pEnemyMonster = pEntity->MyMonsterPointer();
+						if(pEnemyMonster)
+						{
+							pEnemyMonster->Freeze_Monster(40);
+							if(pEntity->pev->gravity <= 1.5)
+							{
+								pEntity->pev->velocity = (pEntity->pev->origin - pev->origin).Normalize() * 2500 + pev->velocity;
+								pEntity->pev->velocity.z = 0;
+							}
+						}
+					}
+				}
+			}
+
+			m_air_oxyan = 1;
+			m_air_oxyan_stop_time = gpGlobals->time + 5.0;
+			pev->velocity = gpGlobals->v_forward * -1500 + pev->velocity;
+			pev->velocity.z *= 0.6;
+			pev->punchangle.x += -8;
+			FX_Explosion( Center(), EXPLOSION_SPARKSHOWER );
+		}
+	}
+
+	if(m_needlekilled_time >= 1 && m_needlekilled_time < gpGlobals->time)
+	{
+		if (m_pActiveItem->m_iId != WEAPON_FIREAXE)
+		{
+			m_needlekilled_time = 0;
+		}
+		else
+		{
+			//DropPlayerItem("weapon_valvesword");
+			m_pActiveItem->Deploy();
+			m_needlekilled_time = 0;
+			m_air_oxyan = 1;
+			m_air_oxyan_stop_time = gpGlobals->time + 5.0;
+			m_swordrecover_time = gpGlobals->time + 45.0;
+			FX_Explosion( Center(), EXPLOSION_HEVCHARGER);
+
+			m_fPlayerUseHolySword = TRUE;
+
+			CBaseEntity *pEnt = CBaseEntity::Create( "holy_valve_sword", pev->origin, g_vecZero, edict() );
+			CBaseEntity *pTarget = CBaseEntity::Create( "sword_aim_target", pev->origin, g_vecZero, edict() );
+		}
+	}
+	else if(m_swordrecover_time >= 1 && m_swordrecover_time < gpGlobals->time)
+	{
+		//GiveNamedItem( "weapon_valvesword" );
+		m_swordrecover_time = 0;
+	}
+
+	if(m_needleheal >= 1)
+	{
+		if(m_needleuse_time < gpGlobals->time)
+		{
+			m_needleuse_time = 0;
+			m_needleheal = 0;
+			m_iClientHealth = -1;
+		}
+		if(m_air_oxyan < m_air_oxyan_max)
+		{
+			m_air_oxyan += 10;
+		}
+	}
+
+	if(m_needleheal2 >= 1)
+	{
+		TakeHealth(1, DMG_GENERIC);
+		m_needleheal2 -= 1;
+	}
+	else if(m_needleheal2 < 0)
+	{
+		if(pev->health > 1)
+		{
+			pev->health -= 1;
+		}
+		m_needleheal2 += 1;
+	}
+
+	if(m_fPlayerUseHolySword == TRUE || m_guard_mynpc == 1)
+	{
+		if(pev->viewmodel != 0)
+		{
+			pev->viewmodel = 0;
+			if (m_pActiveItem)
+			{
+				m_pActiveItem->Holster();
+			}
+		} 
+	}
+
+	if( !m_level_up_switch && m_kadoma_level < int(m_kadoma_exp * 0.001) && m_kadoma_level < 99)
+	{
+		m_kadoma_level += 1;
+
+		char text[256];
+		UTIL_CenterPrintAll( "Level Up!" );
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pev );
+		WRITE_STRING( "lv_up" );
+		MESSAGE_END();
+
+		m_fNextClearTextTime = gpGlobals->time + 6.0;
+
+		sprintf( text, "- Kadoma Level:%d\n", m_kadoma_level);
+		UTIL_SayTextAll( text,this );
+
+		if(m_kadoma_level == 99)
+		{
+			pev->max_health = 500;
+			if(m_fequip1 == TRUE)
+			{
+				pev->max_health = 600;
+			}
+
+			if(m_skill_reload && m_skill_maxarmor != 300)
+			{
+				pev->max_health = 900;
+				m_skill_maxarmor = 300;
+				pev->armorvalue = m_skill_maxarmor;
+			}
+
+			sprintf( text, "- LEVEL MAX! MAX HP +200!!\n");
+			UTIL_SayTextAll( text,this );
+
+			TakeHealth(pev->max_health, DMG_GENERIC);
+		}
+		else
+		{
+			if(pev->max_health >= 300)
+			{
+				pev->max_health = 300;
+			}
+			else
+			{
+			
+				pev->max_health = 100 + m_kadoma_level * 10;
+			
+				sprintf( text, "- MAX HP +10\n");
+				UTIL_SayTextAll( text,this );
+			}
+			if(m_fequip1 == TRUE)
+			{
+				pev->max_health = 400;
+			}
+			TakeHealth(10, DMG_GENERIC);
+		}
+
+		if(m_kadoma_level == 16 && !m_skill_longjump)
+		{
+			m_skill_locked = 41;
+			
+			sprintf( text, "- New Skill: Cloud Push\n");
+			UTIL_SayTextAll( text,this );
+			sprintf( text, "- Fist special attack to push enemy dizzy!\n");
+			UTIL_SayTextAll( text,this );
+			
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pev );
+			WRITE_STRING( "n_skill" );//New Skill!
+			MESSAGE_END();
+
+			m_fNextClearTextTime += 4.0;
+		}
+		else if(m_kadoma_level == 32 && !m_skill_longjump)
+		{
+			m_skill_longjump = 3;
+			g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "1" );
+	
+			sprintf( text, "- New Skill: Long jump\n");
+			UTIL_SayTextAll( text,this );
+			sprintf( text, "- Forward move and duck then jump or press c.\n");
+			UTIL_SayTextAll( text,this );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pev );
+			WRITE_STRING( "n_skill" );//New Skill!
+			MESSAGE_END();
+
+			m_fNextClearTextTime += 4.0;
+		}
+		else if(m_kadoma_level == 40 && !m_skill_miss)
+		{
+			m_skill_miss = 81;
+			
+			sprintf( text, "- New Skill: Slide shovel\n");
+			UTIL_SayTextAll( text,this );
+			sprintf( text, "- Long press duck key + TAB to use slide shove acceleratel\n");
+			UTIL_SayTextAll( text,this );
+			
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pev );
+			WRITE_STRING( "n_skill" );//New Skill!
+			MESSAGE_END();
+
+			m_fNextClearTextTime += 4.0;
+		}
+		else if(m_kadoma_level == 48 && !m_skill_goddam)
+		{
+			m_skill_goddam = 40;
+			
+			sprintf( text, "- New Skill: Last bit\n");
+			UTIL_SayTextAll( text,this );
+			sprintf( text, "- When health > 20%, death attack left 1 last health point\n");
+			UTIL_SayTextAll( text,this );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pev );
+			WRITE_STRING( "n_skill" );//New Skill!
+			MESSAGE_END();
+
+			m_fNextClearTextTime += 4.0;
+		}
+		else if(m_kadoma_level == 56 && !m_skill_respawn)
+		{
+			m_skill_respawn = 6;
+	
+			sprintf( text, "- New Skill: Respawn\n");
+			UTIL_SayTextAll( text,this );
+			sprintf( text, "- When dead 6 second auto respawn\n");
+			UTIL_SayTextAll( text,this );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pev );
+			WRITE_STRING( "n_skill" );//New Skill!
+			MESSAGE_END();
+
+			m_fNextClearTextTime += 4.0;
+		}
+		else if(m_kadoma_level == 64 && !m_skill_deathmatch)
+		{
+			m_skill_deathmatch = 8;
+		
+			sprintf( text, "- New Skill: Armor repair\n");
+			UTIL_SayTextAll( text,this );
+			sprintf( text, "- Equip Egon's Book, Special attack can add armor point\n");
+			UTIL_SayTextAll( text,this );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pev );
+			WRITE_STRING( "n_skill" );//New Skill!
+			MESSAGE_END();
+
+			m_fNextClearTextTime += 4.0;
+		}
+		else if(m_kadoma_level == 80 && !m_skill_wrongdoor)
+		{
+			m_skill_wrongdoor = 9;
+		
+			sprintf( text, "- New Skill: Heavens Blow\n");
+			UTIL_SayTextAll( text,this );
+			sprintf( text, "- Use fist press R, Aim to blast shock\n");
+			UTIL_SayTextAll( text,this );
+
+			MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pev );
+			WRITE_STRING( "n_skill" );//New Skill!
+			MESSAGE_END();
+
+			m_fNextClearTextTime += 6.0;
+		}
+	}
 
 	// Handle Tank controlling
 	if( m_pTank != 0 )
@@ -2627,14 +8621,141 @@ void CBasePlayer::PostThink()
 		}
 	}
 
-	// do weapon stuff
-	ItemPostFrame();
+	if( (pev->flags & FL_FROZEN) || m_rpg_menu_actor1 != 1 || m_concussion_time > gpGlobals->time || m_barnacle_RTP != 0)
+	{
+		pev->viewmodel = 0;
+	}
+	else if(pev->deadflag == DEAD_NO)
+	{
+		if(pev->viewmodel == 0 && m_barnacle_RTP == 0 && m_fMoveItem == NULL && m_fPlayerUseHolySword == FALSE && m_guard_mynpc == 0 && m_concussion_time == 0)
+		{
+			if(m_pActiveItem != NULL)
+			{
+				m_pActiveItem->Deploy();
+			}
+		}
+	}
+
+	if(pev->waterlevel == 1)
+	{
+		if(pev->velocity.Length() >= 200 && m_waterstepTime < gpGlobals->time)
+		{
+			m_waterstepTime = gpGlobals->time + 0.32;
+			TraceResult tr;
+			UTIL_TraceLine(pev->origin, pev->origin - Vector(0,0,36), ignore_monsters, ENT(pev), &tr);
+			FX_ImpBullet( tr.vecEndPos, tr.vecPlaneNormal, pev->origin, 0, 114, 0 );
+		}
+	}
 
 	// check to see if player landed hard enough to make a sound
 	// falling farther than half of the maximum safe distance, but not as far a max safe distance will
 	// play a bootscrape sound, and no damage will be inflicted. Fallling a distance shorter than half
 	// of maximum safe distance will make no sound. Falling farther than max safe distance will play a 
 	// fallpain sound, and damage will be inflicted based on how far the player fell
+
+	if ( (FBitSet(pev->flags, FL_ONGROUND)) )
+	{	
+		//Mario Jump
+		entvars_t *pevGround = VARS(pev->groundentity);
+		if ( pevGround && pevGround->takedamage != DAMAGE_NO )
+		{
+
+			if(m_fequip2 == TRUE)
+			{
+				m_flFallVelocity += 100;
+			}
+
+			if( !(pevGround->flags & FL_MONSTER) )
+			{
+				m_flFallVelocity -= 100;
+			}
+
+			if(m_flFallVelocity >= 250)
+			{
+						
+				TraceResult tr;
+				Vector vecSrc	= pev->origin + Vector(0,0,32);
+				Vector vecEnd = vecSrc - Vector(0,0,96);
+				UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT(pev), &tr );
+				CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
+				pev->velocity = (pev->origin - pEntity->pev->origin).Normalize() * m_flFallVelocity * 0.5;
+
+				if(m_flFallVelocity < 500)
+				{
+					EMIT_SOUND(ENT(pev), CHAN_ITEM, "newadd/fist_hitbod1.wav", 1, ATTN_NORM); 
+					UTIL_Sparks(tr.vecEndPos);
+				}
+				else
+				{
+					EMIT_SOUND(ENT(pev), CHAN_ITEM, "newadd/fist_hitbod3.wav", 1, ATTN_NORM); 
+					MESSAGE_BEGIN(MSG_PVS, SVC_TEMPENTITY, tr.vecEndPos);
+					WRITE_BYTE(TE_STREAK_SPLASH);
+					WRITE_COORD(tr.vecEndPos.x);
+					WRITE_COORD(tr.vecEndPos.y);
+					WRITE_COORD(tr.vecEndPos.z);
+					WRITE_COORD(tr.vecPlaneNormal.x);
+					WRITE_COORD(tr.vecPlaneNormal.y);
+					WRITE_COORD(tr.vecPlaneNormal.z);
+					WRITE_BYTE(10);
+					WRITE_SHORT(30);
+					WRITE_SHORT(50);
+					WRITE_SHORT(300);
+					MESSAGE_END();
+					UTIL_Ricochet( tr.vecEndPos, 1 );
+				}
+						
+				CBasePlayer *pfuck;
+				pfuck = (CBasePlayer *)GET_PRIVATE(pev->groundentity);
+				if(pfuck->pev->takedamage)
+				{
+					ClearMultiDamage( );
+
+					float falldmg = m_flFallVelocity - 250;
+					float hitdmg = falldmg * 0.15;
+
+					if(m_fequip2 == TRUE)
+					{
+						hitdmg = falldmg * 0.25;
+					}
+
+					if(hitdmg < 10)
+					{
+						hitdmg = 10;
+					}
+
+					if(falldmg < 300)
+					{
+						pfuck->TraceAttack(pev, hitdmg, gpGlobals->v_forward, &tr, DMG_FALL | DMG_NEVERGIB ); 
+					}
+					else
+					{
+						hitdmg *= 1.5;
+						pfuck->TraceAttack(pev, hitdmg, gpGlobals->v_forward, &tr, DMG_FALL ); 
+					}
+
+					int tex = (int)TEXTURETYPE_Trace(&tr, vecSrc, vecEnd);
+					int surface = (int)SURFACETYPE_Trace(&tr, vecSrc, vecEnd,Classify(),0);
+					FX_ImpBullet( tr.vecEndPos, tr.vecPlaneNormal, vecSrc, surface, BULLET_CROWBAR, (float)tex );
+
+					ApplyMultiDamage( pev, pev );
+				}
+
+				if((pevGround->flags & FL_MONSTER))
+				{
+					m_flFallVelocity -= 200;
+					if(m_fequip2 == TRUE)
+					{
+						m_flFallVelocity -= 200;
+					}
+				}
+			}
+		}
+
+		if(m_fequip2 == TRUE)
+		{
+			m_flFallVelocity -= 200;
+		}
+	}
 
 	if( ( FBitSet( pev->flags, FL_ONGROUND ) ) && ( pev->health > 0 ) && m_flFallVelocity >= PLAYER_FALL_PUNCH_THRESHHOLD )
 	{
@@ -2652,7 +8773,7 @@ void CBasePlayer::PostThink()
 			// after this point, we start doing damage
 			float flFallDamage = g_pGameRules->FlPlayerFallDamage( this );
 
-			if( flFallDamage > pev->health )
+			if( flFallDamage > pev->health && pev->deadflag == DEAD_NO )
 			{
 				//splat
 				// note: play on item channel because we play footstep landing on body channel
@@ -2661,6 +8782,9 @@ void CBasePlayer::PostThink()
 
 			if( flFallDamage > 0 )
 			{
+				m_flVelocityModifier -= flFallDamage * 0.02;
+				if(m_flVelocityModifier < -4)
+					m_flVelocityModifier = -4;
 				TakeDamage( VARS( eoNullEntity ), VARS( eoNullEntity ), flFallDamage, DMG_FALL ); 
 				pev->punchangle.x = 0;
 			}
@@ -2683,15 +8807,15 @@ void CBasePlayer::PostThink()
 	}
 
 	// select the proper animation for the player character	
-	if( IsAlive() )
-	{
+	/*if( IsAlive() )
+	{*/
 		if( !pev->velocity.x && !pev->velocity.y )
 			SetAnimation( PLAYER_IDLE );
 		else if( ( pev->velocity.x || pev->velocity.y ) && ( FBitSet( pev->flags, FL_ONGROUND ) ) )
 			SetAnimation( PLAYER_WALK );
 		else if( pev->waterlevel > 1 )
 			SetAnimation( PLAYER_WALK );
-	}
+	//}
 
 	StudioFrameAdvance();
 	CheckPowerups( pev );
@@ -2814,7 +8938,7 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 	player = pPlayer->edict();
 
 	// choose a info_player_deathmatch point
-	if( g_pGameRules->IsCoOp() )
+	/*if( g_pGameRules->IsCoOp() )
 	{
 		pSpot = UTIL_FindEntityByClassname( g_pLastSpawn, "info_player_coop" );
 		if( !FNullEnt( pSpot ) )
@@ -2890,7 +9014,11 @@ edict_t *EntSelectSpawnPoint( CBaseEntity *pPlayer )
 		pSpot = UTIL_FindEntityByTargetname( NULL, STRING( gpGlobals->startspot ) );
 		if( !FNullEnt( pSpot ) )
 			goto ReturnSpot;
-	}
+	}*/
+
+	pSpot = UTIL_FindEntityByClassname( NULL, "info_player_start" );
+	if ( !FNullEnt( pSpot ) )
+		goto ReturnSpot;
 
 ReturnSpot:
 	if( FNullEnt( pSpot ) )
@@ -2927,7 +9055,20 @@ void CBasePlayer::Spawn( void )
 	m_bitsDamageType = 0;
 	m_afPhysicsFlags = 0;
 	m_fLongJump = FALSE;// no longjump module. 
+	m_skill_maxarmor = 0;
 
+	m_fMask	= FALSE;
+
+	m_teleprort_in_xen  = 0;
+
+	m_fPlayerUseHolySword= FALSE;
+
+	m_player_died = FALSE;
+	m_skill_darkhide_on = FALSE;
+	m_level_up_switch = FALSE;
+
+	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "dead_bugfix", "0" );
+	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "mario", "0" );
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "0" );
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "hl", "1" );
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "fr", "1" );
@@ -2941,6 +9082,14 @@ void CBasePlayer::Spawn( void )
 	m_flgeigerDelay = gpGlobals->time + 2.0f;	// wait a few seconds until user-defined message registrations
 							// are recieved by all clients
 
+	m_newcross_active = 0;
+	m_godposion = 0;
+
+	m_iNVG = 0;
+
+	m_god_time = gpGlobals->time + 3.0;
+	m_flNextSoundTime1 = gpGlobals->time;
+
 	m_flTimeStepSound = 0;
 	m_iStepLeft = 0;
 	m_flFieldOfView = 0.5f;// some monsters use this to determine whether or not the player is looking at them.
@@ -2951,6 +9100,9 @@ void CBasePlayer::Spawn( void )
 
 	m_iFlashBattery = 99;
 	m_flFlashLightTime = 1; // force first message
+
+	m_air_oxyan_max = 2000;
+	m_air_oxyan = m_air_oxyan_max;
 
 	// dont let uninitialized value here hurt the player
 	m_flFallVelocity = 0;
@@ -2985,6 +9137,39 @@ void CBasePlayer::Spawn( void )
 	m_pClientActiveItem = NULL;
 	m_iClientBattery = -1;
 
+	m_blindUntilTime = 0;
+	m_blindStartTime = 0;
+	m_blindHoldTime = 0;
+	m_blindFadeTime = 0;
+	m_blindAlpha = 0;
+
+	m_rpg_menu_actor1 = 1;
+	m_rpg_menu_on = 0;
+	m_rpg_menu_item_e = -1;
+	m_rpg_menu_item_t = -1;
+
+	m_team_npc1 = NULL;
+	m_team_npc2 = NULL;
+	m_team_npc3 = NULL;
+	m_team_npc4 = NULL;
+	m_team_npc5 = NULL;
+	m_team_npc6 = NULL;
+	m_team_npc7 = NULL;
+	m_team_npc8 = NULL;
+	m_team_npc9 = NULL;
+	m_team_npc10 = NULL;
+	m_team_npc11 = NULL;
+	m_team_npc12 = NULL;
+
+	m_flash_mode = 1;
+	m_ending_frags = 50;
+	m_game_rate = 0;
+	m_skill_punch = 4;
+	m_save_allow = 0;
+
+	SET_VIEW( edict(), edict() );
+	m_player_camera = NULL;
+
 	// reset all ammo values to 0
 	for( int i = 0; i < MAX_AMMO_SLOTS; i++ )
 	{
@@ -2995,6 +9180,12 @@ void CBasePlayer::Spawn( void )
 	m_lastx = m_lasty = 0;
 
 	m_flNextChatTime = gpGlobals->time;
+	m_new_spawner = 100;
+
+	m_flVelocityModifier2 = 1;
+	m_fNextClearTextTime = -1;
+
+	m_concussion_time = 0;
 
 	SET_VIEW(edict(), edict());
 
@@ -3070,6 +9261,11 @@ int CBasePlayer::Restore( CRestore &restore )
 
 	int status = restore.ReadFields( "PLAYER", this, m_playerSaveData, ARRAYSIZE( m_playerSaveData ) );
 
+	g_restore_fix = 100;
+	m_rpg_menu_on = 0;
+	g_fGameSkipCG = 0;
+	m_flFlashLightTime = gpGlobals->time + 0.2f;
+
 	SAVERESTOREDATA *pSaveData = (SAVERESTOREDATA *)gpGlobals->pSaveData;
 	// landmark isn't present.
 	if( !pSaveData->fUseLandmark )
@@ -3105,7 +9301,7 @@ int CBasePlayer::Restore( CRestore &restore )
 
 	g_engfuncs.pfnSetPhysicsKeyValue( edict(), "hl", "1" );
 
-	if( m_fLongJump )
+	if( m_skill_longjump )
 	{
 		g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "1" );
 	}
@@ -3114,13 +9310,21 @@ int CBasePlayer::Restore( CRestore &restore )
 		g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "0" );
 	}
 
+	if(m_fequip2 == TRUE)
+	{
+		g_engfuncs.pfnSetPhysicsKeyValue( edict(), "mario", "1" );
+	}
+	else{
+		g_engfuncs.pfnSetPhysicsKeyValue( edict(), "mario", "0" );
+	}
+
 	RenewItems();
 
 #if CLIENT_WEAPONS
 	// HACK:	This variable is saved/restored in CBaseMonster as a time variable, but we're using it
 	//			as just a counter.  Ideally, this needs its own variable that's saved as a plain float.
 	//			Barring that, we clear it out here instead of using the incorrect restored time value.
-	m_flNextAttack = UTIL_WeaponTimeBase();
+	m_flNextAttack = UTIL_WeaponTimeBase() + 1.0f;
 #endif
 	if( m_flFlashLightTime == 0.0f )
 		m_flFlashLightTime = 1.0f;
@@ -3417,22 +9621,40 @@ CBaseEntity *FindEntityForward( CBaseEntity *pMe )
 	return NULL;
 }
 
+
+BOOL CBasePlayer :: NightViewIsOn( void )
+{
+	return FBitSet(pev->effects, EF_BRIGHTLIGHT);
+}
+
+void CBasePlayer :: NightViewTurnOn( void )
+{
+	EMIT_SOUND_DYN( ENT(pev), CHAN_ITEM, SOUND_NIGHTVIEW_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
+	SetBits(pev->effects, EF_BRIGHTLIGHT);
+}
+
+void CBasePlayer :: NightViewTurnOff( void )
+{
+	EMIT_SOUND_DYN( ENT(pev), CHAN_ITEM, SOUND_NIGHTVIEW_OFF, 1.0, ATTN_NORM, 0, PITCH_NORM );
+	ClearBits(pev->effects, EF_BRIGHTLIGHT);
+}
+
 BOOL CBasePlayer::FlashlightIsOn( void )
 {
-	return FBitSet( pev->effects, EF_DIMLIGHT );
+	return FBitSet( pev->effects, EF_INVLIGHT );
 }
 
 void CBasePlayer::FlashlightTurnOn( void )
 {
-	if( !g_pGameRules->FAllowFlashlight() )
+	if( m_iFlashBattery <= 20 || !m_hasflashlight )
 	{
 		return;
 	}
 
 	if( (pev->weapons & ( 1 << WEAPON_SUIT ) ) )
 	{
-		EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
-		SetBits( pev->effects, EF_DIMLIGHT );
+		EMIT_SOUND_DYN( ENT( pev ), CHAN_ITEM, SOUND_FLASHLIGHT_ON, 1.0, ATTN_NORM, 0, PITCH_NORM );
+		SetBits( pev->effects, EF_INVLIGHT );//EF_DIMLIGHT
 		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
 			WRITE_BYTE( 1 );
 			WRITE_BYTE( m_iFlashBattery );
@@ -3445,7 +9667,7 @@ void CBasePlayer::FlashlightTurnOn( void )
 void CBasePlayer::FlashlightTurnOff( void )
 {
 	EMIT_SOUND_DYN( ENT( pev ), CHAN_WEAPON, SOUND_FLASHLIGHT_OFF, 1.0, ATTN_NORM, 0, PITCH_NORM );
-	ClearBits( pev->effects, EF_DIMLIGHT );
+	ClearBits( pev->effects, EF_INVLIGHT );//EF_DIMLIGHT
 	MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
 		WRITE_BYTE( 0 );
 		WRITE_BYTE( m_iFlashBattery );
@@ -3466,6 +9688,7 @@ Reset stuff so that the state is transmitted.
 void CBasePlayer::ForceClientDllUpdate( void )
 {
 	m_iClientHealth = -1;
+	m_iClient_mynpc  = -1;
 	m_iClientBattery = -1;
 	m_iClientHideHUD = -1;	// Vit_amiN: forcing to update
 	m_iClientFOV = -1;	// Vit_amiN: force client weapons to be sent
@@ -3499,7 +9722,7 @@ void CBasePlayer::ImpulseCommands()
 	int iImpulse = (int)pev->impulse;
 	switch( iImpulse )
 	{
-	case 99:
+	/*case 99:
 		int iOn;
 
 		if( !gmsgLogo )
@@ -3521,16 +9744,55 @@ void CBasePlayer::ImpulseCommands()
 
 		if(!iOn)
 			gmsgLogo = 0;
-		break;
+		break;*/
 	case 100:
         // temporary flashlight for level designers
-		if( FlashlightIsOn() )
+		if(m_darkposion == 0)
 		{
-			FlashlightTurnOff();
+			if ( FlashlightIsOn() )
+			{
+				FlashlightTurnOff();
+			}
+			else
+			{
+				FlashlightTurnOn();
+			}
 		}
-		else 
+		break;
+	case 114:
 		{
-			FlashlightTurnOn();
+			if(m_skill_darkhide_on == FALSE && m_needleheal == 0 && m_concussion_time == 0
+			&& m_rpg_menu_actor1 == 1 && m_fequip5 && m_godposion == 0 && m_guard_mynpc == 0
+			&& pev->waterlevel != 3
+			&& m_needlekilled_time == 0 && m_wrongdoor_time == 0 && m_fPlayerUseHolySword == FALSE)
+			{
+				if(m_fldarkhideTime > gpGlobals->time)
+				{
+					char text[256];
+					sprintf( text, "CD:%1.0fs\n",m_fldarkhideTime - gpGlobals->time);
+					UTIL_CenterPrintAll( text );
+				}
+				else
+				{
+					if ( FlashlightIsOn() )
+					{
+						FlashlightTurnOff();
+					}
+
+					UTIL_ScreenFade( this, Vector(0,0,0), 0.3, 0.1, 50, FFADE_IN );
+
+					EMIT_SOUND_DYN( ENT(pev), CHAN_ITEM, "items/hide1.wav", 1.0, ATTN_NORM, 0, PITCH_NORM );
+					m_iWeaponFlash = 0;
+					m_skill_darkhide_on = TRUE;
+					m_darkposion = 2500;
+					m_iClientHealth	= -1;
+					m_iClient_oxyan = -1;
+					pev->fuser4 = 1;
+					m_RecoverTime = gpGlobals->time;
+					m_air_oxyan_stop_time = gpGlobals->time;
+					m_fldarkhideTime = gpGlobals->time + 35;
+				}
+			}
 		}
 		break;
 	case 201:
@@ -3552,6 +9814,113 @@ void CBasePlayer::ImpulseCommands()
 			pCan->Spawn( pev );
 		}
 		break;
+	case 116:
+		{
+			if ((pev->flags & FL_FROZEN) || m_flNPCguardTime > gpGlobals->time || m_fPlayerUseHolySword
+			|| m_barnacle_RTP || m_fMoveItem != NULL || !m_skill_defguard
+			|| !FBitSet( pev->flags, FL_ONGROUND ) || m_rpg_menu_actor1 != 1)
+				break;
+
+			UTIL_MakeVectors(pev->v_angle);
+			UTIL_TraceLine(pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 128, dont_ignore_monsters, edict(), &tr);
+
+			if(m_guard_mynpc == 0 && tr.flFraction != 1 && m_air_oxyan > 400)
+			{
+				m_flNPCguardTime = gpGlobals->time + 1.0;
+				// What the hell are you doing?
+				CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
+				if ( pEntity )
+				{
+					CBaseMonster *pMonster = pEntity->MyMonsterPointer();
+					if ( pMonster )
+					{
+						if(pMonster->IsAlive())
+						{
+							if ( pMonster->m_MonsterState != MONSTERSTATE_SCRIPT 
+							&& pMonster->m_IdealMonsterState != MONSTERSTATE_SCRIPT 
+							&& pMonster->m_MonsterState != MONSTERSTATE_PRONE
+							&& pMonster->m_IdealMonsterState != MONSTERSTATE_PRONE
+							&& pMonster->m_lovehate > 0 && pMonster->m_hPlayer != NULL
+							&& pMonster->m_rpgms_inteam >= 1 && pMonster->m_rpgms_inteam <= 4)
+							{
+								m_wdoor_mynpc = pMonster->edict();
+								m_guard_mynpc = 1;
+								m_air_oxyan -= 400;
+								m_air_oxyan_stop_time = gpGlobals->time + 2.0;
+								m_flVelocityModifier -= 1;
+								FX_Explosion( pMonster->Center(), 102);
+
+								pMonster->m_playerguardian_mode = 1;
+								pMonster->pev->flags |= FL_NOTARGET;
+								
+								pMonster->m_hEnemy = NULL;
+								pMonster->m_hOldEnemy[0] = NULL;
+								pMonster->m_hOldEnemy[1] = NULL;
+								pMonster->m_hOldEnemy[2] = NULL;
+								pMonster->m_hOldEnemy[3] = NULL;
+								pMonster->ClearSchedule();
+								pMonster->SetYawSpeed();
+								pMonster->RouteClear();
+								pMonster->SetActivity( ACT_IDLE );
+								pMonster->pev->angles.y = pev->angles.y;
+								pMonster->pev->effects |= EF_NODRAW;
+								pMonster->pev->velocity = g_vecZero;
+								pMonster->pev->movetype = MOVETYPE_NONE;
+								pMonster->pev->owner = ENT(pev);
+								pMonster->m_no_cover_mode = 1;
+
+								if (m_pActiveItem)
+								{
+									m_pActiveItem->Holster();
+								}
+
+								if(m_darkposion > 0)
+								{
+									m_darkposion = 0;
+								}
+
+								UTIL_MakeVectors( pev->angles );
+								UTIL_SetOrigin( pMonster->pev, pev->origin + Vector(0,0,48) + gpGlobals->v_forward * -16 );
+							}
+						}
+					}
+				}
+			}
+			else if(m_guard_mynpc != 0)
+			{
+				if(!FNullEnt(m_wdoor_mynpc))
+				{
+					m_flNPCguardTime = gpGlobals->time + 1.0;
+
+					if (m_pActiveItem)
+					{
+						m_pActiveItem->Deploy();
+					}
+
+					entvars_t *Myslave;
+					Myslave = VARS( m_wdoor_mynpc );
+					CBaseEntity *pNPC = GetClassPtr((CBaseEntity *)Myslave);
+					CBaseMonster *pMonster = pNPC->MyMonsterPointer();
+					pMonster->m_playerguardian_mode = 20;
+					//pMonster->pev->effects |= EF_NODRAW;
+					pMonster->pev->angles.y = pev->angles.y;
+					UTIL_MakeVectors( pev->v_angle );
+					UTIL_TraceLine(pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 96, dont_ignore_monsters, edict(), &tr);
+					UTIL_SetOrigin( pMonster->pev, tr.vecEndPos + (tr.vecPlaneNormal * 16) );
+				}
+				else
+				{
+					m_flNPCguardTime = gpGlobals->time + 1.0;
+					if (m_pActiveItem)
+					{
+						m_pActiveItem->Deploy();
+					}
+					m_wdoor_mynpc = NULL;
+					m_guard_mynpc = 0;
+				}
+			}
+			break;
+		}
 	default:
 		// check all of the cheat impulse commands now
 		CheatImpulseCommands( iImpulse );
@@ -3566,32 +9935,423 @@ void CBasePlayer::ImpulseCommands()
 void CBasePlayer::CheatImpulseCommands( int iImpulse )
 {
 #if !HLDEMO_BUILD
-	if( g_enable_cheats->value == 0 )
-	{
+	if(CVAR_GET_FLOAT( "cshl623_debug_mode" ) != 1999)
 		return;
-	}
 
 	CBaseEntity *pEntity;
 	TraceResult tr;
 
 	switch( iImpulse )
 	{
-	case 76:
-		if( !giPrecacheGrunt )
+	case 65:
 		{
-			giPrecacheGrunt = 1;
-			ALERT( at_console, "You must now restart to use Grunt-o-matic.\n" );
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_barney", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+			break;
 		}
-		else
+	case 11:
 		{
-			UTIL_MakeVectors( Vector( 0, pev->v_angle.y, 0 ) );
-			Create( "monster_human_grunt", pev->origin + gpGlobals->v_forward * 128, pev->angles );
+			if(m_save_allow == 0)
+			{
+				UTIL_CenterPrintAll( "Save Check On" );
+				m_save_allow = 1;
+				m_load_check = 1;
+			}
+			else
+			{
+				UTIL_CenterPrintAll( "Save Check Off" );
+				m_save_allow = 0;
+				m_load_check = 0;
+			}
+		}
+		break;
+	case 99:
+		{
+			if (m_rpg_menu_actor1 == 1)
+			{
+				m_mode_origin = g_vecZero;
+				m_godposion = 0;
+				m_rpg_menu_actor1 = 0;
+				m_iClientHealth  = -1;
+				m_iClient_mynpc  = -1;
+				m_iClientBattery = -1;
+				pev->movetype = MOVETYPE_NOCLIP;
+				m_iHideHUD |= HIDEHUD_WEAPONS;
+				m_hasflashlight = FALSE;
+				pev->flags |= FL_NOTARGET;
+				pev->solid = SOLID_NOT;
+			} 
+			else 
+			{
+				m_godposion = 0;
+				m_rpg_menu_actor1 = 1;
+				m_iClientHealth  = -1;
+				m_iClient_mynpc  = -1;
+				m_iClientBattery = -1;
+				m_iHideHUD &= ~HIDEHUD_WEAPONS;
+				m_hasflashlight = TRUE;
+				pev->flags &= ~FL_NOTARGET;
+				pev->solid	= SOLID_SLIDEBOX;
+				pev->movetype = MOVETYPE_WALK;
+			}	
+		}
+		break;
+	case 66:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_lelite", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 67:
+		{
+			CBaseEntity *pSpot2 = UTIL_FindEntityByClassname( NULL, "monster_saintna");
+			if ( pSpot2 )
+			{
+				UTIL_Remove(pSpot2);
+				UTIL_MakeVectors( pev->v_angle );
+				Create("monster_saintna", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+			}
+			else
+			{
+				UTIL_MakeVectors( pev->v_angle );
+				Create("monster_saintna", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+			}
+		}
+		break;
+	case 68:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			CBaseEntity *pEntity2 = Create("monster_scientist", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+			pEntity2->pev->weapons = -1;
+		}
+		break;
+	case 69:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_human_grunt_ally", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 22:
+		{
+			CBaseEntity *pSpot2 = UTIL_FindEntityByClassname( NULL, "monster_dengor");
+			if ( pSpot2 )
+			{
+				UTIL_Remove(pSpot2);
+				UTIL_MakeVectors( pev->v_angle );
+				Create("monster_dengor", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+			}
+			else
+			{
+				UTIL_MakeVectors( pev->v_angle );
+				Create("monster_dengor", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+			}
+		}
+		break;
+	case 75:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_human_fassn", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 77:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_nurse", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 76:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_human_grunt", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 74:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_gargantua", pev->origin + gpGlobals->v_forward * 256, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 78:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_zombie", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 79:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_otis", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 73:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_houndeye", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 72:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_alien_grunt", pev->origin + gpGlobals->v_forward * 200, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 71:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_alien_slave", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 70:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_police", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 80:
+		{
+			GiveNamedItem( "item_godwater" );
+		}
+		break;
+	case 81:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_human_assault", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 82:
+		{
+			GiveNamedItem( "item_respawn" );
+		}
+		break;
+	case 83:
+		break;
+	case 84:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_gonome", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 85:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_barney_shield", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 86:
+		break;
+	case 87:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_headcrab", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 88:
+		{
+			Game_Save_SecondData();
+		}
+		break;
+	case 89:
+		{
+			Game_Load_SecondData();
+		}
+		break;
+	case 95:
+		{
+			char text[256];
+			sprintf( text, "- Kills:%d Diamonds:%d End Frags:%d Game Time:%1.0f\n", m_enemy_kills, m_player_diamonds, m_ending_frags, m_player_time / 60 );
+			UTIL_SayTextAll( text,this );
+			sprintf( text, "- Coordinates:%1.0f,%1.0f,%1.0f, Angle:%1.0f\n", pev->origin.x, pev->origin.y, pev->origin.z, pev->angles.y );
+			UTIL_SayTextAll( text,this );
+			sprintf( text, "- Game Time:%1.0f\n", gpGlobals->time );
+			UTIL_SayTextAll( text,this );
+			sprintf( text, "- EXP:%d  LEVEL:%d\n", m_kadoma_exp, m_kadoma_level );
+			UTIL_SayTextAll( text,this );
+
+			if(m_fSecondWorld)
+			{
+				sprintf( text, "- Currently in New Game Plus mode\n" );
+				UTIL_SayTextAll( text,this );
+			}
+
+			m_fNextClearTextTime = gpGlobals->time + 6.0;
+		}
+		break;
+	case 94:
+		{
+			GiveNamedItem( "item_armor4" );
+		}
+		break;
+	case 93:
+		{
+			GiveNamedItem( "item_armor3" );
+		}
+		break;
+	case 92:
+		{
+			GiveNamedItem( "item_armor2" );
+		}
+		break;
+	case 91:
+		{
+			GiveNamedItem( "item_armor1" );
+		}
+		break;
+	case 90:
+		{
+			MenuItem_add(15);
+			m_fequip1 = TRUE;
+			MenuItem_add(16);
+			m_fequip2 = TRUE;
+			g_engfuncs.pfnSetPhysicsKeyValue( edict(), "mario", "1" );
+			MenuItem_add(18);
+			m_fequip4 = TRUE;
+			m_air_oxyan_max = 2500;
+			m_air_oxyan = m_air_oxyan_max;
+			MenuItem_add(19);
+			m_fequip5 = TRUE;
+			MenuItem_add(20);
+			m_fequip6 = TRUE;
+
+			m_skill_reload = 1;
+			m_skill_defguard = 2;
+			m_skill_longjump = 3;
+			m_skill_punch = 4;
+			m_skill_valvesword = 5;
+			m_skill_respawn = 6;
+			m_skill_darkhide = 7;
+			m_skill_deathmatch = 8;
+			m_skill_wrongdoor = 9;
+			m_skill_miss = 81;
+			m_skill_goddam = 40;
+			m_skill_locked = 41;
+			g_engfuncs.pfnSetPhysicsKeyValue( edict(), "slj", "1" );
+			m_kadoma_exp = 100000;//LVMAX
+
+			g_causality_add = 5;
+		}
+		break;
+
+	case 13:
+		{
+			if(g_Spawnpreacheally == TRUE)
+			{
+				g_Spawnpreacheally = FALSE;
+			}
+			else
+			{
+				g_Spawnpreacheally = TRUE;
+			}
+		}
+		break;
+	case 14:
+		{
+			m_ending_frags -= 50;
+		}
+		break;
+	case 15:
+		{
+			m_ending_frags += 50;
+		}
+		break;
+	case 16:
+		{
+			UTIL_MakeVectors( pev->v_angle );
+			Create("monster_misaliya", pev->origin + Vector(64,0,0), Vector(0,pev->angles.y,0) );
+			Create("monster_saintna", pev->origin + Vector(-64,0,0), Vector(0,pev->angles.y,0) );
+			Create("monster_hime", pev->origin + Vector(0,64,0), Vector(0,pev->angles.y,0) );
+			Create("monster_dragon", pev->origin + Vector(0,-64,0), Vector(0,pev->angles.y,0) );
+			Create("monster_dengor", pev->origin + Vector(128,0,0), Vector(0,pev->angles.y,0) );
+			Create("monster_nobita", pev->origin + Vector(-128,0,0), Vector(0,pev->angles.y,0) );
+			Create("monster_giant", pev->origin + Vector(0,128,0), Vector(0,pev->angles.y,0) );
+			Create("monster_willam", pev->origin + Vector(0,-128,0), Vector(0,pev->angles.y,0) );
+			Create("monster_blues", pev->origin + Vector(128,64,0), Vector(0,pev->angles.y,0) );
+			Create("monster_mario", pev->origin + Vector(-128,64,0), Vector(0,pev->angles.y,0) );
+			Create("monster_andylow", pev->origin + Vector(128,-64,0), Vector(0,pev->angles.y,0) );
+			Create("monster_wisebeast", pev->origin + Vector(-128,-64,0), Vector(0,pev->angles.y,0) );
+			//Create("monster_lelite", pev->origin + Vector(0,0,96), Vector(0,pev->angles.y,0) );
+		}
+		break;
+	case 17:
+		{
+			TeamMate_Nagamatagi_Allclear(10);
+		}
+		break;
+	case 18:
+		{
+			TeamMate_Nagamatagi_Allclear(4);
+		}
+		break;
+	case 19:
+		{
+			TeamMate_Nagamatagi_Allclear(5);
+		}
+		break;
+	case 20:
+		{
+			TeamMate_Nagamatagi_Allclear(99);
+		}
+		break;
+	case 97:
+		{
+			CBaseEntity *pSpot2 = UTIL_FindEntityByClassname( NULL, "monster_misaliya");
+			if ( pSpot2 )
+			{
+				UTIL_Remove(pSpot2);
+				UTIL_MakeVectors( pev->v_angle );
+				CBaseEntity *pMisa = Create("monster_misaliya", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+			}
+			else
+			{
+				UTIL_MakeVectors( pev->v_angle );
+				CBaseEntity *pMisa = Create("monster_misaliya", pev->origin + gpGlobals->v_forward * 128, Vector(0,pev->angles.y,0) );
+			}
+		}
+		break;
+	case 98:
+		{
+			BOSS_Find();
+		}
+		break;
+	case 245:
+		{
+			if(m_fNextClearTextTime < gpGlobals->time)
+			{
+				char text[256];
+				sprintf( text, "====================\n");
+				UTIL_SayTextAll( text,this );
+				sprintf( text, "- Level:%d  EXP:%d\n", m_kadoma_level, m_kadoma_exp );
+				UTIL_SayTextAll( text,this );
+				sprintf( text, "- Kills:%d  End Frags:%d\n", m_enemy_kills, m_ending_frags );
+				UTIL_SayTextAll( text,this );
+				if (g_iSkillLevel == SKILL_EASY)
+				{
+					sprintf( text, "- Difficulty: Easy\n" );
+				}
+				else if (g_iSkillLevel == SKILL_HARD){
+					sprintf( text, "- Difficulty: Hard\n" );
+				}
+				else
+				{
+					sprintf( text, "- Difficulty: Medium\n" );
+				}
+				UTIL_SayTextAll( text,this );
+				sprintf( text, "- Game Time:%1.0f min\n", m_player_time / 60 );
+				UTIL_SayTextAll( text,this );
+				sprintf( text, "====================\n");
+				UTIL_SayTextAll( text,this );
+				m_fNextClearTextTime = gpGlobals->time + 6.0;
+			}
+		}
+		break;
+	case 125:
+		{
+			m_kadoma_exp += 2000;
 		}
 		break;
 	case 101:
 		gEvilImpulse101 = TRUE;
 		GiveNamedItem( "item_suit" );
-		GiveNamedItem( "item_battery" );
+		GiveNamedItem( "item_flashlight" );
 		GiveNamedItem( "weapon_crowbar" );
 		GiveNamedItem( "weapon_9mmhandgun" );
 		GiveNamedItem( "ammo_9mmclip" );
@@ -3602,6 +10362,11 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "ammo_ARgrenades" );
 		GiveNamedItem( "weapon_handgrenade" );
 		GiveNamedItem( "weapon_tripmine" );
+		GiveNamedItem( "ammo_m16clip" );
+		GiveNamedItem( "weapon_smg" );
+		GiveNamedItem( "ammo_smgclip" );
+		GiveNamedItem( "weapon_dueluzi" );
+		GiveNamedItem( "ammo_uzi" );
 #if !OEM_BUILD
 		GiveNamedItem( "weapon_357" );
 		GiveNamedItem( "ammo_357" );
@@ -3615,12 +10380,32 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveNamedItem( "weapon_satchel" );
 		GiveNamedItem( "weapon_snark" );
 		GiveNamedItem( "weapon_hornetgun" );
+		GiveNamedItem( "weapon_ak47" );
+		GiveNamedItem( "weapon_valvesword" );
+		GiveNamedItem( "weapon_fist" );
+		GiveNamedItem( "weapon_deagle" );
+		GiveNamedItem( "weapon_medkit" );
+		GiveNamedItem( "weapon_hammer" );
+		GiveNamedItem( "weapon_displacer" );
+		GiveNamedItem( "weapon_redeemer" );
+		GiveNamedItem( "weapon_sniperrifle" );
+		GiveNamedItem( "weapon_darkgrenade" );
+		GiveNamedItem( "ammo_762" );
+		GiveNamedItem( "weapon_sg550" );
+		GiveNamedItem( "ammo_sg550" );
+		GiveNamedItem( "weapon_airgun" );
+		GiveNamedItem( "weapon_minigun" );
+		GiveNamedItem( "ammo_m134box" );
+		GiveNamedItem( "weapon_dualdbarrel" );
 #endif
 		gEvilImpulse101 = FALSE;
 		break;
 	case 102:
-		// Gibbage!!!
-		CGib::SpawnRandomGibs( pev, 1, 1 );
+		gEvilImpulse101 = TRUE;
+		GiveNamedItem( "item_suit" );
+		GiveNamedItem( "item_flashlight" );
+		GiveNamedItem( "weapon_fist" );
+		gEvilImpulse101 = FALSE;
 		break;
 	case 103:
 		// What the hell are you doing?
@@ -3630,6 +10415,156 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			CBaseMonster *pMonster = pEntity->MyMonsterPointer();
 			if( pMonster )
 				pMonster->ReportAIState();
+		}
+		break;
+	case 110:
+		{
+			UTIL_MakeVectors(pev->v_angle);
+			UTIL_TraceLine ( pev->origin + pev->view_ofs, pev->origin + pev->view_ofs + gpGlobals->v_forward * 2048, dont_ignore_monsters, ENT(pev), & tr);
+
+			if ( tr.flFraction != 1.0 )
+			{	
+				// line hit something, so paint a decal
+				CBaseEntity *pEntity2 = CBaseEntity::Instance(tr.pHit);
+					
+				if(pEntity2)
+				{
+					CBaseMonster *pMonster = pEntity2->MyMonsterPointer();
+					if ( pMonster )
+					{
+						if(pMonster->pev->deadflag == DEAD_NO)
+						{
+							pMonster->Killed( pev, GIB_NEVER );
+							FX_Explosion( pMonster->Center(), 107 );
+							pMonster->pev->health = 0;
+						}
+					}
+				}
+			}
+
+		}
+		break;
+	case 111:
+		{
+			m_kadoma_exp += 1000;
+		}
+		break;
+	case 112:
+		{
+			FX_Explosion( pev->origin, 254 );
+		}
+		break;
+	case 113:
+		{
+			m_fSelectMode = TRUE;
+			ShowVGUIMenu(31);
+		}
+		break;
+	case 211:
+		{
+			if (m_boss_find)
+			{
+				if(m_boss_find->pev->deadflag == DEAD_NO)
+				{
+					m_boss_find->Killed( pev, GIB_NEVER );
+					m_boss_find->pev->health = 0;
+					FX_Explosion( m_boss_find->Center(), 107 );
+					UTIL_ScreenFade( this, Vector(255,255,255), 0.3, 0.1, 64, FFADE_IN );
+				}
+			}
+		}
+		break;
+	case 212:
+		{
+			if (m_team_npc1 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(96,0,-36) );
+			}
+			if (m_team_npc2 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(-96,0,-36) );
+			}
+			if (m_team_npc3 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(0,96,-36) );
+			}
+			if (m_team_npc4 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(0,-96,-36) );
+			}
+		}
+		break;
+	case 213:
+		{
+			if (m_team_npc1 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc1->pev, pev->origin + Vector(64,0,-36) );
+			}
+			if (m_team_npc2 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc2->pev, pev->origin + Vector(-64,0,-36) );
+			}
+			if (m_team_npc3 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc3->pev, pev->origin + Vector(0,64,-36) );
+			}
+			if (m_team_npc4 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc4->pev, pev->origin + Vector(0,-64,-36) );
+			}
+			if (m_team_npc5 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc5->pev, pev->origin + Vector(0,-128,-36) );
+			}
+			if (m_team_npc6 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc6->pev, pev->origin + Vector(0,128,-36) );
+			}
+			if (m_team_npc7 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc7->pev, pev->origin + Vector(-128,0,-36) );
+			}
+			if (m_team_npc8 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc8->pev, pev->origin + Vector(128,0,-36) );
+			}
+			if (m_team_npc9 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc9->pev, pev->origin + Vector(64,64,-36) );
+			}
+			if (m_team_npc10 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc10->pev, pev->origin + Vector(64,-64,-36) );
+			}
+			if (m_team_npc11 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc11->pev, pev->origin + Vector(-64,-64,-36) );
+			}
+			if (m_team_npc12 != NULL)
+			{
+				UTIL_SetOrigin( m_team_npc12->pev, pev->origin + Vector(-64,64,-36) );
+			}
+		}
+		break;
+	case 115:
+		BOSS_Find();
+		break;
+	case 120:
+		{
+			UTIL_ScreenFade( this, Vector(255,255,255), 1, 1, 255, FFADE_IN );
+			EMIT_SOUND(ENT(pev), CHAN_WEAPON, "newadd/Flash3.wav", 1, 0);
+
+			MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+			WRITE_BYTE( TE_LARGEFUNNEL );
+			WRITE_COORD( pev->origin.x );
+			WRITE_COORD( pev->origin.y );
+			WRITE_COORD( pev->origin.z );
+			WRITE_SHORT( g_sModelIndexFlareGlow );
+			WRITE_SHORT( 1 );
+			MESSAGE_END();
+
+			pev->health = pev->max_health;
+			TeamMate_Nagamatagi_RespawnStone(1);
 		}
 		break;
 	case 104:
@@ -3664,7 +10599,10 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 				ALERT( at_console, " - TargetName: No Targetname\n" );
 			}
 
+			ALERT ( at_console, "Origin: - X:%1.0f Y:%1.0f Z:%1.0f\n", pEntity->pev->origin.x,pEntity->pev->origin.y,pEntity->pev->origin.z );
+			ALERT ( at_console, "Angles.Y: - %1.0f\n", pEntity->pev->angles.y);
 			ALERT( at_console, "Model: %s\n", STRING( pEntity->pev->model ) );
+			ALERT ( at_console, "Health: %1.0f\n", pEntity->pev->health);
 			if( pEntity->pev->globalname )
 				ALERT( at_console, "Globalname: %s\n", STRING( pEntity->pev->globalname ) );
 		}
@@ -3683,6 +10621,22 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 			const char *pTextureName = TRACE_TEXTURE( pWorld, start, end );
 			if( pTextureName )
 				ALERT( at_console, "Texture: %s\n", pTextureName );
+		}
+		break;
+	case 108:
+		{
+			// Give me the classname and targetname of this entity.
+			pEntity = FindEntityForward( this );
+			if ( pEntity )
+			{
+				ALERT ( at_console, "Origin: - X:%1.0f Y:%1.0f Z:%1.0f\n", pEntity->pev->origin.x,pEntity->pev->origin.y,pEntity->pev->origin.z );
+				Vector old = pEntity->pev->origin;
+				pEntity->pev->angles.y += 90;
+				pEntity->pev->origin.z += 1;	// Pick up off of the floor
+				UTIL_SetSize (pEntity->pev, pEntity->pev->mins, pEntity->pev->maxs);
+				UTIL_SetOrigin( pEntity->pev, old - (pEntity->pev->mins + pEntity->pev->maxs)* 0.5 );
+				ALERT ( at_console, "Origin: - X:%1.0f Y:%1.0f Z:%1.0f\n", pEntity->pev->origin.x,pEntity->pev->origin.y,pEntity->pev->origin.z );
+			}
 		}
 		break;
 	case 195:
@@ -3727,8 +10681,9 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		pEntity = FindEntityForward( this );
 		if( pEntity )
 		{
-			if( pEntity->pev->takedamage )
-				pEntity->SetThink( &CBaseEntity::SUB_Remove );
+			UTIL_Remove( pEntity );
+			/*if( pEntity->pev->takedamage )
+				pEntity->SetThink( &CBaseEntity::SUB_Remove );*/
 		}
 		break;
 	}
@@ -3751,7 +10706,7 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 			if( pItem->AddDuplicate( pInsert ) )
 			{
 				g_pGameRules->PlayerGotWeapon( this, pItem );
-				pItem->CheckRespawn();
+				//pItem->CheckRespawn();
 
 				// ugly hack to update clip w/o an update clip message
 				pInsert->UpdateItemInfo();
@@ -3773,7 +10728,7 @@ int CBasePlayer::AddPlayerItem( CBasePlayerItem *pItem )
 	if( pItem->AddToPlayer( this ) )
 	{
 		g_pGameRules->PlayerGotWeapon( this, pItem );
-		pItem->CheckRespawn();
+		//pItem->CheckRespawn();
 
 		pItem->m_pNext = m_rgpPlayerItems[pItem->iItemSlot()];
 		m_rgpPlayerItems[pItem->iItemSlot()] = pItem;
@@ -3888,6 +10843,81 @@ Called every frame by the player PreThink
 */
 void CBasePlayer::ItemPreFrame()
 {
+	if(pev->deadflag != DEAD_NO)
+		return;
+
+	static int fInSelect = FALSE;
+
+	ImpulseCommands();
+
+	if(m_barnacle_RTP == 1)
+	{
+		if ( (pev->button & IN_ATTACK2) || (pev->button & IN_ATTACK) )
+		{
+			if(m_barnacle_RTP_button == 0)
+			{
+				m_barnacle_RTP_button = 1;
+				if(m_barnacle_Level == 1)
+				{
+					m_barnacle_RTP_bar += 45;
+				}
+				else if(m_barnacle_Level == 2)
+				{
+					m_barnacle_RTP_bar += 35;
+				}
+				else
+				{
+					m_barnacle_RTP_bar += 30;
+				}
+
+				if(m_guard_mynpc >= 1)
+				{
+					m_barnacle_RTP_bar += 5;
+				}
+
+				EMIT_SOUND(ENT(pev), CHAN_WEAPON, "newadd/struggle_hit.wav", 1, ATTN_NORM);
+			}
+		}
+		else if ( !(pev->button & (IN_ATTACK|IN_ATTACK2) ) )
+		{
+				m_barnacle_RTP_button = 0;
+		}
+	}
+
+	if(m_rpg_menu_actor1 != 1)
+	{
+		if(m_mode_origin != g_vecZero)
+		{
+			if(pev->origin.x > m_mode_origin.x + 1024)
+			{
+				pev->origin.x = m_mode_origin.x + 1024;
+			}
+			else if(pev->origin.x < m_mode_origin.x - 1024)
+			{
+				pev->origin.x = m_mode_origin.x - 1024;
+			}
+			if(pev->origin.y > m_mode_origin.y + 1024)
+			{
+				pev->origin.y = m_mode_origin.y + 1024;
+			}
+			else if(pev->origin.y < m_mode_origin.y - 1024)
+			{
+				pev->origin.y = m_mode_origin.y - 1024;
+			}
+			if(pev->origin.z > m_mode_origin.z + 640)
+			{
+				pev->origin.z = m_mode_origin.z + 640;
+			}
+			else if(pev->origin.z < m_mode_origin.z)
+			{
+				pev->origin.z = m_mode_origin.z;
+			}
+		}	
+	}
+
+	if(m_fMoveItem != NULL || m_guard_mynpc == 1 || m_rpg_menu_actor1 != 1 || m_concussion_time > gpGlobals->time)
+		return;
+
 #if CLIENT_WEAPONS
 	if( m_flNextAttack > 0 )
 #else
@@ -3980,7 +11010,8 @@ void CBasePlayer::SendAmmoUpdate( void )
 			// send "Ammo" update message
 			MESSAGE_BEGIN( MSG_ONE, gmsgAmmoX, NULL, pev );
 				WRITE_BYTE( i );
-				WRITE_BYTE( Q_max( Q_min( m_rgAmmo[i], 254 ), 0 ) );  // clamp the value to one byte
+				WRITE_SHORT( Q_max( Q_min( m_rgAmmo[i], 999 ), 0 ) );
+				//WRITE_BYTE( Q_max( Q_min( m_rgAmmo[i], 254 ), 0 ) );  // clamp the value to one byte
 			MESSAGE_END();
 		}
 	}
@@ -4001,6 +11032,10 @@ void CBasePlayer::UpdateClientData( void )
 {
 	if( m_fInitHUD )
 	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgTbutton, NULL, pev );
+			WRITE_SHORT( 0 );
+		MESSAGE_END();
+
 		m_fInitHUD = FALSE;
 		gInitHUD = FALSE;
 
@@ -4027,10 +11062,10 @@ void CBasePlayer::UpdateClientData( void )
 		FireTargets( "game_playerspawn", this, this, USE_TOGGLE, 0 );
 
 		// Send flashlight status
-		MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
+		/*MESSAGE_BEGIN( MSG_ONE, gmsgFlashlight, NULL, pev );
 			WRITE_BYTE( FlashlightIsOn() ? 1 : 0 );
 			WRITE_BYTE( m_iFlashBattery );
-		MESSAGE_END();
+		MESSAGE_END();*/
 
 		// Vit_amiN: the geiger state could run out of sync, too
 		MESSAGE_BEGIN( MSG_ONE, gmsgGeigerRange, NULL, pev );
@@ -4038,6 +11073,279 @@ void CBasePlayer::UpdateClientData( void )
 		MESSAGE_END();
 
 		InitStatusBar();
+	}
+
+	//==================Wdoor RPG Menu====================
+	//if(m_rpg_menu_on >= 1){
+	//	if(m_rpg_menu_origin < 50){
+	//	m_rpg_menu_origin++;
+	//	}
+	//}
+
+	if(m_rpg_menu_on >= 0)
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgRPGMenu, NULL, pev );
+		WRITE_BYTE( m_rpg_menu_on );
+		WRITE_BYTE( m_rpg_menu_select );
+
+		if(m_rpg_menu_on == 0)
+		{
+			m_rpg_menu_on = -1;
+			m_rpg_menu_select_alpha = 0;
+		}
+
+		WRITE_BYTE( m_rpg_menu_select_alpha );
+		//WRITE_BYTE( m_rpg_menu_origin );
+
+		if(m_rpg_menu_on == 1 || m_rpg_menu_on == 4 || m_rpg_menu_on == 6)
+		{
+			WRITE_BYTE( m_rpg_menu_actor1 );
+			if(pev->deadflag != DEAD_NO)
+			{
+				WRITE_BYTE( 0 );
+			}
+			else
+			{
+				WRITE_BYTE( (int)200 * (pev->health / pev->max_health) );
+			}
+			WRITE_LONG((int)pev->max_health );
+			WRITE_LONG((int)pev->health );
+			WRITE_BYTE( m_kadoma_level );
+			int exp = (m_kadoma_exp - (1000 * m_kadoma_level)) * 0.2;
+			if(m_kadoma_level == 99)
+			{
+				exp = 200;
+			}
+			WRITE_BYTE( exp );
+			if(m_kadoma_exp > 99999)
+			{
+				m_kadoma_exp = 99999;
+			}
+			WRITE_LONG( m_kadoma_exp );
+			WRITE_BYTE( 0 );
+		}
+		else
+		{
+			WRITE_BYTE( 0 );
+			WRITE_BYTE( 0 );
+			WRITE_LONG( 0 );
+			WRITE_LONG( 0 );
+			WRITE_BYTE( 0 );
+			WRITE_BYTE( 0 );
+			WRITE_LONG( 0 );
+			WRITE_BYTE( 0 );
+		}
+
+		if(m_team_npc1 != NULL && (m_rpg_menu_on == 1 || m_rpg_menu_on == 4) )
+		{
+			CBaseMonster *pMonster = m_team_npc1->MyMonsterPointer();
+			if ( pMonster )
+			{
+				m_rpg_menu_hp2 = pMonster->pev->health;
+				m_rpg_menu_maxhp2 = pMonster->pev->max_health;
+				m_rpg_menu_level2 = pMonster->m_rpgms_level;
+				m_rpg_menu_exp2 = pMonster->m_rpgms_exp;
+				m_rpg_menu_maxexp2 = pMonster->m_rpgms_maxexp;
+			}
+		}
+		if(m_team_npc1 == NULL || m_team_npc1->pev->deadflag != DEAD_NO)
+		{
+			if(m_team_npc1 != NULL)
+			{
+				WRITE_BYTE( m_rpg_menu_actor2 );
+				m_rpg_menu_hp2 = 0;
+			}
+			else
+			{
+				WRITE_BYTE( 0 );
+			}
+			WRITE_BYTE( 0 );
+			WRITE_LONG((int)m_rpg_menu_maxhp2 );
+			WRITE_LONG( 0 );
+		}
+		else
+		{
+			WRITE_BYTE( m_rpg_menu_actor2 );
+			WRITE_BYTE( (int)200 * (m_rpg_menu_hp2 / m_rpg_menu_maxhp2) );
+			WRITE_LONG((int)m_rpg_menu_maxhp2 );
+			WRITE_LONG((int)m_rpg_menu_hp2 );
+		}
+
+		WRITE_BYTE( m_rpg_menu_level2 );
+		WRITE_BYTE( int(m_rpg_menu_exp2 * 0.2) );
+		WRITE_LONG( m_rpg_menu_maxexp2 );
+		WRITE_BYTE( 0 );
+
+		if(m_team_npc2 != NULL && (m_rpg_menu_on == 1 || m_rpg_menu_on == 4) )
+		{
+			CBaseMonster *pMonster = m_team_npc2->MyMonsterPointer();
+			if ( pMonster )
+			{
+				m_rpg_menu_hp3 = pMonster->pev->health;
+				m_rpg_menu_maxhp3 = pMonster->pev->max_health;
+				m_rpg_menu_level3 = pMonster->m_rpgms_level;
+				m_rpg_menu_exp3 = pMonster->m_rpgms_exp;
+				m_rpg_menu_maxexp3 = pMonster->m_rpgms_maxexp;
+			}
+		}
+		if(m_team_npc2 == NULL || m_team_npc2->pev->deadflag != DEAD_NO)
+		{
+			if(m_team_npc2 != NULL)
+			{
+				WRITE_BYTE( m_rpg_menu_actor3 );
+			}
+			else
+			{
+				WRITE_BYTE( 0 );
+			}
+			WRITE_BYTE( 0 );
+			WRITE_LONG((int)m_rpg_menu_maxhp3 );
+			WRITE_LONG( 0 );
+		}
+		else
+		{
+			WRITE_BYTE( m_rpg_menu_actor3 );
+			WRITE_BYTE( (int)200 * (m_rpg_menu_hp3 / m_rpg_menu_maxhp3) );
+			WRITE_LONG((int)m_rpg_menu_maxhp3 );
+			WRITE_LONG((int)m_rpg_menu_hp3 );
+		}
+			
+		WRITE_BYTE( m_rpg_menu_level3 );
+		WRITE_BYTE( int(m_rpg_menu_exp3 * 0.2) );
+		WRITE_LONG( m_rpg_menu_maxexp3 );
+		WRITE_BYTE( 0 );
+
+		if(m_team_npc3 != NULL && (m_rpg_menu_on == 1 || m_rpg_menu_on == 4) )
+		{
+			CBaseMonster *pMonster = m_team_npc3->MyMonsterPointer();
+			if ( pMonster )
+			{
+				m_rpg_menu_hp4 = pMonster->pev->health;
+				m_rpg_menu_maxhp4 = pMonster->pev->max_health;
+				m_rpg_menu_level4 = pMonster->m_rpgms_level;
+				m_rpg_menu_exp4 = pMonster->m_rpgms_exp;
+				m_rpg_menu_maxexp4 = pMonster->m_rpgms_maxexp;
+			}
+		}
+		if(m_team_npc3 == NULL || m_team_npc3->pev->deadflag != DEAD_NO)
+		{
+			if(m_team_npc3 != NULL)
+			{
+				WRITE_BYTE( m_rpg_menu_actor4 );
+			}
+			else
+			{
+				WRITE_BYTE( 0 );
+			}
+			WRITE_BYTE( 0 );
+			WRITE_LONG((int)m_rpg_menu_maxhp4 );
+			WRITE_LONG( 0 );
+		}
+		else
+		{
+			WRITE_BYTE( m_rpg_menu_actor4 );
+			WRITE_BYTE( (int)200 * (m_rpg_menu_hp4 / m_rpg_menu_maxhp4) );
+			WRITE_LONG((int)m_rpg_menu_maxhp4 );
+			WRITE_LONG((int)m_rpg_menu_hp4 );
+		}
+
+		WRITE_BYTE( m_rpg_menu_level4 );
+		WRITE_BYTE( int(m_rpg_menu_exp4 * 0.2) );
+		WRITE_LONG( m_rpg_menu_maxexp4 );
+		WRITE_BYTE( 0 );
+
+		if(m_team_npc4 != NULL && (m_rpg_menu_on == 1 || m_rpg_menu_on == 4) )
+		{
+			CBaseMonster *pMonster = m_team_npc4->MyMonsterPointer();
+			if ( pMonster )
+			{
+				m_rpg_menu_hp5 = pMonster->pev->health;
+				m_rpg_menu_maxhp5 = pMonster->pev->max_health;
+				m_rpg_menu_level5 = pMonster->m_rpgms_level;
+				m_rpg_menu_exp5 = pMonster->m_rpgms_exp;
+				m_rpg_menu_maxexp5 = pMonster->m_rpgms_maxexp;
+			}
+		}
+		if(m_team_npc4 == NULL || m_team_npc4->pev->deadflag != DEAD_NO)
+		{
+			if(m_team_npc4 != NULL)
+			{
+				WRITE_BYTE( m_rpg_menu_actor5 );
+			}
+			else
+			{
+				WRITE_BYTE( 0 );
+			}
+			WRITE_BYTE( 0 );
+			WRITE_LONG((int)m_rpg_menu_maxhp5 );
+			WRITE_LONG( 0 );
+		}
+		else
+		{
+			WRITE_BYTE( m_rpg_menu_actor5 );
+			WRITE_BYTE( (int)200 * (m_rpg_menu_hp5 / m_rpg_menu_maxhp5) );
+			WRITE_LONG((int)m_rpg_menu_maxhp5 );
+			WRITE_LONG((int)m_rpg_menu_hp5 );
+		}
+			
+		WRITE_BYTE( m_rpg_menu_level5 );
+		WRITE_BYTE( int(m_rpg_menu_exp5 * 0.2) );
+		WRITE_LONG( m_rpg_menu_maxexp5 );
+		WRITE_BYTE( 0 );
+
+		WRITE_BYTE( m_rpg_menu_item1 );
+		WRITE_BYTE( m_rpg_menu_item2 );
+		WRITE_BYTE( m_rpg_menu_item3 );
+		WRITE_BYTE( m_rpg_menu_item4 );
+		WRITE_BYTE( m_rpg_menu_item5 );
+		WRITE_BYTE( m_rpg_menu_item6 );
+		WRITE_BYTE( m_rpg_menu_item7 );
+		WRITE_BYTE( m_rpg_menu_item8 );
+		WRITE_BYTE( m_rpg_menu_item9 );
+		WRITE_BYTE( m_rpg_menu_item10 );
+		WRITE_BYTE( m_rpg_menu_item11 );
+		WRITE_BYTE( m_rpg_menu_item12 );
+		WRITE_BYTE( m_rpg_menu_item_s );
+		WRITE_BYTE( m_rpg_menu_item_e );
+		WRITE_BYTE( m_rpg_menu_skill_chater );
+		
+		if(m_rpg_menu_on == 8)
+		{
+			GetGame_Playcvar();
+		}
+		
+		WRITE_BYTE( m_rpg_menu_skill1 );
+		WRITE_BYTE( m_rpg_menu_skill2 );
+		WRITE_BYTE( m_rpg_menu_skill3 );
+		WRITE_BYTE( m_rpg_menu_skill4 );
+		WRITE_BYTE( m_rpg_menu_skill5 );
+		WRITE_LONG( m_rpg_menu_skill6 );
+		WRITE_BYTE( m_rpg_menu_skill7 );
+		WRITE_BYTE( m_rpg_menu_skill8 );
+		WRITE_BYTE( m_rpg_menu_skill9 );
+		WRITE_BYTE( m_rpg_menu_skill10 );
+		WRITE_BYTE( m_rpg_menu_skill11 );
+		WRITE_BYTE( m_rpg_menu_skill12 );
+		MESSAGE_END();
+	}
+	//===============================
+
+	//=========================PassWord
+	if(m_rpg_password_on >= 0)
+	{
+		MESSAGE_BEGIN( MSG_ONE, gmsgPWBord, NULL, pev );
+		WRITE_BYTE( m_rpg_password_on );
+		WRITE_BYTE( m_rpg_password_select );
+		WRITE_BYTE( m_rpg_password_light1 );
+		WRITE_BYTE( m_rpg_password_light2 );
+		WRITE_BYTE( m_rpg_password_light3 );
+		WRITE_BYTE( m_rpg_password_light4 );
+		WRITE_BYTE( m_rpg_password_light5 );
+		WRITE_BYTE( m_rpg_password_light6 );
+		WRITE_BYTE( m_rpg_password_light7 );
+		WRITE_BYTE( m_rpg_password_light8 );
+		WRITE_BYTE( m_rpg_password_light9 );
+		MESSAGE_END();
 	}
 
 	if( m_iHideHUD != m_iClientHideHUD )
@@ -4055,6 +11363,19 @@ void CBasePlayer::UpdateClientData( void )
 			WRITE_BYTE( m_iFOV );
 		MESSAGE_END();
 
+		if(m_iFOV >= 10 && m_iFOV <= 20)
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgGunScope, NULL, pev );
+			WRITE_BYTE( 1 );
+			MESSAGE_END();
+		}
+		else
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgGunScope, NULL, pev );
+			WRITE_BYTE( 0 );
+			MESSAGE_END();
+		}
+
 		// cache FOV change at end of function, so weapon updates can see that FOV has changed
 	}
 
@@ -4067,31 +11388,198 @@ void CBasePlayer::UpdateClientData( void )
 		gDisplayTitle = 0;
 	}
 
-	if( pev->health != m_iClientHealth )
+	if(m_guard_mynpc != m_iClient_mynpc)
 	{
-#define clamp( val, min, max ) ( ((val) > (max)) ? (max) : ( ((val) < (min)) ? (min) : (val) ) )
-		int iHealth = clamp( pev->health, 0, 255 ); // make sure that no negative health values are sent
-		if( pev->health > 0.0f && pev->health <= 1.0f )
-			iHealth = 1;
-
-		// send "health" update message
-		MESSAGE_BEGIN( MSG_ONE, gmsgHealth, NULL, pev );
-			WRITE_BYTE( iHealth );
+		MESSAGE_BEGIN( MSG_ONE, gmsgModeShow, NULL, pev );
+		if ( (pev->flags & FL_FROZEN) || pev->deadflag != DEAD_NO)
+		{
+			WRITE_BYTE( 0 );
+			WRITE_BYTE( 0 );
+		}
+		else
+		{
+			WRITE_BYTE( m_guard_mynpc );
+			WRITE_BYTE( m_rpg_menu_item_t );
+		}
+		
 		MESSAGE_END();
-
-		m_iClientHealth = (int)pev->health;
+		m_iClient_mynpc = m_guard_mynpc;
 	}
 
-	if( (int)pev->armorvalue != m_iClientBattery )
+	if(m_air_oxyan != m_iClient_oxyan || m_skill_darkhide_on)
 	{
-		m_iClientBattery = (int)pev->armorvalue;
+		m_iClient_oxyan = m_air_oxyan;
 
-		ASSERT( gmsgBattery > 0 );
+		if(m_air_oxyan_max == 2000 && m_fequip4 == TRUE)
+		{
+			m_air_oxyan_max = 2500;
+		}
+		if(m_air_oxyan_max == 2500 && m_fequip4 == FALSE)
+		{
+			m_air_oxyan_max = 2000;
+		}
 
-		// send "health" update message
-		MESSAGE_BEGIN( MSG_ONE, gmsgBattery, NULL, pev );
-			WRITE_SHORT( (int)pev->armorvalue );
+		if(m_skill_darkhide_on)
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgAirBar, NULL, pev );
+			WRITE_BYTE( 2 );
+			WRITE_BYTE( m_darkposion / 10 );
+			WRITE_BYTE( 250 );
+			MESSAGE_END();
+		}
+		else if(m_fequip4 == TRUE)
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgAirBar, NULL, pev );
+			WRITE_BYTE( m_air_show );
+			WRITE_BYTE( m_air_oxyan / 10 );
+			WRITE_BYTE( 250 );
+			MESSAGE_END();
+		}
+		else
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgAirBar, NULL, pev );
+			WRITE_BYTE( m_air_show );
+			WRITE_BYTE( m_air_oxyan / 10 );
+			WRITE_BYTE( 200 );
+			MESSAGE_END();
+		}
+	}
+
+	if( pev->health != m_iClientHealth )
+	{
+		if (m_darkposion > 0 || m_skill_darkhide_on)
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgDarkHoles, NULL, pev );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( 2 );
+			MESSAGE_END();
+		}
+		else if (pev->health > 0 && m_godposion == 1 )
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgDarkHoles, NULL, pev );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( 4 );
+			MESSAGE_END();
+		}
+		else if (pev->health > 0 && m_greenpoison == 1)
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgDarkHoles, NULL, pev );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( 3 );
+			MESSAGE_END();
+		}
+		else if(pev->health <= pev->max_health * 0.2)
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgDarkHoles, NULL, pev );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( 1 );
+			WRITE_BYTE( 1 );
+			MESSAGE_END();
+		}
+		else
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgDarkHoles, NULL, pev );
+			WRITE_BYTE( 0 );
+			WRITE_BYTE( 0 );
+			WRITE_BYTE( 0 );
+			MESSAGE_END();
+		}
+
+		MESSAGE_BEGIN( MSG_ONE, gmsgHPbar, NULL, pev );
+		WRITE_BYTE( m_rpg_menu_actor1 );
+		if(pev->max_health <= 300)
+		{
+			WRITE_BYTE( (int)pev->max_health * (pev->health / pev->max_health) * 0.8 );
+			WRITE_BYTE( (int)pev->max_health * 0.8 );
+		}
+		else
+		{
+			WRITE_BYTE( (int)240 * (pev->health / pev->max_health));
+			WRITE_BYTE( 240 );
+		}
+		WRITE_SHORT( (int)pev->health);
 		MESSAGE_END();
+
+		m_iClientHealth = pev->health;
+	}
+
+	if (pev->armorvalue != m_iClientBattery)
+	{
+		m_iClientBattery = pev->armorvalue;
+
+		if(pev->health == m_iClientHealth)
+		{
+			if (m_darkposion > 0 || m_skill_darkhide_on)
+			{
+				MESSAGE_BEGIN( MSG_ONE, gmsgDarkHoles, NULL, pev );
+				WRITE_BYTE( 1 );
+				WRITE_BYTE( 1 );
+				WRITE_BYTE( 2 );
+				MESSAGE_END();
+			}
+			else if (pev->health > 0 && m_godposion == 1 )
+			{
+				MESSAGE_BEGIN( MSG_ONE, gmsgDarkHoles, NULL, pev );
+				WRITE_BYTE( 1 );
+				WRITE_BYTE( 1 );
+				WRITE_BYTE( 4 );
+				MESSAGE_END();
+			}
+			else if (pev->health > 0 && m_greenpoison == 1)
+			{
+				MESSAGE_BEGIN( MSG_ONE, gmsgDarkHoles, NULL, pev );
+				WRITE_BYTE( 1 );
+				WRITE_BYTE( 1 );
+				WRITE_BYTE( 3 );
+				MESSAGE_END();
+			}
+			else if(pev->health <= pev->max_health * 0.2)
+			{
+				MESSAGE_BEGIN( MSG_ONE, gmsgDarkHoles, NULL, pev );
+				WRITE_BYTE( 1 );
+				WRITE_BYTE( 1 );
+				WRITE_BYTE( 1 );
+				MESSAGE_END();
+			}
+			else
+			{
+				MESSAGE_BEGIN( MSG_ONE, gmsgDarkHoles, NULL, pev );
+				WRITE_BYTE( 0 );
+				WRITE_BYTE( 0 );
+				WRITE_BYTE( 0 );
+				MESSAGE_END();
+			}
+		}
+
+		if(m_skill_maxarmor >= 1)
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgAPbar, NULL, pev );
+			WRITE_BYTE( m_rpg_menu_actor1 );
+			if(m_skill_maxarmor <= 200)
+			{
+				WRITE_BYTE( (int)m_skill_maxarmor * (pev->armorvalue / m_skill_maxarmor) * 1.2);
+				WRITE_BYTE( (int)m_skill_maxarmor * 1.2 );
+			}
+			else
+			{
+				WRITE_BYTE( (int)240 * (pev->armorvalue / m_skill_maxarmor) );
+				WRITE_BYTE( 240 );
+			}
+			WRITE_SHORT( (int)pev->armorvalue);
+			MESSAGE_END();
+		}
+		else
+		{
+			MESSAGE_BEGIN( MSG_ONE, gmsgAPbar, NULL, pev );
+			WRITE_BYTE( 0 );
+			WRITE_BYTE( (int)240 * (pev->armorvalue / m_skill_maxarmor) );
+			WRITE_BYTE( 240 );
+			WRITE_SHORT( (int)pev->armorvalue);
+			MESSAGE_END();
+		}
 	}
 
 	if( pev->dmg_take || pev->dmg_save || m_bitsHUDDamage != m_bitsDamageType )
@@ -4138,8 +11626,11 @@ void CBasePlayer::UpdateClientData( void )
 				m_flFlashLightTime = FLASH_DRAIN_TIME + gpGlobals->time;
 				m_iFlashBattery--;
 
-				if( !m_iFlashBattery )
+				if( m_iFlashBattery <= 15 )
+				{
 					FlashlightTurnOff();
+					m_iFlashBattery = 5;
+				}
 			}
 		}
 		else
@@ -4236,7 +11727,9 @@ void CBasePlayer::UpdateClientData( void )
 	// Update Status Bar
 	if( m_flNextSBarUpdateTime < gpGlobals->time )
 	{
-		UpdateStatusBar();
+
+		if(!(pev->flags & FL_FROZEN) && CVAR_GET_FLOAT( "hud_centerid" ) != 0)
+			UpdateStatusBar();
 		m_flNextSBarUpdateTime = gpGlobals->time + 0.2f;
 	}
 }
@@ -4258,7 +11751,8 @@ BOOL CBasePlayer::FBecomeProne( void )
 //=========================================================
 void CBasePlayer::BarnacleVictimBitten( entvars_t *pevBarnacle )
 {
-	TakeDamage( pevBarnacle, pevBarnacle, pev->health + pev->armorvalue, DMG_SLASH | DMG_ALWAYSGIB );
+	if(!FClassnameIs(pevBarnacle,"monster_barnacle_holy"))
+		m_air_oxyan -= 20;
 }
 
 //=========================================================
@@ -4298,10 +11792,53 @@ void CBasePlayer::SetPrefsFromUserinfo( char *infobuffer )
 
 void CBasePlayer::EnableControl( BOOL fControl )
 {
-	if( !fControl )
+	m_iFOV = 0;
+	pev->fov = 0;
+	pev->gravity = 1.0;
+
+	if (!fControl)
+	{
+		m_rpg_menu_on = 0;
+		CLIENT_COMMAND(edict(), "=cammousemove\n");
 		pev->flags |= FL_FROZEN;
+
+		if (m_pActiveItem)
+		{
+			m_pActiveItem->Holster();
+		}
+
+		if ( FlashlightIsOn() )
+		{
+			FlashlightTurnOff();
+		}
+
+		if ( NightViewIsOn() )
+		{
+			NightViewTurnOff();
+		}
+	}
 	else
+	{
+		CLIENT_COMMAND(edict(), "-cammousemove\n");
 		pev->flags &= ~FL_FROZEN;
+
+		if (FBitSet( pev->flags, FL_NOTARGET ))
+			pev->flags &= ~FL_NOTARGET;
+
+		if (FBitSet( pev->flags, FL_GODMODE ))
+			pev->flags &= ~FL_GODMODE;
+
+		if (pev->movetype == MOVETYPE_NOCLIP)
+			pev->movetype = MOVETYPE_WALK;
+
+		m_god_time = 0;
+		m_rpg_menu_actor1 = 1;
+
+		m_player_camera = NULL;
+		SET_VIEW( edict(), edict() );
+	}
+
+	m_iClient_mynpc     = -1;
 }
 
 #define DOT_1DEGREE   0.9998476951564
@@ -4324,75 +11861,26 @@ void CBasePlayer::EnableControl( BOOL fControl )
 //=========================================================
 Vector CBasePlayer::GetAutoaimVector( float flDelta )
 {
-	if( g_iSkillLevel == SKILL_HARD )
-	{
-		UTIL_MakeVectors( pev->v_angle + pev->punchangle );
-		return gpGlobals->v_forward;
-	}
-
 	Vector vecSrc = GetGunPosition();
 	float flDist = 8192.0f;
-
-	// always use non-sticky autoaim
-	// UNDONE: use sever variable to chose!
-	if( 1 || g_iSkillLevel == SKILL_MEDIUM )
-	{
-		m_vecAutoAim = Vector( 0, 0, 0 );
-		// flDelta *= 0.5;
-	}
 
 	BOOL m_fOldTargeting = m_fOnTarget;
 	Vector angles = AutoaimDeflection(vecSrc, flDist, flDelta );
 
 	// update ontarget if changed
-	if( !g_pGameRules->AllowAutoTargetCrosshair() )
-		m_fOnTarget = 0;
-	else if( m_fOldTargeting != m_fOnTarget )
+	if( m_fOldTargeting != m_fOnTarget )
 	{
 		m_pActiveItem->UpdateItemInfo();
 	}
 
-	if( angles.x > 180 )
-		angles.x -= 360;
-	if( angles.x < -180 )
-		angles.x += 360;
-	if( angles.y > 180 )
-		angles.y -= 360;
-	if( angles.y < -180 )
-		angles.y += 360;
-
-	if( angles.x > 25 )
-		angles.x = 25;
-	if( angles.x < -25 )
-		angles.x = -25;
-	if( angles.y > 12 )
-		angles.y = 12;
-	if( angles.y < -12 )
-		angles.y = -12;
-
-	// always use non-sticky autoaim
-	// UNDONE: use sever variable to chose!
-	if( 0 || g_iSkillLevel == SKILL_EASY )
+	// Don't send across network if sv_aim is 0
+	if(m_fOnTarget == 1)
 	{
-		m_vecAutoAim = m_vecAutoAim * 0.67f + angles * 0.33f;
+		m_newcross_ontarget = 1;
 	}
 	else
 	{
-		m_vecAutoAim = angles * 0.9f;
-	}
-
-	// m_vecAutoAim = m_vecAutoAim * 0.99;
-
-	// Don't send across network if sv_aim is 0
-	if( g_psv_aim->value && g_psv_allow_autoaim && g_psv_allow_autoaim->value )
-	{
-		if( m_vecAutoAim.x != m_lastx || m_vecAutoAim.y != m_lasty )
-		{
-			SET_CROSSHAIRANGLE( edict(), -m_vecAutoAim.x, m_vecAutoAim.y );
-
-			m_lastx = (int)m_vecAutoAim.x;
-			m_lasty = (int)m_vecAutoAim.y;
-		}
+		m_newcross_ontarget = 0;
 	}
 
 	// ALERT( at_console, "%f %f\n", angles.x, angles.y );
@@ -4410,12 +11898,6 @@ Vector CBasePlayer::AutoaimDeflection( Vector &vecSrc, float flDist, float flDel
 	edict_t *bestent;
 	TraceResult tr;
 
-	if( !( g_psv_aim->value && g_psv_allow_autoaim && g_psv_allow_autoaim->value ))
-	{
-		m_fOnTarget = FALSE;
-		return g_vecZero;
-	}
-
 	UTIL_MakeVectors( pev->v_angle + pev->punchangle + m_vecAutoAim );
 
 	// try all possible entities
@@ -4425,6 +11907,9 @@ Vector CBasePlayer::AutoaimDeflection( Vector &vecSrc, float flDist, float flDel
 
 	m_fOnTarget = FALSE;
 
+	if(m_flash_mode >= 2)
+		return Vector( 0, 0, 0 );
+
 	UTIL_TraceLine( vecSrc, vecSrc + bestdir * flDist, dont_ignore_monsters, edict(), &tr );
 
 	if( tr.pHit && tr.pHit->v.takedamage != DAMAGE_NO )
@@ -4432,7 +11917,7 @@ Vector CBasePlayer::AutoaimDeflection( Vector &vecSrc, float flDist, float flDel
 		// don't look through water
 		if( !( ( pev->waterlevel != 3 && tr.pHit->v.waterlevel == 3 ) || ( pev->waterlevel == 3 && tr.pHit->v.waterlevel == 0 ) ) )
 		{
-			if( tr.pHit->v.takedamage == DAMAGE_AIM )
+			if( tr.pHit->v.takedamage == DAMAGE_AIM && !FBitSet( tr.pHit->v.flags, FL_NOTARGET ) )
 				m_fOnTarget = TRUE;
 
 			return m_vecAutoAim;
@@ -4564,11 +12049,11 @@ int CBasePlayer::GetCustomDecalFrames( void )
 //=========================================================
 void CBasePlayer::DropPlayerItem( char *pszItemName )
 {
-	if( !g_pGameRules->IsMultiplayer() || ( weaponstay.value > 0 ) )
+	/*if( !g_pGameRules->IsMultiplayer() || ( weaponstay.value > 0 ) )
 	{
 		// no dropping in single player.
 		return;
-	}
+	}*/
 
 	if( pszItemName[0] == '\0' )
 	{
@@ -4613,39 +12098,80 @@ void CBasePlayer::DropPlayerItem( char *pszItemName )
 		// item we want to drop and hit a BREAK;  pWeapon is the item.
 		if( pWeapon )
 		{
-			if( !g_pGameRules->GetNextBestWeapon( this, pWeapon ) )
-				return; // can't drop the item they asked for, may be our last item or something we can't holster
+			//if( !g_pGameRules->GetNextBestWeapon( this, pWeapon ) )
+				//return; // can't drop the item they asked for, may be our last item or something we can't holster
 
+			g_pGameRules->GetNextBestWeapon( this, pWeapon );
 			UTIL_MakeVectors( pev->angles ); 
 
 			pev->weapons &= ~( 1 << pWeapon->m_iId );// take item off hud
 
-			CWeaponBox *pWeaponBox = (CWeaponBox *)CBaseEntity::Create( "weaponbox", pev->origin + gpGlobals->v_forward * 10, pev->angles, edict() );
-			pWeaponBox->pev->angles.x = 0;
-			pWeaponBox->pev->angles.z = 0;
-			pWeaponBox->PackWeapon( pWeapon );
-			pWeaponBox->pev->velocity = gpGlobals->v_forward * 300 + gpGlobals->v_forward * 100;
-			
-			// drop half of the ammo for this weapon.
-			int iAmmoIndex;
+			if(pWeapon->m_iId != WEAPON_FIREAXE){
+				CWeaponBox *pWeaponBox = (CWeaponBox *)Create("weaponbox_drop", pev->origin + Vector(0,0,8) + gpGlobals->v_forward * 10, pev->angles, edict());
+				pWeaponBox->pev->angles.x = 0;
+				pWeaponBox->pev->angles.z = 0;
+				pWeaponBox->SetThink(&CWeaponBox::Kill);
+				
+				pWeaponBox->pev->nextthink = gpGlobals->time + 10;
 
-			iAmmoIndex = GetAmmoIndex( pWeapon->pszAmmo1() ); // ???
+				pWeaponBox->PackWeapon(pWeapon);
 
-			if( iAmmoIndex != -1 )
-			{
-				// this weapon weapon uses ammo, so pack an appropriate amount.
-				if( pWeapon->iFlags() & ITEM_FLAG_EXHAUSTIBLE )
-				{
-					// pack up all the ammo, this weapon is its own ammo type
-					pWeaponBox->PackAmmo( MAKE_STRING( pWeapon->pszAmmo1() ), m_rgAmmo[iAmmoIndex] );
-					m_rgAmmo[iAmmoIndex] = 0; 
-				}
+				Vector angThrow = pev->v_angle + pev->punchangle;
+
+				if (angThrow.x < 0)
+					angThrow.x = -10 + angThrow.x * ((90 - 10) / 90.0);
 				else
+					angThrow.x = -10 + angThrow.x * ((90 + 10) / 90.0);
+
+				float flVel = (90 - angThrow.x) * 6;
+
+				if (flVel > 500)
+					flVel = 500;
+
+				UTIL_MakeVectors(angThrow);
+				Vector vecSrc = pev->origin + pev->view_ofs + gpGlobals->v_forward * 16;
+				Vector vecThrow = gpGlobals->v_forward * flVel + pev->velocity;
+
+				pWeaponBox->pev->velocity = vecThrow;
+
+				pWeaponBox->pev->avelocity.x = pev->velocity.Length();
+				pWeaponBox->pev->avelocity.y = RANDOM_FLOAT( -pev->velocity.Length(), pev->velocity.Length() );
+
+				
+				// drop half of the ammo for this weapon.
+				int	iAmmoIndex;
+
+				iAmmoIndex = GetAmmoIndex ( pWeapon->pszAmmo1() ); // ???
+				
+				if ( iAmmoIndex != -1 )
 				{
-					// pack half of the ammo
-					pWeaponBox->PackAmmo( MAKE_STRING( pWeapon->pszAmmo1() ), m_rgAmmo[iAmmoIndex] / 2 );
-					m_rgAmmo[iAmmoIndex] /= 2; 
+					// this weapon weapon uses ammo, so pack an appropriate amount.
+					if ( pWeapon->iFlags() & ITEM_FLAG_EXHAUSTIBLE )
+					{
+						// pack up all the ammo, this weapon is its own ammo type
+						pWeaponBox->PackAmmo( MAKE_STRING(pWeapon->pszAmmo1()), m_rgAmmo[ iAmmoIndex ] );
+						m_rgAmmo[ iAmmoIndex ] = 0; 
+
+					}
+					else
+					{
+						// pack half of the ammo
+						pWeaponBox->PackAmmo( MAKE_STRING(pWeapon->pszAmmo1()), m_rgAmmo[ iAmmoIndex ] / 2 );
+						m_rgAmmo[ iAmmoIndex ] /= 2; 
+					}
+
 				}
+			}
+			else
+			{
+				CWeaponBox *pWeaponBox = (CWeaponBox *)Create("weaponbox_drop", pev->origin + Vector(0,0,16384), pev->angles, edict());
+				pWeaponBox->pev->angles.x = 0;
+				pWeaponBox->pev->angles.z = 0;
+				pWeaponBox->SetThink(&CWeaponBox::Kill);
+				
+				pWeaponBox->pev->nextthink = gpGlobals->time + 1;
+
+				pWeaponBox->PackWeapon(pWeapon);
 			}
 
 			return;// we're done, so stop searching with the FOR loop.
@@ -4792,8 +12318,8 @@ LINK_ENTITY_TO_CLASS( monster_hevsuit_dead, CDeadHEV )
 //=========================================================
 void CDeadHEV::Spawn( void )
 {
-	PRECACHE_MODEL( "models/player.mdl" );
-	SET_MODEL( ENT( pev ), "models/player.mdl" );
+	PRECACHE_MODEL( "models/deadhaz.mdl" );
+	SET_MODEL( ENT( pev ), "models/deadhaz.mdl" );
 
 	pev->effects = 0;
 	pev->yaw_speed = 8;
@@ -4811,7 +12337,7 @@ void CDeadHEV::Spawn( void )
 	}
 
 	// Corpses have less health
-	pev->health = 8;
+	pev->health = 20;
 
 	MonsterInitDead();
 }

@@ -27,6 +27,7 @@
 #include <VGUI_ScrollPanel.h>
 #include <VGUI_ScrollBar.h>
 #include <VGUI_Slider.h>
+#include <VGUI_TextEntry.h> // VGUI 
 
 // custom scheme handling
 #include "vgui_SchemeManager.h"
@@ -43,6 +44,16 @@
 #define MENU_CLASSHELP2 			7
 #define MENU_REPEATHELP 			8
 #define MENU_SPECHELP				9
+
+#define MENU_FIRSTMENU              30
+#define MENU_SELECTMENU             31
+#define MENU_HIDE					32
+#define MENU_SELECTMENU2            33
+#define MENU_SELECTMENU3            34
+#define MENU_SELECTMENU4            35
+#define MENU_SELECTMENU5            36
+#define MENU_SELECTMENU6            37
+
 using namespace vgui;
 
 class Cursor;
@@ -59,6 +70,8 @@ class CTransparentPanel;
 class CClassMenuPanel;
 class CTeamMenuPanel;
 class TeamFortressViewport;
+
+class CSelectMenu; // VGUI 
 
 char *GetVGUITGAName( const char *pszName );
 BitmapTGA *LoadTGAForRes( const char* pImageName );
@@ -516,6 +529,9 @@ private:
 	// Scheme handler
 	CSchemeManager m_SchemeManager;
 
+	void         CreateSelectMenu( void );
+    CMenuPanel*  ShowSelectMenu( int type );
+
 	//  Command Menu Team buttons
 	CommandButton *m_pTeamButtons[6];
 	CommandButton *m_pDisguiseButtons[5];
@@ -617,6 +633,7 @@ public:
 public:
 	// VGUI Menus
 	CMenuPanel		*m_pCurrentMenu;
+	CSelectMenu     *m_pSelectMenu; // VGUI 
 	CTeamMenuPanel	*m_pTeamMenu;
 	int						m_StandardMenu;	// indexs in m_pCommandMenus
 	int						m_SpectatorOptionsMenu;
@@ -1547,6 +1564,27 @@ public:
 	// Numeric input
 	virtual bool SlotInput( int iSlot ) { return false; };
 	virtual void SetActiveInfo( int iInput ) {};
+};
+
+class CSelectMenu : public CMenuPanel
+{
+private:
+    CommandButton       *m_pCancelButton;
+	CTransparentPanel   *m_pPanel; 
+	Label               *m_pTitle; 
+	CommandButton       *m_pSpeak; 
+
+    TextEntry           *m_pEditbox;
+    CImageLabel         *m_pMyPicture;
+    
+    int                 m_iShowText;
+    Label               *m_pText;
+    CommandButton       *m_pShowButton;
+    CommandButton       *m_pHideButton;
+    
+
+public:
+    CSelectMenu(int iTrans, int iRemoveMe, int x, int y, int wide, int tall);
 };
 
 //================================================================

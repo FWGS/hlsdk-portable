@@ -34,6 +34,7 @@
 #include "soundent.h"
 #include "gamerules.h"
 #include "game.h"
+#include "player.h"
 
 #define MONSTER_CUT_CORNER_DIST		8 // 8 means the monster's bounding box is contained without the box of the node in WC
 
@@ -76,8 +77,14 @@ TYPEDESCRIPTION	CBaseMonster::m_SaveData[] =
 	//DEFINE_FIELD( CBaseMonster, m_iRouteIndex, FIELD_INTEGER ),
 	//DEFINE_FIELD( CBaseMonster, m_moveWaitTime, FIELD_FLOAT ),
 
+	DEFINE_FIELD( CBaseMonster, m_flVelocityModifier, FIELD_FLOAT ),
+
 	DEFINE_FIELD( CBaseMonster, m_vecMoveGoal, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( CBaseMonster, m_movementActivity, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_headdef, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_EyeMod, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_can_kill_script, FIELD_INTEGER ),
 
 	//int					m_iAudibleList; // first index of a linked list of sounds that the monster can hear.
 	//DEFINE_FIELD( CBaseMonster, m_afSoundTypes, FIELD_INTEGER ),
@@ -89,12 +96,14 @@ TYPEDESCRIPTION	CBaseMonster::m_SaveData[] =
 	DEFINE_FIELD( CBaseMonster, m_vecEnemyLKP, FIELD_POSITION_VECTOR ),
 	DEFINE_FIELD( CBaseMonster, m_cAmmoLoaded, FIELD_INTEGER ),
 	DEFINE_FIELD( CBaseMonster, m_afCapability, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_cClipSize, FIELD_INTEGER ),
 
 	DEFINE_FIELD( CBaseMonster, m_flNextAttack, FIELD_TIME ),
 	DEFINE_FIELD( CBaseMonster, m_bitsDamageType, FIELD_INTEGER ),
 	DEFINE_ARRAY( CBaseMonster, m_rgbTimeBasedDamage, FIELD_CHARACTER, CDMG_TIMEBASED ),
 	DEFINE_FIELD( CBaseMonster, m_bloodColor, FIELD_INTEGER ),
 	DEFINE_FIELD( CBaseMonster, m_failSchedule, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_aimflag_dist, FIELD_FLOAT ),
 
 	DEFINE_FIELD( CBaseMonster, m_flHungryTime, FIELD_TIME ),
 	DEFINE_FIELD( CBaseMonster, m_flDistTooFar, FIELD_FLOAT ),
@@ -106,6 +115,169 @@ TYPEDESCRIPTION	CBaseMonster::m_SaveData[] =
 
 	DEFINE_FIELD( CBaseMonster, m_scriptState, FIELD_INTEGER ),
 	DEFINE_FIELD( CBaseMonster, m_pCine, FIELD_CLASSPTR ),
+
+	DEFINE_FIELD( CBaseMonster, m_hHitEnemy, FIELD_EHANDLE ),
+
+	DEFINE_FIELD( CBaseMonster, m_vecOldMovePoint, FIELD_VECTOR ),
+	DEFINE_FIELD( CBaseMonster, m_MovePointMax, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_attack_dist, FIELD_FLOAT ),
+	DEFINE_FIELD( CBaseMonster, m_cover_dist, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_thinkspeed, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_running_rangeattack, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_elseuseful, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_killedbydmg, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_ctmod, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_lookignoremod, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_crouchmode, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_candrownwater, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_killbyheadcrab, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_canheadcrab_mode, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_canbarnacle_mode, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_crabzombie_begain, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_grenadekilled, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_MSblastvec, FIELD_POSITION_VECTOR ),
+
+	DEFINE_FIELD( CBaseMonster, m_no_cover_mode, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_lovehate, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_die, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_dieseq, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_diefadeout, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_killed_exp, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_barnacleres_time, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_alert, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_notarget_hide, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_flGodTime, FIELD_TIME ),
+
+	DEFINE_FIELD( CBaseMonster, m_zombiehead_health, FIELD_FLOAT ),
+	DEFINE_FIELD( CBaseMonster, m_no_victdance, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_no_pov_limit, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_die_dont_alert, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_die_dont_move, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_die_corpse_solid, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_die_for_back, FIELD_INTEGER ),
+	
+	DEFINE_FIELD( CBaseMonster, m_flDeadTime, FIELD_TIME ),
+
+	DEFINE_FIELD( CBaseMonster, m_enemyfollower, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_enemyfollower_walk, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_enemyfollower_combat, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_duckseq, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_chase_mode, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_chase_failed_max, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_makerspawn_call, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_MoveFail_FuckRoad_Mode, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_MoveFail_SimpleRoad, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBaseMonster, m_rpgms_actor, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_level, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_exp, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_type, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_maxexp, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_inteam, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_skill1_learn, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_skill2_learn, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_skill3_learn, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_skill4_learn, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_skill5_learn, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_skill6_learn, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_skill7_learn, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_skill8_learn, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_skill9_learn, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_skill10_learn, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_skill11_learn, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_rpgms_skill12_learn, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_flPlayerTeamMateDamage_exp1, FIELD_FLOAT ),
+	DEFINE_FIELD( CBaseMonster, m_flPlayerTeamMateDamage_exp2, FIELD_FLOAT ),
+	DEFINE_FIELD( CBaseMonster, m_flPlayerTeamMateDamage_exp3, FIELD_FLOAT ),
+	DEFINE_FIELD( CBaseMonster, m_flPlayerTeamMateDamage_exp4, FIELD_FLOAT ),
+
+	DEFINE_FIELD( CBaseMonster, m_HenemyEnemyMe, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_HenemyEnemyMe2, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_hPlayer, FIELD_EHANDLE ),
+	DEFINE_FIELD( CBaseMonster, m_hPortecter, FIELD_EHANDLE ),
+	DEFINE_FIELD( CBaseMonster, m_hTeamMate1, FIELD_EHANDLE ),
+	DEFINE_FIELD( CBaseMonster, m_hTeamMate2, FIELD_EHANDLE ),
+	DEFINE_FIELD( CBaseMonster, m_hTeamMate3, FIELD_EHANDLE ),
+	DEFINE_FIELD( CBaseMonster, m_hTeamMate4, FIELD_EHANDLE ),
+
+	DEFINE_FIELD( CBaseMonster, m_MoveFail_FuckRoad, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBaseMonster, m_forcefuckdoor, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBaseMonster, m_selfmode, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBaseMonster, m_godmode, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBaseMonster, m_walkaround, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBaseMonster, m_walkaroundFail, FIELD_BOOLEAN ),
+	
+	DEFINE_FIELD( CBaseMonster, m_is_the_boss, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBaseMonster, m_new_ally_type, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBaseMonster, m_enemyget_mode, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_chaofhate, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_undropgun, FIELD_BOOLEAN ),
+	
+	DEFINE_FIELD( CBaseMonster, m_cover_fromplayer, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBaseMonster, m_noidleseq, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBaseMonster, m_alwaysrunpath, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBaseMonster, m_user_aimflag, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBaseMonster, m_guard_mode, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBaseMonster, m_playerguardian_mode, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_follow_mode, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_groundElev, FIELD_BOOLEAN ),
+	DEFINE_FIELD( CBaseMonster, m_groundElev2, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBaseMonster, m_victoryeat, FIELD_BOOLEAN ),
+
+	DEFINE_FIELD( CBaseMonster, m_pathtrack_reuse, FIELD_INTEGER ),
+
+	DEFINE_FIELD( CBaseMonster, m_fightmode, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_nevergibmode, FIELD_BOOLEAN ),
+	
+	DEFINE_FIELD( CBaseMonster, m_flNPC_Pain, FIELD_FLOAT ),
+
+	DEFINE_FIELD( CBaseMonster, m_flPlayerDamage_exp, FIELD_FLOAT ),
+	DEFINE_FIELD( CBaseMonster, m_flPlayerDamage_hate, FIELD_FLOAT ),
+
+	DEFINE_FIELD( CBaseMonster, m_MoveFailNum, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_ignoreFail, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_ignorePlayer, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_ignoreFail_MAX, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_ignoredamage, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_boltpoison, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_freezetime, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_freeze_def, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_listenlong, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_longming, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_facing_fucking_mode, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_FTSmod, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_aimenemy_mod, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_vecOldLKP, FIELD_POSITION_VECTOR ),
+	DEFINE_FIELD( CBaseMonster, m_vecAllyLKP, FIELD_POSITION_VECTOR ),
+	DEFINE_FIELD( CBaseMonster, m_singdelay_max, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_singdelay_use, FIELD_INTEGER ),
+	DEFINE_FIELD( CBaseMonster, m_MoveStuckCheck, FIELD_INTEGER ),
 };
 
 //IMPLEMENT_SAVERESTORE( CBaseMonster, CBaseToggle )
@@ -184,13 +356,24 @@ void CBaseMonster::BarnacleVictimBitten( entvars_t *pevBarnacle )
 //=========================================================
 void CBaseMonster::BarnacleVictimReleased( void )
 {
-	if (m_IdealMonsterState == MONSTERSTATE_DEAD)
-		return;
-
-	m_IdealMonsterState = MONSTERSTATE_IDLE;
-
-	pev->velocity = g_vecZero;
-	pev->movetype = MOVETYPE_STEP;
+	if(pev->health <= 0)
+	{
+		if(pev->deadflag == DEAD_NO)
+		{
+			pev->deadflag = DEAD_DYING;
+		}
+		m_die = 2;
+		m_IdealMonsterState = MONSTERSTATE_DEAD;
+		pev->movetype = MOVETYPE_TOSS;
+		SetActivity( ACT_DIESIMPLE );
+	}
+	else
+	{
+		m_IdealMonsterState = MONSTERSTATE_IDLE;
+		pev->velocity = Vector(0,0,-1);
+		pev->movetype = MOVETYPE_STEP;
+		m_barnacleres_time = 30;
+	}
 }
 
 //=========================================================
@@ -207,6 +390,30 @@ void CBaseMonster::Listen( void )
 	m_iAudibleList = SOUNDLIST_EMPTY; 
 	ClearConditions( bits_COND_HEAR_SOUND | bits_COND_SMELL | bits_COND_SMELL_FOOD );
 	m_afSoundTypes = 0;
+
+	if ( (pev->spawnflags & SF_MONSTER_WAIT_FOR_SCRIPT) )
+		return;
+	
+	if(m_listenlong > 0 || m_boltpoison > 0 || m_iTriggerCondition == 123 || m_longming >= 1 || m_crouchmode == 1 || m_freezetime > 0)
+		return;
+	
+	if(m_iTriggerCondition == 1919)
+	{
+		m_alert = 100;
+		return;
+	}
+	
+	if ( pev->spawnflags & SF_MONSTER_PRISONER || m_fightmode || m_godmode)
+		return;
+
+	if (m_pCine)
+		return;
+
+	if(m_movementGoal == MOVEGOAL_PATHCORNER)
+		return;
+
+	if ( m_MonsterState == MONSTERSTATE_PRONE || m_IdealMonsterState == MONSTERSTATE_PRONE )
+		return;
 
 	iMySounds = ISoundMask();
 
@@ -305,14 +512,83 @@ BOOL CBaseMonster::FValidateHintType( short sHint )
 //=========================================================
 void CBaseMonster::Look( int iDistance )
 {
-	int iSighted = 0;
+	if(m_cleardally >0)
+	{
+		m_cleardally -= 1;
+	}
+
+	if(m_barnacleres_time > 0)
+	{
+		m_barnacleres_time -= 1;
+	}
+	
+	if(m_cleardally_enemy >0)
+	{
+		m_cleardally_enemy -= 1;
+	}
+	if(m_cleardally_enemy_long >0)
+	{
+		m_cleardally_enemy_long -= 1;
+		if(m_cleardally_enemy_long == 0 && m_pathtrack_reuse == 1)
+		{
+			Use_PathWalk();
+		}
+	}
+	if(m_fucked_run > 0)
+	{
+		m_fucked_run -= 1;
+	}
+	if(m_igonre_npc > 0)
+	{
+		m_igonre_npc -= 1;
+	}
+
+	int	iSighted = 0;
+	if(m_alert > 0)
+	{
+		m_alert--;
+	}
+	if(m_finish > 0)
+	{
+		m_finish--;
+	}
+	if((m_alert > 0 || m_cleardally_enemy >0) && m_thinkspeed == -1)
+	{
+		m_thinkspeed = 0;
+	}
+
+	if(m_iTriggerCondition == 7456)
+	{
+		if(m_hEnemy != NULL)
+		{
+			if(m_hEnemy->IsPlayer())
+			{
+				CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "cshl623_prevent" );
+				if ( pEntity )
+				{
+					if(pEntity->pev->armortype == 0 && pEntity->pev->armorvalue == 0)
+					{
+						pEntity->pev->armorvalue = 1;
+					}
+				}
+			}
+		}
+	}
 
 	// DON'T let visibility information from last frame sit around!
 	ClearConditions( bits_COND_SEE_HATE | bits_COND_SEE_DISLIKE | bits_COND_SEE_ENEMY | bits_COND_SEE_FEAR | bits_COND_SEE_NEMESIS | bits_COND_SEE_CLIENT );
 
 	m_pLink = NULL;
 
+	if(m_boltpoison > 0 || m_iTriggerCondition == 123 || m_freezetime > 0)
+		return;
+
+	if ( m_MonsterState == MONSTERSTATE_PRONE || m_IdealMonsterState == MONSTERSTATE_PRONE )
+		return;
+
 	CBaseEntity *pSightEnt = NULL;// the current visible entity that we're dealing with
+
+	int once_use = 1;
 
 	// See no evil if prisoner is set
 	if( !FBitSet( pev->spawnflags, SF_MONSTER_PRISONER ) )
@@ -327,16 +603,337 @@ void CBaseMonster::Look( int iDistance )
 		{
 			pSightEnt = pList[i];
 			// !!!temporarily only considering other monsters and clients, don't see prisoners
-			if( pSightEnt != this && 
-				 !FBitSet( pSightEnt->pev->spawnflags, SF_MONSTER_PRISONER ) && 
-				 pSightEnt->pev->health > 0 )
+			if( pSightEnt != this && !FBitSet( pSightEnt->pev->spawnflags, SF_MONSTER_PRISONER ))
 			{
 				// the looker will want to consider this entity
 				// don't check anything else about an entity that can't be seen, or an entity that you don't care about.
-				if( IRelationship( pSightEnt ) != R_NO && FInViewCone( pSightEnt ) && !FBitSet( pSightEnt->pev->flags, FL_NOTARGET ) && FVisible( pSightEnt ) )
+				if( IRelationship( pSightEnt ) != R_NO && !FBitSet( pSightEnt->pev->flags, FL_NOTARGET ) && FVisible( pSightEnt )
+				&& !FBitSet( pSightEnt->pev->flags, FL_FROZEN ) && pSightEnt->pev->deadflag == DEAD_NO)
 				{
+					if(m_igonre_npc > 0 && FBitSet( pSightEnt->pev->flags, FL_MONSTER ) )
+					continue;
+
+					if(FClassnameIs(pSightEnt->pev,"npc_aim_flag") && m_aimflag_dist > 0)
+					{
+						if(m_user_aimflag || ( pSightEnt->pev->origin - pev->origin).Length() < m_aimflag_dist)
+						{
+							if(m_elseuseful >= 1 && m_elseuseful <= 3 && m_cAmmoLoaded > 0)
+							{
+								if(pSightEnt->pev->armorvalue < 100)
+								{
+									if(m_elseuseful < 3)
+									{
+										ClearSchedule();
+										m_cAmmoLoaded = -114;
+										m_elseuseful = 3;
+										m_thinkspeed = 2;
+									}
+									else
+									{
+										pSightEnt->pev->armorvalue += 1;
+										UTIL_Sparks( pSightEnt->pev->origin + Vector(RANDOM_LONG(-16,16),RANDOM_LONG(-16,16),RANDOM_LONG(8,24)));
+									}
+									char text[256];
+									sprintf( text, "Bomb Defusing:%1.0f%\n",pSightEnt->pev->armorvalue);
+									UTIL_CenterPrintAll( text );
+								}
+									
+								if(pSightEnt->pev->armorvalue >= 100 && pSightEnt->pev->armorvalue < 200)
+								{
+									pSightEnt->pev->armorvalue = 300;
+									FireTargets( "nuke_defuse_end", this, this, USE_TOGGLE, 0 );
+									pSightEnt->SUB_StartFadeOut();
+								}
+								continue;
+							}
+						}
+					}
+
+					if(FClassnameIs(pSightEnt->pev,"player_aim_flag"))
+					{
+						if(( pSightEnt->pev->origin - pev->origin).Length() < 96)
+							continue;
+	
+					}
+
+					if(!FVisible( pSightEnt ))
+					{
+							
+						if(m_enemyfollower == 1 && m_lovehate > 0 && m_hPlayer != NULL)
+						{
+							if ( pSightEnt->IsPlayer() )
+							{
+							}
+							else if(pSightEnt->Classify() != CLASS_PLAYER_ALLY 
+							&& pSightEnt->Classify() != CLASS_NONE
+							&& FVisible(m_hPlayer)
+							&& pSightEnt->FVisible(m_hPlayer))
+							{	
+							}
+							else
+							{
+								continue;
+							}
+						}
+						else if(m_FTSmod <= 0)
+						{
+							continue;
+						}
+						else if(m_FTSmod == 1)
+						{
+							if(pSightEnt->IsPlayer())
+							{
+							}
+							else if(m_enemyfollower == 0)
+							{
+								CBaseMonster *pEnemyMonster = pSightEnt->MyMonsterPointer();
+								if ( pEnemyMonster )
+								{
+									if ( pEnemyMonster->Classify() == CLASS_PLAYER_ALLY || pEnemyMonster->Classify() == CLASS_HUMAN_MILITARY)
+									{
+									}
+									else
+									{
+										continue;
+									}
+								}
+								else
+								{
+									continue;
+								}
+							}
+						}
+						else if(m_FTSmod == 2)
+						{
+							if ( FClassnameIs(pev, "monster_gargantua" ) )
+							{
+								if(!pSightEnt->IsPlayer())
+								{
+									continue;
+								}
+								else if(FNullEnt( FIND_CLIENT_IN_PVS( edict() ) ))
+								{
+									continue;
+								}
+							}
+							else if ( FClassnameIs(pev, "monster_human_grunt" ) )
+							{
+								if(!FClassnameIs(pSightEnt->pev,"monster_gargantua"))
+								{
+									continue;
+								}
+							}
+							else
+							{
+								continue;
+							}
+						}
+						else if(m_FTSmod == 3)
+						{
+							//float flDist = ( pSightEnt->pev->origin - pev->origin).Length();
+							if(!FClassnameIs(pSightEnt->pev,"player"))
+								continue;
+							
+							//if ( flDist > 4096 ){
+							//continue;
+							//}
+						}
+						else if(m_FTSmod == 4)
+						{
+							if(!FClassnameIs(pSightEnt->pev,"npc_aim_flag") && m_enemyfollower == 0)
+							{
+								continue;
+							}
+							else if(!pSightEnt->IsPlayer() && m_enemyfollower == 1)
+							{
+								continue;
+							}
+							if( !FInViewCone( pSightEnt ) )
+							{
+								if(m_alert == 0 && !pSightEnt->IsPlayer() && !FClassnameIs(pSightEnt->pev,"npc_aim_flag"))
+									continue;
+							}
+						}
+						else if(m_FTSmod == 5)
+						{
+							if(!pSightEnt->IsPlayer() && m_enemyfollower == 1)
+							{
+								continue;
+							}
+							if( !FInViewCone( pSightEnt ) )
+							{
+								if(m_alert == 0 && !pSightEnt->IsPlayer())
+									continue;
+							}
+						}
+						else if(m_FTSmod == 6)
+						{
+							float flDist = ( pSightEnt->pev->origin - pev->origin).Length();
+							if(FClassnameIs(pSightEnt->pev,"player"))
+								continue;
+								
+							if ( flDist > 4096 )
+								continue;
+								
+						}
+						else if(m_FTSmod == 7)
+						{
+							float flDist = ( pSightEnt->pev->origin - pev->origin).Length();
+							if ( flDist > 2048 )
+								continue;
+								
+						}
+						else if(m_FTSmod == 8)
+						{
+							if(!FClassnameIs(pSightEnt->pev,"npc_aim_flag"))
+								continue;
+								
+						}
+					}
+
+					if(m_FTSmod == 1)
+					{
+						if ( FClassnameIs( pSightEnt->pev, "monster_gargantua" )  )
+						{
+							float flDist = ( pSightEnt->pev->origin - pev->origin).Length();
+							if ( flDist > 384 )
+							{
+								continue;
+							}
+							else
+							{
+								CBaseMonster *pEnemyMonster = pSightEnt->MyMonsterPointer();
+								if ( pEnemyMonster )
+								{
+									if(pEnemyMonster->m_hEnemy != NULL)
+									{
+										if ( (pEnemyMonster->m_hEnemy)->Classify() == CLASS_PLAYER || (pEnemyMonster->m_hEnemy)->Classify() == Classify())
+										{
+											//Fuck You!
+										}
+										else
+										{
+											continue;
+										}
+									}
+									else
+									{
+										continue;
+									}
+								}
+							}
+						}
+						if ( FClassnameIs( pSightEnt->pev, "monster_human_grunt" ) )
+						{
+							CBaseMonster *pEnemyMonster = pSightEnt->MyMonsterPointer();
+							if ( pEnemyMonster )
+							{
+								if(pEnemyMonster->m_hEnemy != NULL){
+									if ( (pEnemyMonster->m_hEnemy)->Classify() == CLASS_PLAYER || (pEnemyMonster->m_hEnemy)->Classify() == Classify())
+									{
+										//Fuck You!
+									}
+									else
+									{
+										continue;
+									}
+								}
+								else
+								{
+									continue;
+								}
+							}
+						}
+					}
+
+					if(m_enemyfollower == 0 && m_FTSmod <= 1 && m_lovehate != 810)
+					{
+						if( !FInViewCone( pSightEnt ) && m_alert == 0)
+							continue;
+					}
+
+					if(m_ctmod >= 1)
+					{
+						if ( m_ctmod == 1 && fabs(pSightEnt->pev->origin.z - pev->origin.z) > 128 )
+						{
+							continue;
+						}
+						else if ( m_ctmod == 2 && fabs(pSightEnt->pev->origin.z - pev->origin.z) > 384 )
+						{
+							continue;
+						}
+						else if ( m_ctmod == 3 && fabs(pSightEnt->pev->origin.z - pev->origin.z) >= 96 )
+						{
+							continue;
+						}
+					}
+
+					if ( FClassnameIs( pSightEnt->pev, "npc_aim_flag" ) )
+					{
+						if(pSightEnt->pev->armortype == 1 && pSightEnt->pev->health > 0)
+						{
+							float flDist = ( pSightEnt->pev->origin - pev->origin).Length();
+							if ( flDist < 200 )
+							{
+								m_cleardally = 0;
+								m_FTSmod = 5;
+								m_enemyfollower = 1;
+								RouteClear();
+								m_boltpoison = 10;
+								m_hEnemy = NULL;
+								m_hOldEnemy[0] = NULL;
+								m_hOldEnemy[1] = NULL;
+								m_hOldEnemy[2] = NULL;
+								m_hOldEnemy[3] = NULL;
+								pSightEnt->pev->health = 0;
+							}
+						}
+					}
+
+					CBaseMonster *pClient;
+					pClient = pSightEnt->MyMonsterPointer();
+
+					if(pClient->m_die >= 1)
+						continue;
+
+					if ( m_lookignoremod == 1 && pClient->m_MonsterState == MONSTERSTATE_PRONE )
+						continue;
+						
+					if(IRelationship ( pSightEnt ) >= R_DL && m_singdelay_use > 0 && once_use == 1)
+					{
+						if(m_FTSmod == 0)
+						{
+							m_singdelay_use--;
+							once_use = 0;
+							continue;
+						}
+						else if( FVisible(pSightEnt) )
+						{
+							m_singdelay_use--;
+							once_use = 0;
+							continue;
+						}
+					}
 					if( pSightEnt->IsPlayer() )
 					{
+						if(m_hPlayer == NULL)
+						{
+							m_hPlayer = pSightEnt;
+						}
+						if (m_playerguardian_mode == 0 && m_enemyfollower == 1 && m_enemyfollower_combat == 1 && m_lovehate > 0)
+							continue;
+						
+						if(Classify() == CLASS_PLAYER_ALLY && m_hTargetEnt != NULL)
+						{
+							if(m_hTargetEnt == pSightEnt)
+							{
+								CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)m_hTargetEnt->pev);
+								if(pPlayer->m_iWeaponFlash >= 128)
+								{
+									m_alert = 100;
+								}
+							}
+						}
 						if( pev->spawnflags & SF_MONSTER_WAIT_TILL_SEEN )
 						{
 							CBaseMonster *pClient = pSightEnt->MyMonsterPointer();
@@ -356,6 +953,27 @@ void CBaseMonster::Look( int iDistance )
 
 						// if we see a client, remember that (mostly for scripted AI)
 						iSighted |= bits_COND_SEE_CLIENT;
+
+						if ( pSightEnt && pClient->FInViewCone( this ) )
+						{
+							float flDist = ( pSightEnt->pev->origin - pev->origin).Length();
+							if ( FClassnameIs(pev,"monster_saintna") || FClassnameIs(pev,"monster_misaliya") )
+							{
+								if ( flDist <= 200 )
+								{
+									m_cleardally += 3;
+								}
+							}
+							else{
+								if ( flDist <= 300 )
+								{
+									m_cleardally += 3;
+								}
+							}
+
+							if(m_cleardally > 30)
+								m_cleardally = 30;
+						}
 					}
 
 					pSightEnt->m_pLink = m_pLink;
@@ -363,8 +981,17 @@ void CBaseMonster::Look( int iDistance )
 
 					if( pSightEnt == m_hEnemy )
 					{
-						// we know this ent is visible, so if it also happens to be our enemy, store that now.
-						iSighted |= bits_COND_SEE_ENEMY;
+						if(m_iTriggerCondition != 1919)
+						{
+							// we know this ent is visible, so if it also happens to be our enemy, store that now.
+							iSighted |= bits_COND_SEE_ENEMY;
+							m_hasenemy_nosee = 0;
+						}
+						else if(pev->health == pev->max_health)
+						{
+							iSighted |= bits_COND_SEE_ENEMY;
+							m_hasenemy_nosee = 0;
+						}
 					}
 
 					// don't add the Enemy's relationship to the conditions. We only want to worry about conditions when
@@ -372,13 +999,19 @@ void CBaseMonster::Look( int iDistance )
 					switch( IRelationship( pSightEnt ) )
 					{
 					case R_NM:
-						iSighted |= bits_COND_SEE_NEMESIS;		
+						iSighted |= bits_COND_SEE_NEMESIS;
+						m_cleardally_enemy = 5;
+						m_cleardally_enemy_long = 60;		
 						break;
 					case R_HT:
-						iSighted |= bits_COND_SEE_HATE;		
+						iSighted |= bits_COND_SEE_HATE;
+						m_cleardally_enemy = 5;
+						m_cleardally_enemy_long = 60;		
 						break;
 					case R_DL:
 						iSighted |= bits_COND_SEE_DISLIKE;
+						m_cleardally_enemy = 5;
+						m_cleardally_enemy_long = 60;
 						break;
 					case R_FR:
 						iSighted |= bits_COND_SEE_FEAR;
@@ -394,7 +1027,298 @@ void CBaseMonster::Look( int iDistance )
 		}
 	}
 
-	SetConditions( iSighted );
+	if(!FBitSet( pev->spawnflags, SF_MONSTER_PRISONER ))
+		SetConditions( iSighted );
+
+	if(m_singdelay_use < m_singdelay_max && once_use == 1 && m_cleardally_enemy_long == 0)
+		m_singdelay_use = m_singdelay_max;
+}
+
+void CBaseMonster::Freeze_Monster ( int time )
+{
+		if ( pev->deadflag == DEAD_NO && pev->takedamage)
+		{
+
+			if(m_MonsterState == MONSTERSTATE_SCRIPT || m_IdealMonsterState == MONSTERSTATE_SCRIPT)
+				return;
+
+			if(m_freeze_def == 3)
+			{
+				time -= 30;
+			}
+			else if(m_freeze_def == 2)
+			{
+				time -= 20;
+			}
+			else if(m_freeze_def == 1)
+			{
+				time -= 10;
+			}
+
+			if(time <= 5)
+				return;
+
+			if(m_freezetime <= 2)
+			{
+				m_hEnemy = NULL;
+				ClearSchedule();
+				RouteClear();
+				m_flGroundSpeed = 0;
+				pev->yaw_speed = 0;
+				SetActivity( ACT_IDLE );
+			}
+
+			if(m_freezetime < time)
+			{
+				m_freezetime = time;
+			}
+		}
+}
+
+void CBaseMonster::Hunt_Stand_Set( int mode )
+{
+	if(mode == 0)
+	{
+		ClearSchedule();
+		SetActivity( ACT_IDLE );
+		SetState( MONSTERSTATE_HUNT );
+		m_enemyfollower = 0;
+		pev->movetype = MOVETYPE_STEP;
+		pev->effects &= ~EF_NODRAW;
+		pev->velocity = g_vecZero;
+		pev->yaw_speed = 0;
+		RouteClear();
+		m_cleardally_enemy = 0;
+		m_cleardally_enemy_long = 0;
+		m_hEnemy = NULL;
+		m_hOldEnemy[0] = NULL;
+		m_hOldEnemy[1] = NULL;
+		m_hOldEnemy[2] = NULL;
+		m_hOldEnemy[3] = NULL;
+
+		if(m_playerguardian_mode > 0 && m_hPlayer != NULL)
+		{
+			m_playerguardian_mode = 0;
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)m_hPlayer->pev);
+			pPlayer->m_wdoor_mynpc = NULL;
+			pPlayer->m_guard_mynpc = 0;
+		}
+		pev->owner   = NULL;
+		pev->flags	|= FL_NOTARGET;
+		m_godmode	 = TRUE;
+	}
+	else if(mode == 1)
+	{
+		ClearSchedule();
+		SetState( MONSTERSTATE_HUNT );
+		m_die = 0;
+		m_dieseq	= 0;
+		pev->deadflag = DEAD_NO;
+		pev->movetype = MOVETYPE_STEP;
+		pev->health = pev->max_health;
+		SetActivity( ACT_IDLE );
+		Forget( bits_MEMORY_KILLED );
+		pev->skin = 0;
+		pev->body = 0;
+		UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+		pev->flags		|= FL_NOTARGET;
+		m_godmode		 = TRUE;
+		RouteClear();
+		m_enemyfollower = 0;
+		m_cleardally_enemy = 0;
+		m_cleardally_enemy_long = 0;
+		m_hEnemy = NULL;
+		m_hOldEnemy[0] = NULL;
+		m_hOldEnemy[1] = NULL;
+		m_hOldEnemy[2] = NULL;
+		m_hOldEnemy[3] = NULL;
+		pev->effects &= ~EF_NODRAW;
+		m_killedbydmg = 0;
+	}
+	else if(mode == 2)
+	{
+		if(pev->deadflag == DEAD_NO)
+		{
+			SetActivity( ACT_IDLE );
+			SetState( MONSTERSTATE_IDLE );
+			if(m_new_ally_type){
+				m_enemyfollower = 1;
+			}
+			else
+			{
+				m_hTargetEnt = m_hPlayer;
+			}
+			SetYawSpeed();
+			ClearSchedule();
+			pev->movetype = MOVETYPE_STEP;
+			pev->flags &= ~FL_NOTARGET;
+			m_godmode = FALSE;
+			m_selfmode = FALSE;
+		}
+	}
+	else if(mode == 3)
+	{
+		ClearSchedule();
+		SetState( MONSTERSTATE_IDLE );
+		m_die = 0;
+		m_dieseq	= 0;
+		pev->deadflag = DEAD_NO;
+		pev->movetype = MOVETYPE_STEP;
+		pev->health = pev->max_health;
+		SetActivity( ACT_IDLE );
+		Forget( bits_MEMORY_KILLED );
+		pev->skin = 0;
+		pev->body = 0;
+		UTIL_SetSize(pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX);
+		pev->flags &= ~FL_NOTARGET;
+		pev->effects &= ~EF_NODRAW;
+		m_godmode = FALSE;
+		m_killedbydmg = 0;
+	}
+}
+
+void CBaseMonster::Alert_Ally( CBaseEntity *Attacker )
+{
+	if( m_MonsterState == MONSTERSTATE_SCRIPT)
+		return;
+	
+	if ( m_MonsterState == MONSTERSTATE_PRONE || m_IdealMonsterState == MONSTERSTATE_PRONE )
+		return;
+	
+	if(m_boltpoison > 0 || m_selfmode == TRUE)
+		return;
+
+	CBaseEntity *pEntity = NULL;
+	Vector vecSpot;
+	Vector vecSrc = BodyTarget_e( pev->origin );
+	TraceResult	tr;
+	while ((pEntity = UTIL_FindEntityInSphere( pEntity, vecSrc, 1536 )) != NULL)
+	{
+		CBaseMonster *pMonster = pEntity->MyMonsterPointer();
+		if ( pMonster )
+		{
+			if(pMonster->Classify() == Classify() )
+			{
+				if ( pMonster->IsAlive() && pMonster->m_selfmode == FALSE && pMonster->m_igonre_npc == 0)
+				{
+					vecSpot = pEntity->BodyTarget_e( vecSrc );
+					UTIL_TraceLine ( vecSrc, vecSpot, ignore_monsters, ENT(pev), &tr );
+					if ( tr.flFraction == 1.0 || tr.pHit == pEntity->edict() )
+					{
+						alert_chese:
+						if(Attacker != NULL)
+						{
+							if(Attacker->Classify() != pMonster->Classify() && Attacker->Classify() != Classify() )
+							{
+								if(Attacker->Classify() == CLASS_PLAYER && pMonster->Classify() == CLASS_PLAYER_ALLY || Attacker->Classify() == CLASS_PLAYER && pMonster->Classify() == CLASS_HUMAN_PASSIVE)
+								{
+								}
+								else
+								{
+									pMonster->PushEnemy( Attacker, Attacker->pev->origin );
+								}
+							}
+						}
+						else if(pMonster != this && pMonster->m_hEnemy == NULL)
+						{
+							pMonster->m_vecAllyLKP = pev->origin;
+							pMonster->m_vecOldLKP = pMonster->pev->origin;
+							pMonster->m_allydeadcheck = 1;
+							pMonster->m_alert = 100;
+							if( pMonster->m_MonsterState == MONSTERSTATE_IDLE && pMonster->pev->health > 0)
+							{
+								if(pMonster->m_movementGoal == MOVEGOAL_PATHCORNER)
+								{
+									pMonster->ClearSchedule();
+									pMonster->m_cleardally_enemy_long = 60;
+								}
+								pMonster->SetState( MONSTERSTATE_ALERT );
+							}
+						}
+					}
+					else
+					{
+						if( pMonster->IsAlive() && (pMonster->pev->origin - pev->origin ).Length() < 256)
+							goto alert_chese;
+					}
+				}
+			}
+		}
+	}
+}
+
+void CBaseMonster::Alert_Clients( CBaseEntity *Attacker )
+{
+	if( m_MonsterState == MONSTERSTATE_SCRIPT)
+		return;
+	
+	if ( m_MonsterState == MONSTERSTATE_PRONE || m_IdealMonsterState == MONSTERSTATE_PRONE )
+		return;
+	
+	if(m_boltpoison > 0 || m_selfmode == TRUE)
+		return;
+	
+	CBaseEntity *pEntity = NULL;
+	Vector vecSpot;
+	Vector vecSrc = EyePosition();
+	TraceResult	tr;
+	while ((pEntity = UTIL_FindEntityInSphere( pEntity, vecSrc, 2048 )) != NULL)
+	{
+		CBaseMonster *pMonster = pEntity->MyMonsterPointer();
+		if ( pMonster )
+		{
+			if( pMonster->Classify() == Classify() && pMonster->m_selfmode == FALSE && pMonster->m_rpgms_inteam == 0)
+			{
+				if ( pMonster->IsAlive() )
+				{
+					vecSpot = pEntity->EyePosition();
+					UTIL_TraceLine ( vecSrc, vecSpot, ignore_monsters, ENT(pev), &tr );
+					if ( tr.flFraction == 1.0 || tr.pHit == pEntity->edict() )
+					{
+						alert_chese:
+						if(Attacker != NULL)
+						{
+							if(pMonster->m_lovehate == 810)
+							{
+								pMonster->m_lovehate = 0;
+							}
+							else
+							{
+								pMonster->m_lovehate -= 60;
+							}
+							
+							if(pMonster->m_lovehate <= 0)
+							{
+								if(Attacker->Classify() != CLASS_PLAYER)
+									pMonster->PushEnemy( Attacker, Attacker->pev->origin );
+										
+							}
+						}
+						else if(pMonster != this && pMonster->m_hEnemy == NULL)
+						{
+							pMonster->m_vecAllyLKP = pev->origin;
+							pMonster->m_vecOldLKP = pMonster->pev->origin;
+							pMonster->m_allydeadcheck = 1;
+							pMonster->m_alert = 100;
+							if( pMonster->m_MonsterState == MONSTERSTATE_IDLE && pMonster->pev->health > 0)
+								pMonster->SetState( MONSTERSTATE_ALERT );
+								
+						}
+					}
+					else
+					{
+						if(m_die_dont_alert == 0)
+						{
+							if( pMonster->IsAlive() && (pMonster->pev->origin - pev->origin ).Length() < 256)
+								goto alert_chese;
+								
+						}
+					}
+				}
+			}
+		}
+	}
+
 }
 
 //=========================================================
@@ -414,7 +1338,10 @@ int CBaseMonster::ISoundMask( void )
 // should react to. Right now responds only to nearest sound.
 //=========================================================
 CSound *CBaseMonster::PBestSound( void )
-{	
+{
+	if(m_listenlong > 0 || m_boltpoison > 0)
+		return NULL;
+
 	int iThisSound; 
 	int iBestSound = -1;
 	float flBestDist = 8192;// so first nearby sound will become best so far.
@@ -521,16 +1448,404 @@ CSound *CBaseMonster::PBestScent( void )
 //=========================================================
 void CBaseMonster::MonsterThink( void )
 {
-	pev->nextthink = gpGlobals->time + 0.1f;// keep monster thinking.
+	if(m_playerguardian_mode == 20)
+	{
+		pev->origin.z += 1;
+		DROP_TO_FLOOR ( ENT(pev) );
+		pev->movetype = MOVETYPE_STEP;
+		pev->velocity = g_vecZero;
+
+		if (!WALK_MOVE ( ENT(pev), 0, 0, WALKMOVE_NORMAL ) )
+		{
+			m_playerguardian_mode = 1;
+			UTIL_SetOrigin( pev, pev->origin + Vector(0,0,16384) );
+			pev->movetype = MOVETYPE_NONE;
+			pev->effects |= EF_NODRAW;
+		}
+		else if(m_hPlayer != NULL)
+		{
+			m_playerguardian_mode = 0;
+			pev->flags &= ~FL_NOTARGET;
+			m_no_cover_mode = 0;
+			pev->effects &= ~EF_NODRAW;
+			CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)m_hPlayer->pev);
+			pPlayer->m_wdoor_mynpc = NULL;
+			pPlayer->m_guard_mynpc = 0;
+			FX_Explosion( Center(), 102);
+			pev->owner = NULL;
+		}
+	}
+	else if(m_playerguardian_mode == 1)
+	{
+		if(m_hPlayer)
+		{
+			if(pev->deadflag != DEAD_NO)
+			{
+				pev->effects &= ~EF_NODRAW;
+				m_no_cover_mode = 0;
+				CBasePlayer *pPlayer = GetClassPtr((CBasePlayer *)m_hPlayer->pev);
+				pPlayer->m_wdoor_mynpc = NULL;
+				pPlayer->m_guard_mynpc = 0;
+				m_playerguardian_mode = 0;
+				pev->flags &= ~FL_NOTARGET;
+				FX_Explosion( Center(), 102);
+				pev->owner = NULL;
+			}
+			else
+			{
+				if (pev->angles.y != m_hPlayer->pev->angles.y)
+					pev->angles.y = m_hPlayer->pev->angles.y;
+						
+
+				if ( IsMoving() )
+				{
+					RouteClear();
+					m_flGroundSpeed = 0;
+					pev->velocity = g_vecZero;
+				}
+
+				UTIL_MakeVectors( m_hPlayer->pev->angles );
+				UTIL_SetOrigin( pev, m_hPlayer->pev->origin + gpGlobals->v_forward * -16);
+			}
+		}
+		else if(m_rpgms_inteam == 0)
+		{
+			pev->effects &= ~EF_NODRAW;
+			m_no_cover_mode = 0;
+			m_playerguardian_mode = 0;
+			pev->flags &= ~FL_NOTARGET;
+			pev->owner = NULL;
+		}
+	}
+
+	if(pev->deadflag == DEAD_DEAD)
+	{
+
+		if( !FNullEnt(FIND_CLIENT_IN_PVS(edict())) && m_diefadeout == 0)
+		{
+			if ( pev->waterlevel >= 1 && pev->movetype != MOVETYPE_FLY )
+			{
+				pev->gravity = 0.1;
+				if ( pev->waterlevel >= 2 )
+				{
+					if (pev->velocity.Length() > 60){
+						pev->velocity = pev->velocity * 0.8;
+					}
+					else if (pev->velocity.Length() < 30){
+						if ( pev->flags & FL_ONGROUND ){
+						pev->flags &= ~FL_ONGROUND;
+						}
+						pev->velocity.z += 1.0;
+						pev->velocity = pev->velocity * 1.1;
+					}
+				}
+
+				if (pev->watertype == CONTENT_LAVA)
+				{
+					TakeDamage(VARS(eoNullEntity), VARS(eoNullEntity), 20 * pev->waterlevel, DMG_BURN);
+				}
+				else if (pev->watertype == CONTENT_SLIME)
+				{
+					TakeDamage(VARS(eoNullEntity), VARS(eoNullEntity), 10 * pev->waterlevel, DMG_ACID);
+				}
+
+			}
+
+			if (pev->velocity == g_vecZero)
+			{
+				m_droptofloor++;
+				if(m_droptofloor >= 5)
+				{
+					pev->velocity.z -= 0.1;
+					m_droptofloor = 0;
+				}
+			}
+			else
+			{
+				m_droptofloor = 0;
+			}
+		}
+
+		if(m_thinkspeed == 3)
+		{
+			pev->nextthink = gpGlobals->time + 0.02;
+		}
+		else if(m_thinkspeed == 2)
+		{
+			pev->nextthink = gpGlobals->time + 0.2;
+		}
+		else if(m_thinkspeed == -1)
+		{
+			pev->nextthink = gpGlobals->time + 0.3;
+		}
+		else
+		{
+			pev->nextthink = gpGlobals->time + 0.1;
+		}
+
+		if(m_die_for_back >= 1)
+		{
+			if(m_flDeadTime + 5.0 <= gpGlobals->time)
+			{
+				if(m_die_for_back == 1 && m_killed_exp > 1)
+				{
+					m_killed_exp = 1;
+				}
+				m_die_for_back--;
+				ClearSchedule();
+				SetState( MONSTERSTATE_IDLE );
+				m_die = 0;
+				m_dieseq	= 0;
+				pev->deadflag = DEAD_NO;
+				pev->movetype = MOVETYPE_STEP;
+				pev->health = pev->max_health;
+				SetActivity( ACT_IDLE );
+				Forget( bits_MEMORY_KILLED );
+				m_freezetime = 0;
+				m_alert = 100;
+				FX_Explosion( Center(), 102);
+			}
+		}
+
+	}
+
+	if(pev->deadflag == DEAD_NO)
+	{
+
+		if(m_trainstuck > 0)
+		{
+			pev->origin.z += 1;
+			m_trainstuck--;
+		}
+
+		if (m_MoveStuckCheck == 1)
+		{
+			float dist;
+			if ( IsMoving() )
+			{
+				dist = (m_vecOldMovePoint - pev->origin).Length();
+				if(dist <= 4)
+				{
+					m_MovePointMax += 1;
+					if(m_MovePointMax > 10)
+					{
+						m_hEnemy = NULL;
+						ClearSchedule();
+						m_MovePointMax = 0;
+						pev->velocity.x += RANDOM_LONG(-250,250);
+						pev->velocity.y += RANDOM_LONG(-250,250);
+						pev->velocity.z += 50;
+					}
+				}
+				else
+				{
+					m_MovePointMax = 0;
+				}
+					m_vecOldMovePoint = pev->origin;
+			}
+			else
+			{	
+			}
+		}
+
+		if (m_groundElev2 == TRUE)
+		{
+			TraceResult tr;
+			UTIL_TraceLine ( Center(), pev->origin, dont_ignore_monsters, ENT(pev), &tr );
+			if(tr.vecEndPos.z > pev->origin.z)
+			{
+				UTIL_SetOrigin ( pev, pev->origin + Vector(0,0,1) );
+			}
+		}
+
+		if( !FNullEnt(FIND_CLIENT_IN_PVS(edict())) )
+		{
+			if(m_MonsterState != MONSTERSTATE_PRONE && m_IdealMonsterState != MONSTERSTATE_PRONE
+			&& pev->movetype == MOVETYPE_STEP && !m_groundElev && m_freezetime == 0)
+			{
+				m_droptofloor++;
+				if(m_droptofloor >= 4)
+				{
+					TraceResult tr;
+					UTIL_TraceLine ( Center(), pev->origin - Vector(0,0,4), dont_ignore_monsters, ENT(pev), &tr );
+					if(pev->velocity.Length() <= 10 && tr.flFraction == 1.0)
+						pev->velocity.z -= 1;
+					m_droptofloor = 0;
+				}
+			}
+		}
+		
+
+		if(m_boltpoison > 0)
+			m_boltpoison -= 1;
+			
+		if(m_freezetime > 0)
+		{
+				m_freezetime -= 1;
+				if(m_freezetime <= 1)
+				{
+					ChangeSchedule( GetScheduleOfType( SCHED_ALERT_STAND ) );
+					SetActivity( ACT_IDLE );
+					SetYawSpeed();
+				}
+		}
+		if(m_listenlong > 0)
+			m_listenlong -= 1;
+			
+		if(m_ignorePlayer > 0)
+			m_ignorePlayer -= 1;
+			
+		if ( m_candrownwater >= 1 && IsAlive() && pev->movetype != MOVETYPE_FLY)
+		{
+			if (pev->waterlevel >= 2)
+			{
+				if(pev->health > 0)
+				{
+					if(m_candrownwater == 1)
+					{
+						m_candrownwater = 2;
+						pev->air_finished = gpGlobals->time + 10.0;
+					}
+					if (pev->air_finished < gpGlobals->time)
+					{
+						Killed( pev, GIB_NEVER );
+						UTIL_Bubbles( pev->origin - Vector( 12, 12, -48 ), pev->origin + Vector( 12, 12, 96 ), 16 );
+					}
+				}
+			}
+			else if ( pev->waterlevel <= 1 && m_candrownwater >= 2 )
+			{
+				m_candrownwater = 1;
+				pev->air_finished = 0;
+			}
+		}
+
+		if ( pev->waterlevel >= 1)
+		{
+			if (pev->watertype == CONTENT_LAVA)
+			{
+				TakeDamage(VARS(eoNullEntity), VARS(eoNullEntity), 60 * pev->waterlevel, DMG_BURN);
+			}
+			else if (pev->watertype == CONTENT_SLIME)
+			{
+				TakeDamage(VARS(eoNullEntity), VARS(eoNullEntity), 30 * pev->waterlevel, DMG_ACID);
+			}
+		}
+
+		if(pev->movetype == MOVETYPE_STEP)
+		{
+			if(m_ignoreFail == 1919)
+			{
+			}
+			else
+			{
+				if(m_ignoreFail_MAX <= 0)
+				{
+					m_ignoreFail = -1;
+				}
+				else
+				{
+					if(m_ignoreFail > m_ignoreFail_MAX)
+					{
+						m_ignoreFail = -20;
+					}
+					else if(m_ignoreFail < 0 && m_ignoreFail > -100)
+					{
+						m_ignoreFail += 1;
+					}
+				}
+			}
+		}
+		else
+		{
+			m_ignoreFail = -1;
+		}
+
+		if(m_ignoreFail > 0 && !IsMoving() )
+		{
+			if(m_ignoreFail == 1919)
+			{
+			}
+			else
+			{
+				m_ignoreFail -= 1;
+			}
+		}	
+	
+		if(m_notarget_hide > 0)
+		{
+			pev->flags |= FL_FROZEN;
+			if(m_notarget_hide < 1919)
+			{
+				m_notarget_hide--;
+				if(m_notarget_hide <= 0)
+					pev->flags &= ~FL_FROZEN;
+				
+			}
+		}
+		else if(m_notarget_hide <= 0 && FBitSet( pev->flags, FL_FROZEN ) ){
+			pev->flags &= ~FL_FROZEN;
+		}
+
+		if(m_forcefuckdoor)
+		{
+			if(IsMoving() && m_OpenDoorWaitTime <= gpGlobals->time)
+			{
+				m_OpenDoorWaitTime = gpGlobals->time + 0.5;
+				TraceResult tr;
+				UTIL_MakeVectors(pev->angles);
+				Vector vecSrc	= BodyTarget(pev->origin);
+				Vector vecEnd	= vecSrc + gpGlobals->v_forward * (pev->maxs.x + 64);
+				UTIL_TraceLine( vecSrc, vecEnd, dont_ignore_monsters, ENT( pev ), &tr );
+				CBaseEntity *pEntity = CBaseEntity::Instance(tr.pHit);
+				if(tr.flFraction < 1.0)
+				{
+					if ( FClassnameIs( pEntity->pev, "func_door" ) || FClassnameIs( pEntity->pev, "func_door_rotating" ) )
+					{
+						pEntity->TakeDamage(pev, pev, 0, DMG_OPEN_DOOR);
+						m_OpenDoorWaitTime = gpGlobals->time + 2.0;
+					}
+				}
+			}
+		}
+	}
+
+	if(m_rpgms_type == 1)
+	{
+		if(m_rpgms_exp >= 1000)
+		{
+			m_rpgms_exp -= 1000;
+			m_rpgms_level += 1;
+			if(m_rpgms_level > 99)
+				m_rpgms_level = 99;
+		}
+	}
 
 	RunAI();
+
+	if(m_thinkspeed == 3)
+	{
+		pev->nextthink = gpGlobals->time + 0.02;
+	}
+	else if(m_thinkspeed == 2)
+	{
+		pev->nextthink = gpGlobals->time + 0.2;
+	}
+	else if(m_thinkspeed == -1)
+	{
+		pev->nextthink = gpGlobals->time + 0.3;
+	}
+	else
+	{
+		pev->nextthink = gpGlobals->time + 0.1;
+	}
 
 	float flInterval = StudioFrameAdvance( ); // animate
 
 	// start or end a fidget
 	// This needs a better home -- switching animations over time should be encapsulated on a per-activity basis
 	// perhaps MaintainActivity() or a ShiftAnimationOverTime() or something.
-	if( m_MonsterState != MONSTERSTATE_SCRIPT && m_MonsterState != MONSTERSTATE_DEAD && m_Activity == ACT_IDLE && m_fSequenceFinished )
+	if( m_MonsterState != MONSTERSTATE_HUNT && m_MonsterState != MONSTERSTATE_SCRIPT && m_MonsterState != MONSTERSTATE_DEAD && m_Activity == ACT_IDLE && m_fSequenceFinished )
 	{
 		int iSequence;
 
@@ -555,7 +1870,7 @@ void CBaseMonster::MonsterThink( void )
 
 	DispatchAnimEvents( flInterval );
 
-	if( !MovementIsComplete() )
+	if( !MovementIsComplete() && m_freezetime == 0 )
 	{
 		Move( flInterval );
 	}
@@ -607,9 +1922,15 @@ int CBaseMonster::IgnoreConditions( void )
 void CBaseMonster::RouteClear( void )
 {
 	RouteNew();
-	m_movementGoal = MOVEGOAL_NONE;
-	m_movementActivity = ACT_IDLE;
-	Forget( bits_MEMORY_MOVE_FAILED );
+	if(m_movementGoal == MOVEGOAL_PATHCORNER && m_cleardally_enemy == 0 && pev->deadflag == DEAD_NO )
+	{
+	}
+	else
+	{
+		m_movementGoal = MOVEGOAL_NONE;
+		m_movementActivity = ACT_IDLE;
+		Forget( bits_MEMORY_MOVE_FAILED );
+	}
 }
 
 //=========================================================
@@ -849,7 +2170,7 @@ void CBaseMonster::RouteSimplify( CBaseEntity *pTargetEnt )
 			outRoute[outCount] = m_Route[m_iRouteIndex + i];
 			outCount++;
 		}
-		else if( CheckLocalMove( vecStart, m_Route[m_iRouteIndex+i + 1].vecLocation, pTargetEnt, NULL ) == LOCALMOVE_VALID )
+		else if( CheckLocalMove( vecStart, m_Route[m_iRouteIndex+i + 1].vecLocation, pTargetEnt, NULL, 1 ) == LOCALMOVE_VALID )
 		{
 			// Skip vert
 			continue;
@@ -865,12 +2186,12 @@ void CBaseMonster::RouteSimplify( CBaseEntity *pTargetEnt )
 			vecSplit = ( m_Route[m_iRouteIndex + i].vecLocation + vecStart ) * 0.5f;
 
 			int iType = ( m_Route[m_iRouteIndex + i].iType | bits_MF_TO_DETOUR ) & ~bits_MF_NOT_TO_MASK;
-			if( CheckLocalMove( vecStart, vecTest, pTargetEnt, NULL ) == LOCALMOVE_VALID )
+			if( CheckLocalMove( vecStart, vecTest, pTargetEnt, NULL, 1  ) == LOCALMOVE_VALID )
 			{
 				outRoute[outCount].iType = iType;
 				outRoute[outCount].vecLocation = vecTest;
 			}
-			else if( CheckLocalMove( vecSplit, vecTest, pTargetEnt, NULL ) == LOCALMOVE_VALID )
+			else if( CheckLocalMove( vecSplit, vecTest, pTargetEnt, NULL, 1 ) == LOCALMOVE_VALID )
 			{
 				outRoute[outCount].iType = iType;
 				outRoute[outCount].vecLocation = vecSplit;
@@ -927,7 +2248,17 @@ BOOL CBaseMonster::FBecomeProne( void )
 		pev->flags -= FL_ONGROUND;
 	}
 
-	m_IdealMonsterState = MONSTERSTATE_PRONE;
+	m_hEnemy = NULL;
+	m_hOldEnemy[0] = NULL;
+	m_hOldEnemy[1] = NULL;
+	m_hOldEnemy[2] = NULL;
+	m_hOldEnemy[3] = NULL;
+	ClearSchedule();
+	SetState( MONSTERSTATE_PRONE );
+	//m_IdealMonsterState = MONSTERSTATE_PRONE;
+	RouteClear();
+
+	//pev->movetype = MOVETYPE_TOSS;
 	return TRUE;
 }
 
@@ -1003,6 +2334,24 @@ void CBaseMonster::CheckAttacks( CBaseEntity *pTarget, float flDist )
 	// Clear all attack conditions
 	ClearConditions( bits_COND_CAN_RANGE_ATTACK1 | bits_COND_CAN_RANGE_ATTACK2 | bits_COND_CAN_MELEE_ATTACK1 |bits_COND_CAN_MELEE_ATTACK2 );
 
+	if(m_hEnemy != NULL)
+	{
+		if(m_enemyfollower == 1 && m_lovehate > 0)
+		{
+			if(m_hEnemy->IsPlayer())
+			{
+				if(m_enemyfollower_combat == 1)
+				{
+					m_enemyfollower_combat = 0;
+				}
+				goto dont_attack;
+			}
+		}
+	}
+
+	if(FClassnameIs( pTarget->pev, "npc_aim_flag" ) || FClassnameIs( pTarget->pev, "player_aim_flag" ) )
+		goto dont_attack;
+
 	if( m_afCapability & bits_CAP_RANGE_ATTACK1 )
 	{
 		if( CheckRangeAttack1( flDot, flDist ) )
@@ -1023,6 +2372,7 @@ void CBaseMonster::CheckAttacks( CBaseEntity *pTarget, float flDist )
 		if( CheckMeleeAttack2( flDot, flDist ) )
 			SetConditions( bits_COND_CAN_MELEE_ATTACK2 );
 	}
+	dont_attack:;
 }
 
 //=========================================================
@@ -1031,6 +2381,10 @@ void CBaseMonster::CheckAttacks( CBaseEntity *pTarget, float flDist )
 //=========================================================
 BOOL CBaseMonster::FCanCheckAttacks( void )
 {
+	if(!HasConditions(bits_COND_SEE_ENEMY) && m_hasenemy_nosee < 100)
+	{
+		m_hasenemy_nosee++;
+	}
 	if( HasConditions( bits_COND_SEE_ENEMY ) && !HasConditions( bits_COND_ENEMY_TOOFAR ) )
 	{
 		return TRUE;
@@ -1051,6 +2405,7 @@ int CBaseMonster::CheckEnemy( CBaseEntity *pEnemy )
 
 	iUpdatedLKP = FALSE;
 	ClearConditions( bits_COND_ENEMY_FACING_ME );
+	ClearConditions( bits_COND_NEW_COVER_MODE );
 
 	if( !FVisible( pEnemy ) )
 	{
@@ -1064,7 +2419,81 @@ int CBaseMonster::CheckEnemy( CBaseEntity *pEnemy )
 	{
 		SetConditions( bits_COND_ENEMY_DEAD );
 		ClearConditions( bits_COND_SEE_ENEMY | bits_COND_ENEMY_OCCLUDED );
+		m_alert = 100;
+
+		if(m_enemyfollower == 1 && m_new_ally_type)
+		{
+			m_enemyfollower_combat = 0;
+		}
 		return FALSE;
+	}
+
+	if(pEnemy->IsPlayer())
+	{
+		if(m_enemyfollower == 0 && m_new_ally_type && m_lovehate > 0)
+		{
+			return FALSE;
+		}
+		else if(m_enemyfollower == 1 && m_new_ally_type && m_lovehate > 0)
+		{
+			if ( HasConditions( bits_COND_SEE_ENEMY ) )
+			{
+				float flDist = ( pEnemy->pev->origin - pev->origin).Length();
+						
+				if(m_cover_fromplayer == TRUE)
+				{
+					if ( flDist >= 768)
+					{
+						m_cover_fromplayer = FALSE;
+					}
+					else if ( flDist <= 192)
+					{
+						if(m_igonre_npc <= 0)
+							m_cover_fromplayer = FALSE;
+					}
+					else if(m_igonre_npc < 5)
+					{
+						m_igonre_npc = 5;
+					}
+				}
+
+							
+				if ( flDist <= 128 )
+				{
+					if ( m_IdealActivity == m_movementActivity )
+					{
+						m_IdealActivity = GetStoppedActivity();
+					}
+					RouteClear();
+				}
+				else if ( flDist <= 256 )
+				{
+					if(m_movementActivity == ACT_RUN)
+					{
+						m_movementActivity = ACT_WALK;
+					}
+				}
+				else
+				{
+					if(m_movementActivity == ACT_WALK)
+						m_movementActivity = ACT_RUN;	
+				}
+			}
+			else
+			{
+				if(m_movementActivity == ACT_WALK)
+					m_movementActivity = ACT_RUN;
+							
+			}
+		}
+	}
+	else
+	{
+		if(m_enemyfollower == 1 && m_new_ally_type)
+		{
+			if ( HasConditions( bits_COND_SEE_ENEMY ) )
+				m_enemyfollower_combat = 1;
+		}
 	}
 
 	Vector vecEnemyPos = pEnemy->pev->origin;
@@ -1097,6 +2526,111 @@ int CBaseMonster::CheckEnemy( CBaseEntity *pEnemy )
 
 		if( pEnemyMonster )
 		{
+			if(pEnemyMonster->FInViewCone2 ( this ))
+			{
+				m_HenemyEnemyMe2 = 2;
+			}
+			else if(pEnemyMonster->FInViewCone3 ( this ))
+			{
+				m_HenemyEnemyMe2 = 1;
+			}
+			else
+			{
+				m_HenemyEnemyMe2 = 0;
+			}
+
+			if(pEnemyMonster->m_hEnemy != NULL)
+			{
+				if(pEnemyMonster->m_hEnemy != this){
+					if(pEnemyMonster->FInViewCone3 ( this ))
+					{
+						m_HenemyEnemyMe = 1;
+					}
+					else{
+						m_HenemyEnemyMe = 0;
+					}
+				}
+				else if(pEnemyMonster->m_hEnemy == this)
+				{
+					if(pEnemyMonster->HasConditions(bits_COND_CAN_RANGE_ATTACK1)
+					|| pEnemyMonster->HasConditions(bits_COND_CAN_RANGE_ATTACK2)
+					|| pEnemyMonster->HasConditions(bits_COND_CAN_MELEE_ATTACK1)
+					|| pEnemyMonster->HasConditions(bits_COND_CAN_MELEE_ATTACK2)  )
+					{
+						if ( FClassnameIs( m_hEnemy->pev, "monster_houndeye") )
+						{
+							m_HenemyEnemyMe = 1;
+						}
+						else
+						{
+							m_HenemyEnemyMe = 3;
+						}
+					}
+					else if(pEnemyMonster->pev->sequence == LookupActivity ( ACT_RELOAD ) 
+					|| pEnemyMonster->pev->sequence == LookupActivity ( ACT_COWER ))
+					{
+						m_HenemyEnemyMe = 0;
+					}
+					else if(pEnemyMonster->FInViewCone3 ( this ) )
+					{
+						m_HenemyEnemyMe = 2;
+					}
+					else
+					{
+						m_HenemyEnemyMe = 1;
+					}
+				}
+
+				if(FClassnameIs(pev,"monster_misaliya") || FClassnameIs(pev,"monster_wisebeast")
+				|| FClassnameIs(pev,"monster_hime") || FClassnameIs(pev,"monster_mario"))
+				{
+					float flDist = ( pEnemy->pev->origin - pev->origin).Length();
+					if(pEnemyMonster->m_hEnemy == this)
+					{
+						if(pEnemyMonster->HasConditions(bits_COND_CAN_RANGE_ATTACK1)
+						|| pEnemyMonster->HasConditions(bits_COND_CAN_RANGE_ATTACK2)
+						|| pEnemyMonster->HasConditions(bits_COND_CAN_MELEE_ATTACK1)
+						|| pEnemyMonster->HasConditions(bits_COND_CAN_MELEE_ATTACK2) 
+						|| flDist <= pEnemyMonster->m_attack_dist)
+							m_HenemyEnemyMe = 4;
+					}
+					else
+					{
+						if(FClassnameIs(m_hEnemy->pev, "monster_hydra_boss"))
+						{
+							if((pEnemyMonster->FInViewCone3 ( this ) || flDist <= pEnemyMonster->m_attack_dist))
+								m_HenemyEnemyMe = 4;
+						}
+					}
+				}
+			}
+			else if ( (m_hEnemy->pev->flags & FL_CLIENT) )
+			{
+				if(m_enemyfollower == 0)
+				{
+					if(pEnemyMonster->FInViewCone2 ( this ))
+					{
+						m_HenemyEnemyMe = 2;
+					}
+					else if(pEnemyMonster->FInViewCone3 ( this ))
+					{
+						m_HenemyEnemyMe = 1;
+					}
+					else
+					{
+						m_HenemyEnemyMe = 0;
+					}
+				}
+				else
+				{
+					m_HenemyEnemyMe = 0;
+				}
+			}
+			else
+			{
+				m_HenemyEnemyMe = 0;
+			}
+
 			if( pEnemyMonster->FInViewCone( this ) )
 			{
 				SetConditions( bits_COND_ENEMY_FACING_ME );
@@ -1108,11 +2642,35 @@ int CBaseMonster::CheckEnemy( CBaseEntity *pEnemy )
 		if( pEnemy->pev->velocity != Vector( 0, 0, 0 ) )
 		{
 			// trail the enemy a bit
-			m_vecEnemyLKP = m_vecEnemyLKP - pEnemy->pev->velocity * RANDOM_FLOAT( -0.05f, 0.0f );
+			m_vecEnemyLKP = m_vecEnemyLKP - pEnemy->pev->velocity * RANDOM_FLOAT( -0.05f, 0.05f );
+			m_vecEnemyLKP.z = pEnemy->pev->origin.z;
 		}
 		else
 		{
 			// UNDONE: use pev->oldorigin?
+		}
+		if(m_cover_dist >= 64 )
+		{
+			if( !m_crouchmode && !IsMoving() )
+			{
+				if(FClassnameIs(m_hEnemy->pev, "monster_headcrab") || FClassnameIs(m_hEnemy->pev, "monster_houndeye"))
+				{
+					goto no_cover;
+				}
+				if ( fabs( pev->origin.z - pEnemyMonster->pev->origin.z ) <= 128 )
+				{
+					if(pEnemyMonster->m_hEnemy != NULL)
+					{
+						if(pEnemyMonster->m_hEnemy == this 
+						&& pEnemyMonster->FInViewCone3(this) 
+						&& flDistToEnemy <= m_cover_dist
+						&& FInViewCone3(pEnemyMonster)){
+							SetConditions ( bits_COND_NEW_COVER_MODE );
+						}
+					}
+				}
+			}
+			no_cover:;
 		}
 	}
 	else if( !HasConditions( bits_COND_ENEMY_OCCLUDED | bits_COND_SEE_ENEMY ) && ( flDistToEnemy <= 256 ) )
@@ -1162,11 +2720,20 @@ int CBaseMonster::CheckEnemy( CBaseEntity *pEnemy )
 //=========================================================
 void CBaseMonster::PushEnemy( CBaseEntity *pEnemy, Vector &vecLastKnownPos )
 {
+	if(m_movementGoal == MOVEGOAL_PATHCORNER)
+		m_movementGoal = MOVEGOAL_NONE;
+
+	if(m_boltpoison > 0 || m_iTriggerCondition == 123)
+		return;
+
 	int i;
 
 	if( pEnemy == NULL )
 		return;
 
+	if (FClassnameIs( pEnemy->pev, "player_aim_flag" ) || FClassnameIs( pEnemy->pev, "npc_aim_flag" ) )
+		return;
+		
 	// UNDONE: blah, this is bad, we should use a stack but I'm too lazy to code one.
 	for( i = 0; i < MAX_OLD_ENEMIES; i++ )
 	{
@@ -1213,6 +2780,26 @@ BOOL CBaseMonster::PopEnemy()
 //=========================================================
 void CBaseMonster::SetActivity( Activity NewActivity )
 {
+	if ( m_IdealMonsterState == MONSTERSTATE_DEAD || pev->deadflag != DEAD_NO || pev->health <= 0 || m_die >= 1 )
+	{
+		if(m_die == 2)
+		{
+			if(NewActivity == ACT_BARNACLE_HIT || NewActivity == ACT_BARNACLE_PULL
+			|| NewActivity == ACT_BARNACLE_CHOMP || NewActivity == ACT_BARNACLE_CHEW)
+			{
+				return;
+			}
+		}
+
+		if(NewActivity <= ACT_EAT || pev->deadflag == DEAD_DEAD)
+		{
+			if(NewActivity != ACT_FALL && NewActivity != ACT_DIESIMPLE)
+			{
+				return;
+			}
+		}
+	}
+
 	int iSequence;
 
 	iSequence = LookupActivity( NewActivity );
@@ -1241,7 +2828,10 @@ void CBaseMonster::SetActivity( Activity NewActivity )
 	{
 		// Not available try to get default anim
 		ALERT( at_aiconsole, "%s has no sequence for act:%d\n", STRING( pev->classname ), NewActivity );
-		pev->sequence = 0;	// Set to the reset anim (if it's there)
+		if(pev->deadflag == DEAD_NO)
+		{
+			pev->sequence = 0;	// Set to the reset anim (if it's there)
+		}
 	}
 }
 
@@ -1288,7 +2878,7 @@ void CBaseMonster::SetSequenceByName( const char *szSequence )
 // DON"T USE SETORIGIN! 
 //=========================================================
 #define	LOCAL_STEP_SIZE	16
-int CBaseMonster::CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist )
+int CBaseMonster::CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist, int igonrefailed )
 {
 	Vector vecStartPos;// record monster's position before trying the move
 	float flYaw;
@@ -1305,7 +2895,7 @@ int CBaseMonster::CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, 
 	// move the monster to the start of the local move that's to be checked.
 	UTIL_SetOrigin( pev, vecStart );// !!!BUGBUG - won't this fire triggers? - nope, SetOrigin doesn't fire
 
-	if( !( pev->flags & ( FL_FLY | FL_SWIM ) ) )
+	if( !m_groundElev && !( pev->flags & ( FL_FLY | FL_SWIM ) ) )
 	{
 		DROP_TO_FLOOR( ENT( pev ) );//make sure monster is on the floor!
 	}
@@ -1351,14 +2941,31 @@ int CBaseMonster::CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, 
 			}
 			else
 			{
-				// If we're going toward an entity, and we're almost getting there, it's OK.
-				//if( pTarget && fabs( flDist - iStep ) < LOCAL_STEP_SIZE )
-				//	fReturn = TRUE;
-				//else
-				iReturn = LOCALMOVE_INVALID;
+				if(m_ignoreFail_OFF == 0)
+				{
+					if(m_cleardally_enemy > 0 || m_hTargetEnt != NULL)
+					{
+						if ( (m_ignoreFail >= 0 && m_ignoreFail <= m_ignoreFail_MAX) )
+						{
+							if(m_ignoreFail != 1919)
+								m_ignoreFail += 1;
+						}
+						else
+						{
+							iReturn = LOCALMOVE_INVALID;
+						}
+					}
+					else
+					{
+						iReturn = LOCALMOVE_INVALID;
+					}
+				}
+				else
+				{
+					iReturn = LOCALMOVE_INVALID;
+				}
 				break;
 			}
-
 		}
 	}
 
@@ -1366,9 +2973,26 @@ int CBaseMonster::CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, 
 	{
 		// The monster can move to a spot UNDER the target, but not to it. Don't try to triangulate, go directly to the node graph.
 		// UNDONE: Magic # 64 -- this used to be pev->size.z but that won't work for small creatures like the headcrab
-		if( fabs( vecEnd.z - pev->origin.z ) > 64.0f )
+		if( fabs( vecEnd.z - pev->origin.z ) > 128.0f && !m_MoveFail_FuckRoad && m_ctmod != 2 )
 		{
-			iReturn = LOCALMOVE_INVALID_DONT_TRIANGULATE;
+			if(m_ignoreFail_OFF == 0)
+			{
+				if ( (m_ignoreFail >= 0 && m_ignoreFail <= m_ignoreFail_MAX) || m_ignoreFail == 1919 )
+				{
+					if(m_ignoreFail != 1919)
+					{
+						m_ignoreFail += 1;
+					}
+				}
+				else
+				{
+					iReturn = LOCALMOVE_INVALID_DONT_TRIANGULATE;
+				}
+			}
+			else
+			{
+				iReturn = LOCALMOVE_INVALID_DONT_TRIANGULATE;
+			}
 		}
 	}
 	/*
@@ -1385,6 +3009,41 @@ int CBaseMonster::CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, 
 
 	// since we've actually moved the monster during the check, undo the move.
 	UTIL_SetOrigin( pev, vecStartPos );
+
+
+	if(iReturn != LOCALMOVE_VALID && m_MoveFail_FuckRoad)
+	{
+		if(m_MoveFail_FuckRoad_Mode == 1)
+		{
+			if(m_MoveFailNum >= 30)
+			{
+				iReturn = LOCALMOVE_VALID;
+			}
+		}
+		else if(m_MoveFailNum >= 10)
+		{
+			iReturn = LOCALMOVE_VALID;
+		}
+
+		TraceResult tr;
+		UTIL_MakeVectors(pev->angles);
+		Vector vecSrc = pev->origin + Vector(0,0,18);
+		Vector vecEnd	= vecSrc + gpGlobals->v_forward * 36;
+		UTIL_TraceLine( vecSrc, vecEnd, ignore_monsters, ENT( pev ), &tr );
+		if ( tr.flFraction == 1.0 )
+		{
+			m_MoveFailNum += 1;
+		}
+		else
+		{
+			m_MoveFailNum = 0;
+		}
+
+	}
+	else if(m_MoveFailNum > 0)
+	{
+		m_MoveFailNum = 0;
+	}
 
 	return iReturn;
 }
@@ -1532,7 +3191,7 @@ BOOL CBaseMonster::BuildRoute( const Vector &vecGoal, int iMoveFlag, CBaseEntity
 	m_Route[0].iType = iMoveFlag | bits_MF_IS_GOAL;
 
 	// check simple local move
-	iLocalMove = CheckLocalMove( pev->origin, vecGoal, pTarget, &flDist );
+	iLocalMove = CheckLocalMove( pev->origin, vecGoal, pTarget, &flDist, 1 );
 
 	if( iLocalMove == LOCALMOVE_VALID )
 	{
@@ -1702,9 +3361,9 @@ BOOL CBaseMonster::FTriangulate( const Vector &vecStart, const Vector &vecEnd, f
 			MESSAGE_END();
 		}
 #endif
-		if( CheckLocalMove( pev->origin, vecRight, pTargetEnt, NULL ) == LOCALMOVE_VALID )
+		if( CheckLocalMove( pev->origin, vecRight, pTargetEnt, NULL, 0 ) == LOCALMOVE_VALID )
 		{
-			if( CheckLocalMove( vecRight, vecFarSide, pTargetEnt, NULL ) == LOCALMOVE_VALID )
+			if( CheckLocalMove( vecRight, vecFarSide, pTargetEnt, NULL, 0 ) == LOCALMOVE_VALID )
 			{
 				if( pApex )
 				{
@@ -1714,9 +3373,9 @@ BOOL CBaseMonster::FTriangulate( const Vector &vecStart, const Vector &vecEnd, f
 				return TRUE;
 			}
 		}
-		if( CheckLocalMove( pev->origin, vecLeft, pTargetEnt, NULL ) == LOCALMOVE_VALID )
+		if( CheckLocalMove( pev->origin, vecLeft, pTargetEnt, NULL, 0 ) == LOCALMOVE_VALID )
 		{
-			if( CheckLocalMove( vecLeft, vecFarSide, pTargetEnt, NULL ) == LOCALMOVE_VALID )
+			if( CheckLocalMove( vecLeft, vecFarSide, pTargetEnt, NULL, 0 ) == LOCALMOVE_VALID )
 			{
 				if( pApex )
 				{
@@ -1729,9 +3388,9 @@ BOOL CBaseMonster::FTriangulate( const Vector &vecStart, const Vector &vecEnd, f
 
 		if( pev->movetype == MOVETYPE_FLY )
 		{
-			if( CheckLocalMove( pev->origin, vecTop, pTargetEnt, NULL ) == LOCALMOVE_VALID)
+			if( CheckLocalMove( pev->origin, vecTop, pTargetEnt, NULL, 0 ) == LOCALMOVE_VALID)
 			{
-				if( CheckLocalMove ( vecTop, vecFarSide, pTargetEnt, NULL ) == LOCALMOVE_VALID )
+				if( CheckLocalMove ( vecTop, vecFarSide, pTargetEnt, NULL, 0 ) == LOCALMOVE_VALID )
 				{
 					if( pApex )
 					{
@@ -1743,9 +3402,9 @@ BOOL CBaseMonster::FTriangulate( const Vector &vecStart, const Vector &vecEnd, f
 				}
 			}
 #if 1
-			if( CheckLocalMove( pev->origin, vecBottom, pTargetEnt, NULL ) == LOCALMOVE_VALID )
+			if( CheckLocalMove( pev->origin, vecBottom, pTargetEnt, NULL, 0 ) == LOCALMOVE_VALID )
 			{
-				if( CheckLocalMove( vecBottom, vecFarSide, pTargetEnt, NULL ) == LOCALMOVE_VALID )
+				if( CheckLocalMove( vecBottom, vecFarSide, pTargetEnt, NULL, 0 ) == LOCALMOVE_VALID )
 				{
 					if( pApex )
 					{
@@ -1798,7 +3457,7 @@ void CBaseMonster::Move( float flInterval )
 		}
 	}
 
-	if( m_flMoveWaitFinished > gpGlobals->time )
+	if( m_flMoveWaitFinished > gpGlobals->time || m_playerguardian_mode >= 1 )
 		return;
 
 // Debug, test movement code
@@ -1816,6 +3475,25 @@ void CBaseMonster::Move( float flInterval )
 // Debug, draw the route
 //	DrawRoute( pev, m_Route, m_iRouteIndex, 0, 200, 0 );
 #endif
+
+	if(m_MoveFail_FuckRoad)
+	{
+		if(m_MoveFail_FuckRoad_Mode == 1)
+		{
+			if(m_MoveFailNum >= 50)
+			{
+				m_MoveFailNum = 0;
+				TaskFail();
+				return;
+			}
+		}
+		else if(m_MoveFailNum >= 30)
+		{
+			m_MoveFailNum = 0;
+			TaskFail();
+			return;
+		}
+	}
 	// if the monster is moving directly towards an entity (enemy for instance), we'll set this pointer
 	// to that entity for the CheckLocalMove and Triangulate functions.
 	pTargetEnt = NULL;
@@ -1851,7 +3529,7 @@ void CBaseMonster::Move( float flInterval )
 	// If this fails, it should be because of some dynamic entity blocking this guy.
 	// We've already checked this path, so we should wait and time out if the entity doesn't move
 	flDist = 0;
-	if( CheckLocalMove( pev->origin, pev->origin + vecDir * flCheckDist, pTargetEnt, &flDist ) != LOCALMOVE_VALID )
+	if( CheckLocalMove( pev->origin, pev->origin + vecDir * flCheckDist, pTargetEnt, &flDist, 1 ) != LOCALMOVE_VALID )
 	{
 		CBaseEntity *pBlocker;
 
@@ -1908,8 +3586,29 @@ void CBaseMonster::Move( float flInterval )
 				}
 				else
 				{
+					if(m_MoveFail_SimpleRoad)
+					{
+						if ( m_movementGoal == MOVEGOAL_ENEMY )
+						{
+							if(m_hEnemy != NULL && m_hEnemy->IsAlive())
+							{
+								RouteSimplify( m_hEnemy );
+								FRefreshRoute();
+								return;
+							}
+						}
+						else if ( m_movementGoal == MOVEGOAL_TARGETENT )
+						{
+							if(m_hTargetEnt != NULL && m_hTargetEnt->IsAlive())
+							{
+								RouteSimplify( m_hTargetEnt );
+								FRefreshRoute();
+								return;
+							}
+						}
+					}
 					TaskFail();
-					ALERT( at_aiconsole, "%s Failed to move (%d)!\n", STRING( pev->classname ), HasMemory( bits_MEMORY_MOVE_FAILED ) );
+					//ALERT( at_aiconsole, "%s Failed to move (%d)!\n", STRING( pev->classname ), HasMemory( bits_MEMORY_MOVE_FAILED ) );
 					//ALERT( at_aiconsole, "%f, %f, %f\n", pev->origin.z, ( pev->origin + ( vecDir * flCheckDist ) ).z, m_Route[m_iRouteIndex].vecLocation.z );
 				}
 				return;
@@ -1986,22 +3685,32 @@ void CBaseMonster::MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, f
 //=========================================================
 void CBaseMonster::MonsterInit( void )
 {
-	if( !g_pGameRules->FAllowMonsters() )
+	/*if( !g_pGameRules->FAllowMonsters() )
 	{
 		pev->flags |= FL_KILLME;		// Post this because some monster code modifies class data after calling this function
 		//REMOVE_ENTITY( ENT( pev ) );
 		return;
-	}
+	}*/
 
 	// Set fields common to all monsters
 	pev->effects		= 0;
+	pev->friction		= 0.7f;
 	pev->takedamage		= DAMAGE_AIM;
 	pev->ideal_yaw		= pev->angles.y;
 	pev->max_health		= pev->health;
 	pev->deadflag		= DEAD_NO;
-	m_IdealMonsterState	= MONSTERSTATE_IDLE;// Assume monster will be idle, until proven otherwise
 
-	m_IdealActivity = ACT_IDLE;
+	if(pev->impulse == 1426)
+	{
+		m_IdealMonsterState	= MONSTERSTATE_HUNT;
+		ResetSequenceInfo( );
+		pev->frame = 0;
+	}
+	else
+	{
+		m_IdealActivity = ACT_IDLE;
+		m_IdealMonsterState	= MONSTERSTATE_IDLE;// Assume monster will be idle, until proven otherwise
+	}
 
 	SetBits( pev->flags, FL_MONSTER );
 	if( pev->spawnflags & SF_MONSTER_HITMONSTERCLIP )
@@ -2020,12 +3729,92 @@ void CBaseMonster::MonsterInit( void )
 	m_flDistTooFar = 1024.0f;
 	m_flDistLook = 2048.0f;
 
+	m_hHitEnemy			= NULL;
+
+	m_hTeamMate1		= NULL;
+	m_hTeamMate2		= NULL;
+	m_hTeamMate3		= NULL;
+	m_hTeamMate4		= NULL;
+
+	m_noidleseq			= FALSE;
+
+	m_flDistTooFar		= 2560.0;
+	m_flDistLook		= 4096.0;
+
+	m_aimflag_dist      = 40.0;
+
+	m_fightmode			= 0;
+	m_die_for_back      = 0;
+
+	m_ignoreFail_MAX    = 0;
+	m_ignoreFail_OFF	= 1;
+
+	m_groundElev		= FALSE;
+	m_groundElev2		= FALSE;
+
+	m_MoveFail_SimpleRoad = FALSE;
+
+	m_forcefuckdoor     = FALSE;
+	m_MoveFail_FuckRoad = FALSE;
+	m_MoveFail_FuckRoad_Mode = 0;
+
+	m_flPlayerDamage_exp = 0;
+
+	m_barnacleres_time  = 0;
+	m_freeze_def = 0;
+	m_killedbydmg = 0;
+
+	m_follow_mode		= 0;
+	m_killed_exp		= 0;
+	m_die				= 0;
+	m_dieseq			= 0;
+	m_cover_dist		= 256;
+	m_attack_dist		= 256;
+	m_playerguardian_mode = 0;
+
+	m_rpgms_skill1_learn = 15;
+	m_rpgms_skill2_learn = 15;
+	m_rpgms_skill3_learn = 15;
+	m_rpgms_skill4_learn = 15;
+	m_rpgms_skill5_learn = 15;
+	m_rpgms_skill6_learn = 15;
+	m_rpgms_skill7_learn = 15;
+	m_rpgms_skill8_learn = 15;
+	m_rpgms_skill9_learn = 15;
+	m_rpgms_skill10_learn = 15;
+	m_rpgms_skill11_learn = 15;
+	m_rpgms_skill12_learn = 15;
+
+	if(m_singdelay_max == 0)
+	{
+		m_singdelay_max = 2;
+		m_singdelay_use = m_singdelay_max;
+	}
+
 	// set eye position
 	SetEyePosition();
 
 	SetThink( &CBaseMonster::MonsterInitThink );
 	pev->nextthink = gpGlobals->time + 0.1f;
 	SetUse( &CBaseMonster::MonsterUse );
+
+	if (FClassnameIs(pev, "monster_tyant_boss"))
+	{
+		pev->nextthink = gpGlobals->time + 1.2;
+	}
+
+	if ( !FNullEnt(pev->owner))
+	{
+		if(VARS(pev->owner)->flags & FL_MONSTER)
+		{
+			if (FClassnameIs(pev, "monster_zombie") || FClassnameIs(pev, "monster_zombie_barney") ||
+			FClassnameIs(pev, "monster_zombie_soldier"))
+			{
+				pev->nextthink = gpGlobals->time + 1.2;
+				pev->owner = NULL;
+			}
+		}
+	}
 }
 
 //=========================================================
@@ -2034,6 +3823,25 @@ void CBaseMonster::MonsterInit( void )
 //=========================================================
 void CBaseMonster::MonsterInitThink( void )
 {
+	if(m_fightmode)
+	{
+
+		MESSAGE_BEGIN(MSG_BROADCAST, SVC_TEMPENTITY,pev->origin);
+			WRITE_BYTE(3);
+			WRITE_COORD( pev->origin.x );
+			WRITE_COORD( pev->origin.y );
+			WRITE_COORD( pev->origin.z);
+			WRITE_SHORT(g_sModelIndexCteleport);
+			WRITE_BYTE(15);
+			WRITE_BYTE(15);
+			WRITE_BYTE(4);
+		MESSAGE_END();
+						
+		EMIT_SOUND_DYN( ENT(pev), CHAN_AUTO, "debris/beamstart2old.wav", 1, ATTN_NORM, 0, 100 );
+		m_diefadeout = 1;
+		m_undropgun = TRUE;
+	}
+
 	StartMonster();
 }
 
@@ -2064,8 +3872,8 @@ void CBaseMonster::StartMonster( void )
 	// Raise monster off the floor one unit, then drop to floor
 	if( pev->movetype != MOVETYPE_FLY && !FBitSet( pev->spawnflags, SF_MONSTER_FALL_TO_GROUND ) )
 	{
-		pev->origin.z += 1;
-		DROP_TO_FLOOR( ENT( pev ) );
+		pev->velocity.z -= 1;
+		/*DROP_TO_FLOOR( ENT( pev ) );
 
 		// Try to move the monster to make sure it's not stuck in a brush.
 		if( !WALK_MOVE( ENT( pev ), 0, 0, WALKMOVE_NORMAL ) )
@@ -2074,7 +3882,7 @@ void CBaseMonster::StartMonster( void )
 
 			if( g_psv_developer && g_psv_developer->value )
 				pev->effects = EF_BRIGHTFIELD;
-		}
+		}*/
 	}
 	else 
 	{
@@ -2125,18 +3933,75 @@ void CBaseMonster::StartMonster( void )
 	//SetState( m_IdealMonsterState );
 	//SetActivity( m_IdealActivity );
 
+	Use_PathWalk();
+
 	// Delay drop to floor to make sure each door in the level has had its chance to spawn
 	// Spread think times so that they don't all happen at the same time (Carmack)
 	SetThink( &CBaseMonster::CallMonsterThink );
-	pev->nextthink += RANDOM_FLOAT( 0.1f, 0.4f ); // spread think times.
+	pev->nextthink += RANDOM_FLOAT( 0.1f, 0.3f ); // spread think times.
 
-	// Vit_amiN: fixed -- now it doesn't touch any scripted_sequence target
-	if( !FStringNull( pev->targetname ) && !m_pCine )// wait until triggered
+	if( pev->impulse != 1426 && !FStringNull(pev->targetname) )// wait until triggered
 	{
 		SetState( MONSTERSTATE_IDLE );
 		// UNDONE: Some scripted sequence monsters don't have an idle?
 		SetActivity( ACT_IDLE );
 		ChangeSchedule( GetScheduleOfType( SCHED_WAIT_TRIGGER ) );
+	}
+}
+
+void CBaseMonster :: Use_PathWalk( void ) 
+{
+	if ( !FStringNull(pev->target) )// this monster has a target
+	{
+		// Find the monster's initial target entity, stash it
+		m_pGoalEnt = CBaseEntity::Instance( FIND_ENTITY_BY_TARGETNAME ( NULL, STRING( pev->target ) ) );
+
+		if ( !m_pGoalEnt )
+		{
+			ALERT(at_error, "ReadyMonster()--%s couldn't find target %s", STRING(pev->classname), STRING(pev->target));
+		}
+		else
+		{
+			// Monster will start turning towards his destination
+			MakeIdealYaw ( m_pGoalEnt->pev->origin );
+
+			// JAY: How important is this error message?  Big Momma doesn't obey this rule, so I took it out.
+
+			// set the monster up to walk a path corner path. 
+			// !!!BUGBUG - this is a minor bit of a hack.
+			// JAYJAY
+			m_movementGoal = MOVEGOAL_PATHCORNER;
+					
+			if ( pev->movetype == MOVETYPE_FLY )
+			{
+				m_movementActivity = ACT_FLY;
+			}
+			else if ( LookupActivity( ACT_RUN ) != ACTIVITY_NOT_AVAILABLE && m_alwaysrunpath )
+			{
+				m_movementActivity = ACT_RUN;
+			}
+			else
+			{
+				m_movementActivity = ACT_WALK;
+			}
+
+			if ( !FRefreshRoute() )
+			{
+				ALERT ( at_aiconsole, "Can't Create Route!\n" );
+			}
+
+			m_pathtrack_reuse = 1;
+
+			m_alert = 0;
+			m_hEnemy = NULL;
+			m_hOldEnemy[0] = NULL;
+			m_hOldEnemy[1] = NULL;
+			m_hOldEnemy[2] = NULL;
+			m_hOldEnemy[3] = NULL;
+
+			SetState( MONSTERSTATE_IDLE );
+			ChangeSchedule( GetScheduleOfType( SCHED_IDLE_WALK ) );
+		}
 	}
 }
 
@@ -2175,25 +4040,284 @@ int CBaseMonster::TaskIsRunning( void )
 //=========================================================
 int CBaseMonster::IRelationship( CBaseEntity *pTarget )
 {
-	static int iEnemy[14][14] =
-	{			 //   NONE	 MACH	 PLYR	 HPASS	 HMIL	 AMIL	 APASS	 AMONST	APREY	 APRED	 INSECT	PLRALY	PBWPN	ABWPN
-	/*NONE*/		{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO	},
-	/*MACHINE*/		{ R_NO	,R_NO	,R_DL	,R_DL	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_DL,	R_DL	},
-	/*PLAYER*/		{ R_NO	,R_DL	,R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_DL,	R_DL	},
-	/*HUMANPASSIVE*/{ R_NO	,R_NO	,R_AL	,R_AL	,R_HT	,R_FR	,R_NO	,R_HT	,R_DL	,R_FR	,R_NO	,R_AL,	R_NO,	R_NO	},
-	/*HUMANMILITAR*/{ R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_HT	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_HT,	R_NO,	R_NO	},
-	/*ALIENMILITAR*/{ R_NO	,R_DL	,R_HT	,R_DL	,R_HT	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO	},
-	/*ALIENPASSIVE*/{ R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO,	R_NO,	R_NO	},
-	/*ALIENMONSTER*/{ R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_NO	,R_DL,	R_NO,	R_NO	},
-	/*ALIENPREY   */{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_NO	,R_FR	,R_NO	,R_DL,	R_NO,	R_NO	},
-	/*ALIENPREDATO*/{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO	,R_NO	,R_HT	,R_DL	,R_NO	,R_DL,	R_NO,	R_NO	},
-	/*INSECT*/		{ R_FR	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR	,R_FR	,R_FR	,R_FR	,R_NO	,R_FR,	R_NO,	R_NO	},
-	/*PLAYERALLY*/	{ R_NO	,R_DL	,R_AL	,R_AL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_NO,	R_NO,	R_NO	},
-	/*PBIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_DL	,R_NO	,R_DL,	R_NO,	R_DL	},
-	/*ABIOWEAPON*/	{ R_NO	,R_NO	,R_DL	,R_DL	,R_DL	,R_AL	,R_NO	,R_DL	,R_DL	,R_NO	,R_NO	,R_DL,	R_DL,	R_NO	}
-	};
+	if(Classify() == pTarget->Classify())
+		return R_NO;
+	
+	if(m_ignorePlayer > 0 && pTarget->Classify() == CLASS_PLAYER)
+		return R_NO;
+	
 
-	return iEnemy[Classify()][pTarget->Classify()];
+	if(Classify() == CLASS_ALIEN_PREY)
+	{
+		if(pTarget->Classify() == CLASS_HUMAN_ASS 
+		|| pTarget->Classify() == CLASS_HUMAN_MILITARY
+		|| pTarget->Classify() == CLASS_ALIEN_MONSTER 
+		|| pTarget->Classify() == CLASS_ALIEN_MILITARY
+		|| pTarget->Classify() == CLASS_PLAYER
+		|| pTarget->Classify() == CLASS_PLAYER_ALLY
+		|| pTarget->Classify() == CLASS_HUMAN_PASSIVE)
+		{
+			return R_DL;
+		}
+	}
+	if(Classify() == CLASS_MACHINE_BLACK)
+	{
+		if(pTarget->Classify() == CLASS_HUMAN_ASS 
+		|| pTarget->Classify() == CLASS_HUMAN_MILITARY
+		|| pTarget->Classify() == CLASS_ALIEN_MONSTER 
+		|| pTarget->Classify() == CLASS_ALIEN_MILITARY
+		|| pTarget->Classify() == CLASS_MACHINE 
+		|| pTarget->Classify() == CLASS_MACHINE_ASS
+		|| pTarget->Classify() == CLASS_HUMAN_PASSIVE)
+		{
+			return R_DL;
+		}
+	}
+
+	if(Classify() == CLASS_HUMAN_PASSIVE)
+	{
+		if (FClassnameIs( pTarget->pev, "npc_attack_flag" ) && pTarget->pev->frags == 5)
+		{
+			return R_NM;
+		}
+		if(pTarget->Classify() == CLASS_HUMAN_ASS 
+		|| pTarget->Classify() == CLASS_HUMAN_MILITARY
+		|| pTarget->Classify() == CLASS_ALIEN_MONSTER 
+		|| pTarget->Classify() == CLASS_ALIEN_MILITARY
+		|| pTarget->Classify() == CLASS_MACHINE 
+		|| pTarget->Classify() == CLASS_MACHINE_ASS)
+		{
+			return R_HT;
+		}
+		if(pTarget->Classify() == CLASS_ALIEN_PREY )
+		{
+			return R_DL;
+		}
+		if (FClassnameIs( pTarget->pev, "npc_aim_flag" ) && pTarget->pev->frags == 5)
+		{
+			return R_DL;
+		}
+		if(pTarget->Classify() == CLASS_PLAYER || pTarget->Classify() == CLASS_PLAYER_ALLY)
+		{
+			return R_AL;
+		}
+	}
+
+	if(Classify() == CLASS_PLAYER_ALLY)
+	{
+		if (m_enemyfollower == 1 && (FClassnameIs( pTarget->pev, "player_aim_flag" ) || FClassnameIs( pTarget->pev, "player_attack_flag" )) )
+		{
+			return R_NM;
+		}
+		if(pTarget->Classify() == CLASS_HUMAN_ASS 
+		|| pTarget->Classify() == CLASS_HUMAN_MILITARY
+		|| pTarget->Classify() == CLASS_ALIEN_MONSTER 
+		|| pTarget->Classify() == CLASS_ALIEN_MILITARY
+		|| pTarget->Classify() == CLASS_MACHINE 
+		|| pTarget->Classify() == CLASS_MACHINE_ASS)
+		{
+			return R_HT;
+		}
+		if (FClassnameIs( pTarget->pev, "npc_attack_flag" ) && pTarget->pev->frags >= 5)
+		{
+			return R_HT;
+		}
+		if(pTarget->Classify() == CLASS_ALIEN_PREY )
+		{
+			return R_DL;
+		}
+		if (FClassnameIs( pTarget->pev, "npc_aim_flag" ) && (pTarget->pev->frags >= 5 || pTarget->pev->frags == 3) )
+		{
+			return R_DL;
+		}
+		if (pTarget->Classify() == CLASS_PLAYER && m_lovehate <= 0)
+		{
+			if(m_enemyfollower == 1)
+			{
+				m_enemyfollower = 0;
+			}
+			else
+			{
+				return R_HT;
+			}
+		}
+
+		//pTarget->IsPlayer()
+		if ( (pTarget->Classify() == CLASS_PLAYER && m_enemyfollower == 1 && m_enemyfollower_combat == 0)
+		|| (pTarget->Classify() == CLASS_PLAYER && m_playerguardian_mode == 1 && m_follow_mode == 1) )
+		{
+			return R_DL;
+		}
+
+		if(pTarget->Classify() == CLASS_PLAYER)
+		{
+			return R_AL;
+		}
+	}
+
+	if(Classify() == CLASS_HUMAN_ASS || Classify() == CLASS_MACHINE_ASS)
+	{
+		if (FClassnameIs( pTarget->pev, "npc_attack_flag" ) && pTarget->pev->frags == 4)
+		{
+			return R_NM;
+		}
+		if(m_fightmode >= 2 && (pTarget->Classify() == CLASS_ALIEN_MILITARY || pTarget->Classify() == CLASS_ALIEN_MONSTER) )
+		{
+			return R_NO;
+		}
+		if(pTarget->Classify() == CLASS_PLAYER
+		|| pTarget->Classify() == CLASS_PLAYER_ALLY
+		|| pTarget->Classify() == CLASS_HUMAN_MILITARY
+		|| pTarget->Classify() == CLASS_ALIEN_MONSTER 
+		|| pTarget->Classify() == CLASS_ALIEN_MILITARY
+		|| pTarget->Classify() == CLASS_MACHINE 
+		|| pTarget->Classify() == CLASS_MACHINE_BLACK
+		|| pTarget->Classify() == CLASS_HUMAN_PASSIVE
+		|| pTarget->Classify() == CLASS_HUMAN_BIOWEAPON)
+		{
+			return R_HT;
+		}
+		if(pTarget->Classify() == CLASS_ALIEN_PREY )
+		{
+			return R_HT;
+		}
+		if (FClassnameIs( pTarget->pev, "npc_aim_flag" ) && pTarget->pev->frags == 4)
+		{
+			return R_DL;
+		}
+	}
+
+	if(Classify() == CLASS_HUMAN_MILITARY || Classify() == CLASS_MACHINE)
+	{
+		if (FClassnameIs( pTarget->pev, "npc_attack_flag" ) && pTarget->pev->frags == 2)
+		{
+			return R_NM;
+		}
+		if(pTarget->Classify() == CLASS_HUMAN_ASS
+		|| pTarget->Classify() == CLASS_MACHINE_ASS
+		|| pTarget->Classify() == CLASS_ALIEN_MILITARY)
+		{
+			return R_NM;
+		}
+		if(pTarget->Classify() == CLASS_PLAYER
+		|| pTarget->Classify() == CLASS_PLAYER_ALLY
+		|| pTarget->Classify() == CLASS_MACHINE_BLACK
+		|| pTarget->Classify() == CLASS_ALIEN_PREY 
+		|| pTarget->Classify() == CLASS_ALIEN_MONSTER 
+		|| pTarget->Classify() == CLASS_HUMAN_PASSIVE
+		|| pTarget->Classify() == CLASS_HUMAN_BIOWEAPON)
+		{
+			return R_HT;
+		}
+		if(pTarget->Classify() == CLASS_PLAYER_BIOWEAPON 
+		|| pTarget->Classify() == CLASS_ALIEN_BIOWEAPON)
+		{
+			return R_DL;
+		}
+		if (FClassnameIs( pTarget->pev, "npc_aim_flag" ) && pTarget->pev->frags == 2)
+		{
+			if(m_elseuseful == 2 || m_elseuseful == 3)
+			{
+				return R_NM;
+			}
+			else
+			{
+				return R_DL;
+			}
+		}
+	}
+	if(Classify() == CLASS_PLAYER)
+	{
+		return R_AL;
+	}
+	if(Classify() == CLASS_ALIEN_MONSTER || Classify() == CLASS_ALIEN_MILITARY)
+	{
+		if (FClassnameIs( pTarget->pev, "npc_attack_flag" ) && pTarget->pev->frags == 1)
+		{
+			return R_NM;
+		}
+		if (FClassnameIs( pTarget->pev, "npc_aim_flag" ) && pTarget->pev->frags == 1)
+		{
+			return R_DL;
+		}
+		if(m_fightmode >= 2 && pTarget->Classify() == CLASS_HUMAN_ASS)
+		{
+			return R_NO;
+		}
+		if(pTarget->Classify() == CLASS_PLAYER
+		|| pTarget->Classify() == CLASS_PLAYER_ALLY
+		|| pTarget->Classify() == CLASS_MACHINE
+		|| pTarget->Classify() == CLASS_MACHINE_BLACK
+		|| pTarget->Classify() == CLASS_MACHINE_ASS
+		|| pTarget->Classify() == CLASS_HUMAN_BIOWEAPON)
+		{
+			return R_HT;
+		}
+		if(pTarget->Classify() == CLASS_HUMAN_ASS
+		|| pTarget->Classify() == CLASS_HUMAN_MILITARY 
+		|| pTarget->Classify() == CLASS_HUMAN_PASSIVE)\
+		{
+			return R_NM;
+		}
+	}
+	if(Classify() == CLASS_INSECT)
+	{
+		if(pTarget->Classify() == CLASS_PLAYER_BIOWEAPON 
+		|| pTarget->Classify() == CLASS_ALIEN_BIOWEAPON)
+		{
+			return R_NO;
+		}
+		return R_FR;
+	}
+	if(Classify() == CLASS_PLAYER_BIOWEAPON )
+	{
+		if(pTarget->Classify() == CLASS_HUMAN_ASS
+		|| pTarget->Classify() == CLASS_HUMAN_MILITARY
+		|| pTarget->Classify() == CLASS_ALIEN_MONSTER 
+		|| pTarget->Classify() == CLASS_ALIEN_MILITARY
+		|| pTarget->Classify() == CLASS_MACHINE
+		|| pTarget->Classify() == CLASS_MACHINE_BLACK
+		|| pTarget->Classify() == CLASS_MACHINE_ASS)
+		{
+			return R_HT;
+		}
+		if(pTarget->Classify() == CLASS_PLAYER_ALLY
+		|| pTarget->Classify() == CLASS_HUMAN_PASSIVE
+		|| pTarget->Classify() == CLASS_PLAYER)
+		{
+			return R_DL;
+		}
+	}
+	if(Classify() == CLASS_ALIEN_BIOWEAPON )
+	{
+		if(pTarget->Classify() == CLASS_HUMAN_ASS
+		|| pTarget->Classify() == CLASS_HUMAN_MILITARY
+		|| pTarget->Classify() == CLASS_PLAYER 
+		|| pTarget->Classify() == CLASS_PLAYER_ALLY
+		|| pTarget->Classify() == CLASS_MACHINE
+		|| pTarget->Classify() == CLASS_MACHINE_BLACK
+		|| pTarget->Classify() == CLASS_MACHINE_ASS
+		|| pTarget->Classify() == CLASS_HUMAN_PASSIVE
+		|| pTarget->Classify() == CLASS_HUMAN_BIOWEAPON)
+		{
+			return R_HT;
+		}
+	}
+	if(Classify() == CLASS_HUMAN_BIOWEAPON )
+	{
+		
+		if(pTarget->Classify() == CLASS_HUMAN_ASS
+		|| pTarget->Classify() == CLASS_HUMAN_MILITARY
+		|| pTarget->Classify() == CLASS_ALIEN_MONSTER 
+		|| pTarget->Classify() == CLASS_ALIEN_MILITARY
+		|| pTarget->Classify() == CLASS_MACHINE
+		|| pTarget->Classify() == CLASS_MACHINE_BLACK
+		|| pTarget->Classify() == CLASS_MACHINE_ASS)
+		{
+			return R_HT;
+		}
+	}
+	return R_NO;
 }
 
 //=========================================================
@@ -2403,11 +4527,15 @@ CBaseEntity *CBaseMonster::BestVisibleEnemy( void )
 {
 	CBaseEntity	*pReturn;
 	CBaseEntity	*pNextEnt;
-	int		iNearest;
-	int		iDist;
-	int		iBestRelationship;
+	int iNearest;
+	int	iDist;
+	int	iBestRelationship;
 
 	iNearest = 8192;// so first visible entity will become the closest.
+	if(m_enemyget_mode == 1)
+	{
+		iNearest = 0;
+	}
 	pNextEnt = m_pLink;
 	pReturn = NULL;
 	iBestRelationship = R_NO;
@@ -2416,7 +4544,16 @@ CBaseEntity *CBaseMonster::BestVisibleEnemy( void )
 	{
 		if( pNextEnt->IsAlive() )
 		{
-			if( IRelationship( pNextEnt) > iBestRelationship )
+			if( pNextEnt->pev->team == 666)
+			{
+				if(IRelationship( pNextEnt) >= R_DL)
+				{
+					iBestRelationship = 4;
+					iNearest = ( pNextEnt->pev->origin - pev->origin ).Length();
+					pReturn = pNextEnt;
+				}
+			}
+			else if( IRelationship( pNextEnt) > iBestRelationship )
 			{
 				// this entity is disliked MORE than the entity that we 
 				// currently think is the best visible enemy. No need to do 
@@ -2431,12 +4568,25 @@ CBaseEntity *CBaseMonster::BestVisibleEnemy( void )
 				// we currently think is the best visible enemy, so we only
 				// get mad at it if it is closer.
 				iDist = ( pNextEnt->pev->origin - pev->origin ).Length();
-				
-				if( iDist <= iNearest )
+
+
+				if(m_enemyget_mode == 1)
 				{
-					iNearest = iDist;
-					iBestRelationship = IRelationship( pNextEnt );
-					pReturn = pNextEnt;
+					if ( iDist >= iNearest )
+					{
+						iNearest = iDist;
+						iBestRelationship = IRelationship ( pNextEnt );
+						pReturn = pNextEnt;
+					}
+				}
+				else 
+				{
+					if( iDist <= iNearest )
+					{
+						iNearest = iDist;
+						iBestRelationship = IRelationship( pNextEnt );
+						pReturn = pNextEnt;
+					}
 				}
 			}
 		}
@@ -2684,6 +4834,31 @@ void CBaseMonster::HandleAnimEvent( MonsterEvent_t *pEvent )
 				EMIT_SOUND( ENT( pev ), CHAN_BODY, "common/bodydrop4.wav", 1, ATTN_NORM );
 			}
 		}
+		break;
+	case MONSTER_EVENT_BODYSIZE_DOWN:	
+				if ( pev->flags & FL_ONGROUND )
+				{
+					if ( RANDOM_LONG( 0, 1 ) == 0 )
+					{
+						EMIT_SOUND( ENT(pev), CHAN_BODY, "common/bodydrop3.wav", 1, ATTN_NORM );
+					}
+					else
+					{
+						EMIT_SOUND( ENT(pev), CHAN_BODY, "common/bodydrop4.wav", 1, ATTN_NORM );
+					}
+				}
+				if(m_die_corpse_solid == 1)
+				{
+					UTIL_SetSize ( pev, Vector ( pev->mins.x, pev->mins.y, pev->mins.z ), Vector ( pev->maxs.x, pev->maxs.y, 1 ) );
+				}
+				else if ( !BBoxFlat() || m_crouchmode != 0 )
+				{
+					UTIL_SetSize ( pev, Vector ( pev->mins.x, pev->mins.y, pev->mins.z ), Vector ( pev->maxs.x, pev->maxs.y, pev->mins.z + 2 ) );
+				}
+				else
+				{
+					UTIL_SetSize ( pev, Vector ( pev->mins.x, pev->mins.y, pev->mins.z ), Vector ( pev->maxs.x, pev->maxs.y, pev->mins.z + 4 ) );
+				}	
 		break;
 	case MONSTER_EVENT_SWISHSOUND:
 		{
@@ -2941,9 +5116,173 @@ void CBaseMonster::KeyValue( KeyValueData *pkvd )
 		m_iszTriggerTarget = ALLOC_STRING( pkvd->szValue );
 		pkvd->fHandled = TRUE;
 	}
+	else if (FStrEq(pkvd->szKeyName, "TriggerFTS") )
+	{
+		m_FTSmod = atoi( pkvd->szValue );
+		pkvd->fHandled = TRUE;
+	}
+	else if (FStrEq(pkvd->szKeyName, "ElseFunction") )
+	{
+		if(atoi( pkvd->szValue ) == 1)
+		{
+			m_walkaround = TRUE;
+		}
+		else if(atoi( pkvd->szValue ) == 2)
+		{
+			m_walkaround = TRUE;
+			m_alwaysrunpath = TRUE;
+		}
+		else if(atoi( pkvd->szValue ) == 3)
+		{
+			m_alwaysrunpath = TRUE;
+		}
+		else if(atoi( pkvd->szValue ) == 4)
+		{
+			m_walkaround = TRUE;
+			m_selfmode = TRUE;
+		}
+		else if(atoi( pkvd->szValue ) == 5)
+		{
+			m_selfmode = TRUE;
+		}
+		else if(atoi( pkvd->szValue ) == 6)
+		{
+			m_walkaround = TRUE;
+			m_ctmod = 1;
+		}
+		else if(atoi( pkvd->szValue ) == 7)
+		{
+			m_longming = 1;
+		}
+		else if(atoi( pkvd->szValue ) == 8)
+		{
+			m_selfmode = TRUE;
+			m_longming = 1;
+		}
+		else if(atoi( pkvd->szValue ) == 9)
+		{
+			m_selfmode = TRUE;
+			m_longming = 1;
+			m_godmode = TRUE;
+		}
+		else if(atoi( pkvd->szValue ) == 10)
+		{
+			pev->flags		|= FL_NOTARGET;
+		}
+		else if(atoi( pkvd->szValue ) == 11)
+		{
+			m_MoveFail_SimpleRoad = TRUE;
+			m_ignoreFail_MAX = 50;
+			m_ignoreFail_OFF = 0;
+		}
+		else if(atoi( pkvd->szValue ) == 12)
+		{
+			m_no_pov_limit = 1;
+		}
+		else if(atoi( pkvd->szValue ) == 13)
+		{
+			m_EyeMod = 1;
+		}
+		else if(atoi( pkvd->szValue ) == 14)
+		{
+			m_EyeMod = 2;
+		}
+		else if(atoi( pkvd->szValue ) == 15)
+		{
+			m_walkaround = TRUE;
+			m_walkaroundFail = TRUE;
+		}
+		else if(atoi( pkvd->szValue ) == 16)
+		{
+			m_EyeMod = 1;
+			m_ctmod = 1;
+		}
+		else if(atoi( pkvd->szValue ) == 17)
+		{
+			m_FTSmod = 8;
+		}
+		else if(atoi( pkvd->szValue ) == 18)
+		{
+			m_FTSmod = 8;
+			m_no_pov_limit = 1;
+		}
+		else if(atoi( pkvd->szValue ) == 19)
+		{
+			m_user_aimflag = TRUE;
+			m_longming = 1;
+		}
+		else if(atoi( pkvd->szValue ) == 20)
+		{
+			m_undropgun = TRUE;
+		}
+		else if(atoi( pkvd->szValue ) == 21)
+		{
+			m_selfmode = TRUE;
+			m_longming = 1;
+			m_godmode = TRUE;
+			pev->flags		|= FL_NOTARGET;
+		}
+		else if(atoi( pkvd->szValue ) == 22)
+		{
+			m_singdelay_max = 5;
+			m_singdelay_use = m_singdelay_max;
+			m_flFieldOfView	= 0.5;
+		}
+		else if(atoi( pkvd->szValue ) == 23)
+		{
+			m_rpgms_inteam = 5;
+		}
+		else if(atoi( pkvd->szValue ) == 24)
+		{
+			m_selfmode = TRUE;
+			m_rpgms_inteam = 5;
+			m_godmode = TRUE;
+			pev->flags |= FL_NOTARGET;
+		}
+		
+		pkvd->fHandled = TRUE;
+	}
 	else if( FStrEq( pkvd->szKeyName, "TriggerCondition" ) )
 	{
 		m_iTriggerCondition = atoi( pkvd->szValue );
+
+		if(m_iTriggerCondition == 1000)
+		{
+			m_flFieldOfView		= -1;
+			m_iTriggerCondition = 0;
+		}
+
+		if(m_iTriggerCondition == 1419)
+		{
+			m_FTSmod = 4;
+			m_iTriggerCondition = 4;
+			m_no_pov_limit = 1;
+		}
+		if(m_iTriggerCondition == 1834)
+		{
+			m_running_rangeattack = 1;
+			m_iTriggerCondition = 0;
+			m_no_pov_limit = 1;
+		}
+		if(m_iTriggerCondition == 8757)
+		{
+			m_FTSmod = 1;
+			m_chase_mode = 2;
+			m_iTriggerCondition = 0;
+			m_no_pov_limit = 1;
+		}
+		if(m_iTriggerCondition == 1919)
+		{
+			m_ignoreFail_OFF = 1;
+			m_iTriggerCondition = 0;
+		}
+
+		if(m_iTriggerCondition == 1024)
+		{
+			m_flFieldOfView		= -1;
+			m_iTriggerCondition = 6547;
+		}
+
 		pkvd->fHandled = TRUE;
 	}
 	else
@@ -2979,10 +5318,77 @@ BOOL CBaseMonster::FCheckAITrigger( void )
 			fFireTarget = TRUE;
 		}
 		break;
+	case 7456:
+		if(m_lovehate > 0)
+		{
+			m_lovehate = 810;
+			m_longming = 1;
+			m_no_pov_limit = 1;
+		}
+		break;
+	case 1919:
+		if ( m_cleardally >= 25 )
+		{
+			if ( !FStringNull(pev->message) )// this monster has a target
+			{
+				// Find the monster's initial target entity, stash it
+				m_pGoalEnt = CBaseEntity::Instance( FIND_ENTITY_BY_TARGETNAME ( NULL, STRING( pev->message ) ) );
+
+				if ( !m_pGoalEnt )
+				{
+					ALERT(at_error, "ReadyMonster()--%s couldn't find target %s", STRING(pev->classname), STRING(pev->target));
+				}
+				else
+				{
+					// Monster will start turning towards his destination
+					MakeIdealYaw ( m_pGoalEnt->pev->origin );
+
+					m_movementGoal = MOVEGOAL_PATHCORNER;
+					
+					if ( pev->movetype == MOVETYPE_FLY )
+					{
+						m_movementActivity = ACT_FLY;
+					}
+					else if ( LookupActivity( ACT_RUN ) != ACTIVITY_NOT_AVAILABLE && m_alwaysrunpath )
+					{
+						m_movementActivity = ACT_RUN;
+					}
+					else{
+						m_movementActivity = ACT_WALK;
+					}
+					if ( !FRefreshRoute() )
+					{
+						ALERT ( at_aiconsole, "Can't Create Route!\n" );
+					}
+					SetState( MONSTERSTATE_IDLE );
+					ChangeSchedule( GetScheduleOfType( SCHED_IDLE_WALK ) );
+				}
+			}
+			m_iTriggerCondition = AITRIGGER_NONE;
+			return FALSE; 
+		}
+		break;
 	case AITRIGGER_SEEPLAYER_UNCONDITIONAL:
 		if( HasConditions( bits_COND_SEE_CLIENT ) )
 		{
 			fFireTarget = TRUE;
+		}
+		break;
+	case 123:
+		{
+			CBaseEntity *pEntity = UTIL_FindEntityByClassname( NULL, "player" );
+			if ( pEntity )
+			{
+				float flDist = ( pEntity->pev->origin - pev->origin).Length();
+				if(flDist < 250)
+				{
+					m_boltpoison = 40;
+					pev->sequence = LookupActivity ( ACT_MELEE_ATTACK1 );
+					ResetSequenceInfo( );
+					pev->frame = 0;
+					m_iTriggerCondition = AITRIGGER_NONE;
+				}
+			}
 		}
 		break;
 	case AITRIGGER_SEEPLAYER_NOT_IN_COMBAT:
@@ -3039,6 +5445,34 @@ BOOL CBaseMonster::FCheckAITrigger( void )
 			fFireTarget = TRUE;
 		}
 		break;
+	case AITRIGGER_SEEPLAYER_OR_TAKEDAMAGE:
+		if ( pev->deadflag != DEAD_NO )
+		{
+			fFireTarget = TRUE;
+		}
+		else if ( m_afConditions & ( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE ) )
+		{
+			fFireTarget = TRUE;
+		}
+		else if ( HasConditions ( bits_COND_SEE_CLIENT ) || HasConditions ( bits_COND_SEE_ENEMY ) )
+		{
+			fFireTarget = TRUE;
+		}
+		break;
+	case 13:
+		if ( m_afConditions & ( bits_COND_LIGHT_DAMAGE | bits_COND_HEAVY_DAMAGE ) )
+		{
+			fFireTarget = TRUE;
+		} 
+		else if(m_cleardally >= 10){
+			fFireTarget = TRUE;
+		}
+		break;
+	case 6547:
+		if(m_cleardally >= 1){
+		fFireTarget = TRUE;
+		}
+		break;
 	}
 
 	if( fFireTarget )
@@ -3080,7 +5514,7 @@ int CBaseMonster::CanPlaySequence( BOOL fDisregardMonsterState, int interruptLev
 		return TRUE;
 	}
 	
-	if( m_MonsterState == MONSTERSTATE_ALERT && interruptLevel >= SS_INTERRUPT_BY_NAME )
+	if( m_MonsterState == MONSTERSTATE_ALERT )
 		return TRUE;
 
 	// unknown situation
@@ -3121,7 +5555,7 @@ BOOL CBaseMonster::FindLateralCover( const Vector &vecThreat, const Vector &vecV
 
 		if( tr.flFraction != 1.0f )
 		{
-			if( FValidateCover( vecLeftTest ) && CheckLocalMove( pev->origin, vecLeftTest, NULL, NULL ) == LOCALMOVE_VALID )
+			if( FValidateCover( vecLeftTest ) && CheckLocalMove( pev->origin, vecLeftTest, NULL, NULL, 0 ) == LOCALMOVE_VALID )
 			{
 				if( MoveToLocation( ACT_RUN, 0, vecLeftTest ) )
 				{
@@ -3135,7 +5569,7 @@ BOOL CBaseMonster::FindLateralCover( const Vector &vecThreat, const Vector &vecV
 
 		if( tr.flFraction != 1.0f )
 		{
-			if( FValidateCover( vecRightTest ) && CheckLocalMove( pev->origin, vecRightTest, NULL, NULL ) == LOCALMOVE_VALID )
+			if( FValidateCover( vecRightTest ) && CheckLocalMove( pev->origin, vecRightTest, NULL, NULL, 0 ) == LOCALMOVE_VALID )
 			{
 				if( MoveToLocation( ACT_RUN, 0, vecRightTest ) )
 				{
@@ -3154,7 +5588,83 @@ Vector CBaseMonster::ShootAtEnemy( const Vector &shootOrigin )
 
 	if( pEnemy )
 	{
-		return( ( pEnemy->BodyTarget( shootOrigin ) - pEnemy->pev->origin ) + m_vecEnemyLKP - shootOrigin ).Normalize();
+		Vector duckheight = Vector(0,0,0);
+
+		CBaseMonster *pEnemyMonster;
+		pEnemyMonster = pEnemy->MyMonsterPointer();
+		if(pEnemyMonster && pEnemyMonster->m_duckseq == 1)
+		{
+			duckheight = Vector(0,0,-10);
+		}
+		else if(pEnemyMonster && pEnemyMonster->m_duckseq == 2)
+		{
+			duckheight = Vector(0,0,-24);
+		}
+		else if(pEnemyMonster && pEnemyMonster->m_duckseq == 3)
+		{
+			duckheight = Vector(0,0,-27);
+		}
+		else if(pEnemyMonster && pEnemyMonster->m_duckseq == 4)
+		{
+			duckheight = Vector(0,0,-32);
+		}
+		else if(pEnemyMonster && pEnemyMonster->m_duckseq == 5)
+		{
+			duckheight = Vector(0,0,-15);
+		}
+
+		if(m_aimenemy_mod == 9)
+		{
+			return ( (pEnemy->BodyTarget_d( shootOrigin ) - pEnemy->pev->origin + duckheight) + m_vecEnemyLKP - shootOrigin ).Normalize();
+		}
+		else if(m_aimenemy_mod == 8)
+		{
+			return ( (pEnemy->BodyTarget_b( shootOrigin ) - pEnemy->pev->origin + duckheight) + m_vecEnemyLKP - shootOrigin ).Normalize();
+		}
+		else if(m_aimenemy_mod == 7)
+		{
+			return ( (pEnemy->BodyTarget_l( shootOrigin ) - pEnemy->pev->origin + duckheight) + m_vecEnemyLKP - shootOrigin ).Normalize();
+		}
+		else if(m_aimenemy_mod == 6)
+		{
+			return ( (pEnemy->BodyTarget_o( shootOrigin ) - pEnemy->pev->origin + duckheight) + m_vecEnemyLKP - shootOrigin ).Normalize();
+		}
+		else if(m_aimenemy_mod == 5)
+		{
+			return ( (pEnemy->BodyTarget( shootOrigin ) - pEnemy->pev->origin + duckheight) + m_vecEnemyLKP - shootOrigin ).Normalize();
+		}
+		else if(m_aimenemy_mod == 4)
+		{
+			return ( (pEnemy->BodyTarget_e( shootOrigin ) - pEnemy->pev->origin + duckheight) + m_vecEnemyLKP - shootOrigin ).Normalize();
+		}
+		else if(m_aimenemy_mod == 3)
+		{
+			return ( (pEnemy->BodyTarget_h( shootOrigin ) - pEnemy->pev->origin + duckheight) + m_vecEnemyLKP - shootOrigin ).Normalize();
+		}
+		else if(m_aimenemy_mod == 2)
+		{
+			int aim_mod = RANDOM_LONG(1,5);
+			if(aim_mod == 1)
+			{
+				return ( (pEnemy->BodyTarget( shootOrigin ) - pEnemy->pev->origin + duckheight) + m_vecEnemyLKP - shootOrigin ).Normalize();
+			}
+			else if(aim_mod == 5)
+			{
+				return ( (pEnemy->BodyTarget_e( shootOrigin ) - pEnemy->pev->origin + duckheight) + m_vecEnemyLKP - shootOrigin ).Normalize();
+			}
+			else
+			{
+				return ( (pEnemy->BodyTarget_h( shootOrigin ) - pEnemy->pev->origin + duckheight) + m_vecEnemyLKP - shootOrigin ).Normalize();
+			}
+		}
+		else if(m_aimenemy_mod == 1)
+		{
+			return ( (pEnemy->BodyTarget_c( shootOrigin ) - pEnemy->pev->origin + duckheight) + m_vecEnemyLKP - shootOrigin ).Normalize();
+		}
+		else
+		{
+			return ( (pEnemy->BodyTarget( shootOrigin ) - pEnemy->pev->origin + duckheight) + m_vecEnemyLKP - shootOrigin ).Normalize();
+		}
 	}
 	else
 		return gpGlobals->v_forward;
@@ -3169,7 +5679,7 @@ Vector CBaseMonster::ShootAtEnemy( const Vector &shootOrigin )
 //=========================================================
 BOOL CBaseMonster::FacingIdeal( void )
 {
-	if( fabs( FlYawDiff() ) <= 0.006f )//!!!BUGBUG - no magic numbers!!!
+	if( m_playerguardian_mode == 1 || m_facing_fucking_mode == 1 || fabs( FlYawDiff() ) <= 0.006 )//!!!BUGBUG - no magic numbers!!!
 	{
 		return TRUE;
 	}
@@ -3182,12 +5692,10 @@ BOOL CBaseMonster::FacingIdeal( void )
 //=========================================================
 BOOL CBaseMonster::FCanActiveIdle( void )
 {
-	/*
 	if( m_MonsterState == MONSTERSTATE_IDLE && m_IdealMonsterState == MONSTERSTATE_IDLE && !IsMoving() )
 	{
 		return TRUE;
 	}
-	*/
 	return FALSE;
 }
 
@@ -3215,15 +5723,12 @@ void CBaseMonster::SentenceStop( void )
 #endif
 void CBaseMonster::CorpseFallThink( void )
 {
-	if( pev->flags & FL_ONGROUND )
-	{
-		SetThink( NULL );
+	pev->movetype = MOVETYPE_TOSS;
+	SetThink( NULL );
 
-		SetSequenceBox( );
-		UTIL_SetOrigin( pev, pev->origin );// link into world.
-	}
-	else
-		pev->nextthink = gpGlobals->time + 0.1f;
+	SetSequenceBox( );
+	UTIL_SetOrigin( pev, pev->origin );// link into world.
+	UTIL_SetSize(pev, Vector(-5,-5,0), Vector(5,5,2));
 }
 
 // Call after animation/pose is set up
@@ -3233,6 +5738,7 @@ void CBaseMonster::MonsterInitDead( void )
 
 	pev->solid		= SOLID_BBOX;
 	pev->movetype		= MOVETYPE_TOSS;// so he'll fall to ground
+	pev->takedamage     = DAMAGE_YES;
 
 	pev->frame = 0;
 	ResetSequenceInfo();
@@ -3258,53 +5764,14 @@ void CBaseMonster::MonsterInitDead( void )
 //=========================================================
 BOOL CBaseMonster::BBoxFlat( void )
 {
-	TraceResult	tr;
-	Vector		vecPoint;
-	float		flXSize, flYSize;
-	float		flLength;
-	float		flLength2;
-
-	flXSize = pev->size.x / 2;
-	flYSize = pev->size.y / 2;
-
-	vecPoint.x = pev->origin.x + flXSize;
-	vecPoint.y = pev->origin.y + flYSize;
-	vecPoint.z = pev->origin.z;
-
-	UTIL_TraceLine( vecPoint, vecPoint - Vector( 0, 0, 100 ), ignore_monsters, ENT( pev ), &tr );
-	flLength = ( vecPoint - tr.vecEndPos ).Length();
-
-	vecPoint.x = pev->origin.x - flXSize;
-	vecPoint.y = pev->origin.y - flYSize;
-
-	UTIL_TraceLine( vecPoint, vecPoint - Vector( 0, 0, 100 ), ignore_monsters, ENT( pev ), &tr );
-	flLength2 = ( vecPoint - tr.vecEndPos ).Length();
-	if( flLength2 > flLength )
+	TraceResult tr;
+	Vector vecSrc = pev->origin + Vector(0,0,1);
+	Vector vecEnd = vecSrc + Vector(0,0,40);
+	UTIL_TraceLine( vecSrc, vecEnd, ignore_monsters, ENT( pev ), &tr );
+	if( tr.flFraction != 1.0 )
 	{
 		return FALSE;
 	}
-	flLength = flLength2;
-
-	vecPoint.x = pev->origin.x - flXSize;
-	vecPoint.y = pev->origin.y + flYSize;
-	UTIL_TraceLine ( vecPoint, vecPoint - Vector( 0, 0, 100 ), ignore_monsters, ENT( pev ), &tr );
-	flLength2 = ( vecPoint - tr.vecEndPos ).Length();
-	if( flLength2 > flLength )
-	{
-		return FALSE;
-	}
-	flLength = flLength2;
-
-	vecPoint.x = pev->origin.x + flXSize;
-	vecPoint.y = pev->origin.y - flYSize;
-	UTIL_TraceLine( vecPoint, vecPoint - Vector( 0, 0, 100 ), ignore_monsters, ENT( pev ), &tr );
-	flLength2 = ( vecPoint - tr.vecEndPos ).Length();
-	if( flLength2 > flLength )
-	{
-		return FALSE;
-	}
-	// flLength = flLength2;
-
 	return TRUE;
 }
 
@@ -3359,6 +5826,10 @@ BOOL CBaseMonster::GetEnemy( void )
 
 	if( m_hEnemy != 0 )
 	{
+		if(m_thinkspeed == -1)
+		{
+			m_thinkspeed = 0;
+		}
 		// monster has an enemy.
 		return TRUE;
 	}
@@ -3399,7 +5870,7 @@ CBaseEntity *CBaseMonster::DropItem( const char *pszItemName, const Vector &vecP
 BOOL CBaseMonster::ShouldFadeOnDeath( void )
 {
 	// if flagged to fade out or I have an owner (I came from a monster spawner)
-	if( ( pev->spawnflags & SF_MONSTER_FADECORPSE ) || !FNullEnt( pev->owner ) )
+	if( ( pev->spawnflags & SF_MONSTER_FADECORPSE ) || m_diefadeout >= 1 )
 		return TRUE;
 
 	return FALSE;

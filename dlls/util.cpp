@@ -1078,12 +1078,12 @@ BOOL UTIL_ShouldShowBlood( int color )
 	{
 		if( color == BLOOD_COLOR_RED )
 		{
-			if( CVAR_GET_FLOAT( "violence_hblood" ) != 0 )
+			//if( CVAR_GET_FLOAT( "violence_hblood" ) != 0 )
 				return TRUE;
 		}
 		else
 		{
-			if( CVAR_GET_FLOAT( "violence_ablood" ) != 0 )
+			//if( CVAR_GET_FLOAT( "violence_ablood" ) != 0 )
 				return TRUE;
 		}
 	}
@@ -1290,6 +1290,23 @@ void UTIL_Sparks( const Vector &position )
 		WRITE_COORD( position.x );
 		WRITE_COORD( position.y );
 		WRITE_COORD( position.z );
+	MESSAGE_END();
+}
+
+void UTIL_WhiteSparks( const Vector &origin, const Vector &direction, int color, int count, int speed, int velocityRange )
+{
+	MESSAGE_BEGIN( MSG_PVS, SVC_TEMPENTITY, origin );
+		WRITE_BYTE( TE_STREAK_SPLASH );
+		WRITE_COORD( origin.x );		// origin
+		WRITE_COORD( origin.y );
+		WRITE_COORD( origin.z );
+		WRITE_COORD( direction.x );	// direction
+		WRITE_COORD( direction.y );
+		WRITE_COORD( direction.z );
+		WRITE_BYTE( color );	// Streak color 6
+		WRITE_SHORT( count );	// count
+		WRITE_SHORT( speed );
+		WRITE_SHORT( velocityRange );	// Random velocity modifier
 	MESSAGE_END();
 }
 

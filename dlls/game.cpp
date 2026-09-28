@@ -67,7 +67,7 @@ cvar_t *g_psv_developer;
 
 //CVARS FOR SKILL LEVEL SETTINGS
 // Agrunt
-cvar_t	sk_agrunt_health1 = {"sk_agrunt_health1","0"};
+/*cvar_t	sk_agrunt_health1 = {"sk_agrunt_health1","0"};
 cvar_t	sk_agrunt_health2 = {"sk_agrunt_health2","0"};
 cvar_t	sk_agrunt_health3 = {"sk_agrunt_health3","0"};
 
@@ -456,7 +456,7 @@ cvar_t	sk_player_arm3	= { "sk_player_arm3","1" };
 
 cvar_t	sk_player_leg1	= { "sk_player_leg1","1" };
 cvar_t	sk_player_leg2	= { "sk_player_leg2","1" };
-cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };
+cvar_t	sk_player_leg3	= { "sk_player_leg3","1" };*/
 
 // END Cvars for Skill Level settings
 
@@ -516,7 +516,7 @@ void GameDLLInit( void )
 
 // REGISTER CVARS FOR SKILL LEVEL STUFF
 	// Agrunt
-	CVAR_REGISTER( &sk_agrunt_health1 );// {"sk_agrunt_health1","0"};
+	/*CVAR_REGISTER( &sk_agrunt_health1 );// {"sk_agrunt_health1","0"};
 	CVAR_REGISTER( &sk_agrunt_health2 );// {"sk_agrunt_health2","0"};
 	CVAR_REGISTER( &sk_agrunt_health3 );// {"sk_agrunt_health3","0"};
 
@@ -886,11 +886,11 @@ void GameDLLInit( void )
 
 	CVAR_REGISTER( &sk_player_leg1 );
 	CVAR_REGISTER( &sk_player_leg2 );
-	CVAR_REGISTER( &sk_player_leg3 );
+	CVAR_REGISTER( &sk_player_leg3 );*/
 // END REGISTER CVARS FOR SKILL LEVEL STUFF
 
 	CVAR_REGISTER( &sv_pushable_fixed_tick_fudge );
 
-	SERVER_COMMAND( "exec skill.cfg\n" );
+	SERVER_COMMAND( "exec game.cfg\n" );
 }
 

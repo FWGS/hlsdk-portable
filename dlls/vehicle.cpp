@@ -18,6 +18,7 @@
 #define VEHICLE_SPEED11_ACCELERATION	0.001444444444444444
 #define VEHICLE_SPEED12_ACCELERATION	0.001200000000000000
 #define VEHICLE_SPEED13_ACCELERATION	0.000916666666666666
+#define VEHICLE_SPEED14_ACCELERATION 	0.001444444444444444
 
 #define VEHICLE_STARTPITCH		60
 #define VEHICLE_MAXPITCH		200
@@ -33,6 +34,8 @@ TYPEDESCRIPTION CFuncVehicle::m_SaveData[] =
 	DEFINE_FIELD( CFuncVehicle, m_startSpeed, FIELD_FLOAT ),
 	DEFINE_FIELD( CFuncVehicle, m_controlMins, FIELD_VECTOR ),
 	DEFINE_FIELD( CFuncVehicle, m_controlMaxs, FIELD_VECTOR ),
+	DEFINE_FIELD( CFuncVehicle, m_controlMins2, FIELD_VECTOR ),
+	DEFINE_FIELD( CFuncVehicle, m_controlMaxs2, FIELD_VECTOR ),
 	DEFINE_FIELD( CFuncVehicle, m_sounds, FIELD_INTEGER ),
 	DEFINE_FIELD( CFuncVehicle, m_flVolume, FIELD_FLOAT ),
 	DEFINE_FIELD( CFuncVehicle, m_flBank, FIELD_FLOAT ),
@@ -226,6 +229,7 @@ void CFuncVehicle::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 			else if( pev->speed < 400 )	flSpeedRatio = m_acceleration * 0.0005 + flSpeedRatio + VEHICLE_SPEED11_ACCELERATION;
 			else if( pev->speed < 550 )	flSpeedRatio = m_acceleration * 0.0005 + flSpeedRatio + VEHICLE_SPEED12_ACCELERATION;
 			else if( pev->speed < 800 )	flSpeedRatio = m_acceleration * 0.0005 + flSpeedRatio + VEHICLE_SPEED13_ACCELERATION;
+			else flSpeedRatio = m_acceleration * 0.0005 + flSpeedRatio + VEHICLE_SPEED14_ACCELERATION;
 		}
 		else if( delta < 0 )
 		{
@@ -308,7 +312,7 @@ void CFuncVehicle::UpdateSound()
 	{
 		if( m_sounds < 5 )
 		{
-			EMIT_SOUND_DYN( ENT(pev), CHAN_ITEM, "plats/vehicle_brake1.wav", m_flVolume, ATTN_NORM, 0, PITCH_NORM );
+			EMIT_SOUND_DYN( ENT(pev), CHAN_ITEM, "vehicle/vehicle_brake1.wav", m_flVolume, ATTN_NORM, 0, PITCH_NORM );
 		}
 
 		EMIT_SOUND_DYN( ENT( pev ), CHAN_STATIC, STRING( pev->noise ), m_flVolume, ATTN_NORM, 0, (int)flpitch );
@@ -321,7 +325,7 @@ void CFuncVehicle::UpdateSound()
 		unsigned short us_volume = ( (unsigned short)( m_flVolume * 40 ) & 0x003F );
 		unsigned short us_encode = us_sound | us_pitch | us_volume;
 
-		PLAYBACK_EVENT_FULL( FEV_UPDATE, edict(), m_usAdjustPitch, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, us_encode, 0, 0, 0 );
+		//PLAYBACK_EVENT_FULL( FEV_UPDATE, edict(), m_usAdjustPitch, 0.0, g_vecZero, g_vecZero, 0.0, 0.0, us_encode, 0, 0, 0 );
 	}
 }
 
@@ -673,6 +677,22 @@ void CFuncVehicle::Next()
 		pev->velocity = pev->velocity + vGravityVector;
 	}
 
+	CBaseEntity *pEntity = NULL;
+	while ((pEntity = UTIL_FindEntityInSphere( pEntity, pev->origin, 768 )) != NULL)
+	{
+		if(OnControls2(pEntity->pev) && pEntity->pev->takedamage )
+		{
+			if(pEntity->pev->health <= pev->speed * 0.04)
+			{
+				pEntity->TakeDamage(pev, pev, pev->speed * 0.4, DMG_CRUSH);
+			}
+			else
+			{
+				pEntity->TakeDamage(pev, pev, pev->speed * 0.04, DMG_CRUSH);
+			}
+		}
+	}
+
 	SetThink( &CFuncVehicle::Next );
 	NextThink( pev->ltime + time, TRUE );
 }
@@ -737,6 +757,13 @@ void CFuncVehicle::SetControls(entvars_t *pevControls)
 	m_controlMaxs = pevControls->maxs + offset;
 }
 
+void CFuncVehicle::SetControls2(entvars_t *pevControls)
+{
+	Vector offset = pevControls->origin - pev->oldorigin;
+	m_controlMins2 = pevControls->mins + offset;
+	m_controlMaxs2 = pevControls->maxs + offset;
+}
+
 BOOL CFuncVehicle::OnControls(entvars_t *pevTest)
 {
 	if( pev->spawnflags & SF_TRACKTRAIN_NOCONTROL )
@@ -753,6 +780,23 @@ BOOL CFuncVehicle::OnControls(entvars_t *pevTest)
 
 	return ( local.x >= m_controlMins.x && local.y >= m_controlMins.y && local.z >= m_controlMins.z
 		&& local.x <= m_controlMaxs.x && local.y <= m_controlMaxs.y && local.z <= m_controlMaxs.z );
+}
+
+BOOL CFuncVehicle::OnControls2(entvars_t *pevTest)
+{
+	Vector offset = pevTest->origin - pev->origin;
+
+	if (pev->spawnflags & SF_TRACKTRAIN_NOCONTROL)
+		return FALSE;
+
+	UTIL_MakeVectors(pev->angles);
+
+	Vector local;
+	local.x = DotProduct(offset, gpGlobals->v_forward);
+	local.y = -DotProduct(offset, gpGlobals->v_right);
+	local.z = DotProduct(offset, gpGlobals->v_up);
+
+	return (local.x >= m_controlMins2.x && local.y >= m_controlMins2.y && local.z >= m_controlMins2.z && local.x <= m_controlMaxs2.x && local.y <= m_controlMaxs2.y && local.z <= m_controlMaxs2.z);
 }
 
 void CFuncVehicle::Find()
@@ -944,21 +988,22 @@ void CFuncVehicle::Precache()
 
 	switch( m_sounds )
 	{
-	case 1: PRECACHE_SOUND( "plats/vehicle1.wav" );pev->noise = MAKE_STRING( "plats/vehicle1.wav" ); break;
-	case 2: PRECACHE_SOUND( "plats/vehicle2.wav" );pev->noise = MAKE_STRING( "plats/vehicle2.wav" ); break;
-	case 3: PRECACHE_SOUND( "plats/vehicle3.wav" );pev->noise = MAKE_STRING( "plats/vehicle3.wav" ); break;
-	case 4: PRECACHE_SOUND( "plats/vehicle4.wav" );pev->noise = MAKE_STRING( "plats/vehicle4.wav" ); break;
-	case 5: PRECACHE_SOUND( "plats/vehicle6.wav" );pev->noise = MAKE_STRING( "plats/vehicle6.wav" ); break;
-	case 6: PRECACHE_SOUND( "plats/vehicle7.wav" );pev->noise = MAKE_STRING( "plats/vehicle7.wav" ); break;
+	case 1: PRECACHE_SOUND( "vehicle/vehicle1.wav" );pev->noise = MAKE_STRING( "vehicle/vehicle1.wav" ); break;
+	case 2: PRECACHE_SOUND( "vehicle/vehicle2.wav" );pev->noise = MAKE_STRING( "vehicle/vehicle2.wav" ); break;
+	case 3: PRECACHE_SOUND( "vehicle/vehicle3.wav" );pev->noise = MAKE_STRING( "vehicle/vehicle3.wav" ); break;
+	case 4: PRECACHE_SOUND( "vehicle/vehicle4.wav" );pev->noise = MAKE_STRING( "vehicle/vehicle4.wav" ); break;
+	case 5: PRECACHE_SOUND( "vehicle/vehicle6.wav" );pev->noise = MAKE_STRING( "vehicle/vehicle6.wav" ); break;
+	case 6: PRECACHE_SOUND( "vehicle/vehicle7.wav" );pev->noise = MAKE_STRING( "vehicle/vehicle7.wav" ); break;
 	}
 
-	PRECACHE_SOUND( "plats/vehicle_brake1.wav" );
-	PRECACHE_SOUND( "plats/vehicle_start1.wav" );
+	PRECACHE_SOUND( "vehicle/vehicle_brake1.wav" );
+	PRECACHE_SOUND( "vehicle/vehicle_start1.wav" );
 
 	m_usAdjustPitch = PRECACHE_EVENT( 1, "events/vehicle.sc" );
 }
 
 LINK_ENTITY_TO_CLASS( func_vehiclecontrols, CFuncVehicleControls );
+LINK_ENTITY_TO_CLASS( func_vehiclecontrols2, CFuncVehicleControls );
 
 void CFuncVehicleControls::Find()
 {
@@ -977,8 +1022,14 @@ void CFuncVehicleControls::Find()
 	}
 
 	CFuncVehicle *pvehicle = CFuncVehicle::Instance( pTarget );
-
-	pvehicle->SetControls( pev );
+	if(FClassnameIs(pev, "func_vehiclecontrols2"))
+	{
+		pvehicle->SetControls2(pev);
+	}
+	else
+	{
+		pvehicle->SetControls( pev );
+	}
 	UTIL_Remove( this );
 }
 
