@@ -23,6 +23,7 @@
 #include "decals.h"
 #include "func_break.h"
 #include "shake.h"
+#include "player.h"
 
 #define	SF_GIBSHOOTER_REPEATABLE		1 // allows a gibshooter to be refired
 
@@ -30,6 +31,8 @@
 
 // Lightning target, just alias landmark
 LINK_ENTITY_TO_CLASS( info_target, CPointEntity )
+LINK_ENTITY_TO_CLASS( info_displacer_xen_target, CPointEntity );
+LINK_ENTITY_TO_CLASS( info_displacer_earth_target, CPointEntity );
 
 class CBubbling : public CBaseEntity
 {
@@ -1390,8 +1393,8 @@ void CGibShooter::Spawn( void )
 
 CGib *CGibShooter::CreateGib( void )
 {
-	if( CVAR_GET_FLOAT( "violence_hgibs" ) == 0 )
-		return NULL;
+	/*if( CVAR_GET_FLOAT( "violence_hgibs" ) == 0 )
+		return NULL;*/
 
 	CGib *pGib = GetClassPtr( (CGib *)NULL );
 	pGib->Spawn( "models/hgibs.mdl" );
@@ -1901,6 +1904,7 @@ LINK_ENTITY_TO_CLASS( env_fade, CFade )
 #define SF_FADE_IN			0x0001		// Fade in, not out
 #define SF_FADE_MODULATE		0x0002		// Modulate, don't blend
 #define SF_FADE_ONLYONE			0x0004
+#define SF_FADE_FREEZE			0x0008
 
 void CFade::Spawn( void )
 {
@@ -1935,6 +1939,14 @@ void CFade::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType
 
 	if( pev->spawnflags & SF_FADE_MODULATE )
 		fadeFlags |= FFADE_MODULATE;
+
+	if( pev->spawnflags & SF_FADE_FREEZE )
+	{
+		if ( pActivator->IsNetClient() )
+		{
+			((CBasePlayer *)pActivator)->EnableControl(FALSE);
+		}
+	}
 
 	if( pev->spawnflags & SF_FADE_ONLYONE )
 	{

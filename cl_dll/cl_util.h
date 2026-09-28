@@ -20,6 +20,11 @@
 #include <assert.h>
 #include "exportdef.h"
 #include "cvardef.h"
+#include <cmath>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 #if !defined(TRUE)
 #define TRUE 1
@@ -49,6 +54,8 @@ inline struct cvar_s *CVAR_CREATE( const char *cv, const char *val, const int fl
 #define SPR_Set ( *gEngfuncs.pfnSPR_Set )
 #define SPR_Frames ( *gEngfuncs.pfnSPR_Frames )
 #define SPR_GetList ( *gEngfuncs.pfnSPR_GetList )
+
+cl_entity_t *UTIL_GetClientEntityWithServerIndex( int sv_index );
 
 // SPR_Draw  draws a the current sprite as solid
 #define SPR_Draw ( *gEngfuncs.pfnSPR_Draw )
@@ -156,6 +163,13 @@ inline void PlaySound( int iSound, float vol ) { gEngfuncs.pfnPlaySoundByIndex( 
 #define Q_min(a, b)  (((a) < (b)) ? (a) : (b))
 #define fabs(x)	   ((x) > 0 ? (x) : 0 - (x))
 
+//=======================================//
+void VectorRandom(float *v, float min = -1.0f, float max = 1.0f);
+vec3_t VectorRandom(void);
+
+int LoadModel(const char *pszName);
+//=======================================//
+
 inline int GetSpriteRes( int width, int height )
 {
 	int i;
@@ -192,6 +206,8 @@ void VectorInverse( float *v );
 
 // extern vec3_t vec3_origin;
 extern float vec3_origin[3];
+extern double g_cl_gravity;// XDM3035
+extern Vector g_vecViewAngles;
 
 // disable 'possible loss of data converting float to int' warning message
 #pragma warning( disable: 4244 )
@@ -209,4 +225,36 @@ HSPRITE LoadSprite( const char *pszName );
 
 bool HUD_MessageBox( const char *msg );
 bool IsXashFWGS();
+
+inline void SinCos(float rad, float *sinf, float *cosf)
+{
+    *sinf = std::sin(rad);
+    *cosf = std::cos(rad);
+}
+
+/*
+====================
+AngleMatrix
+XDM: faster combined algorythm
+====================
+*/
+inline void AngleMatrix2(const float *origin, const float *angles, float (*matrix)[4])
+{
+	float sr, sp, sy, cr, cp, cy;
+	SinCos(angles[0] * (M_PI*2 / 360), &sp, &cp);
+	SinCos(angles[1] * (M_PI*2 / 360), &sy, &cy);
+	SinCos(angles[2] * (M_PI*2 / 360), &sr, &cr);
+	matrix[0][0] = cp*cy;
+	matrix[1][0] = cp*sy;
+	matrix[2][0] = -sp;
+	matrix[0][1] = sr*sp*cy+cr*-sy;
+	matrix[1][1] = sr*sp*sy+cr*cy;
+	matrix[2][1] = sr*cp;
+	matrix[0][2] = (cr*sp*cy+-sr*-sy);
+	matrix[1][2] = (cr*sp*sy+-sr*cy);
+	matrix[2][2] = cr*cp;
+	matrix[0][3] = origin[0];
+	matrix[1][3] = origin[1];
+	matrix[2][3] = origin[2];
+}
 #endif

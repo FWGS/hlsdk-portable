@@ -29,6 +29,7 @@ CSoundEnt *pSoundEnt;
 void CSound::Clear( void )
 {
 	m_vecOrigin = g_vecZero;
+	m_iClassType = 0;
 	m_iType = 0;
 	m_iVolume = 0;
 	m_flExpireTime = 0;
@@ -43,6 +44,7 @@ void CSound::Clear( void )
 void CSound::Reset( void )
 {
 	m_vecOrigin = g_vecZero;
+	m_iClassType = 0;
 	m_iType = 0;
 	m_iVolume = 0;
 	m_iNext = SOUNDLIST_EMPTY;

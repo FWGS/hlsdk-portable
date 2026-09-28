@@ -32,6 +32,13 @@ void BEGIN_READ( void *buf, int size )
 	gpBuf = (byte*)buf;
 }
 
+void END_READ( const char *pszName )
+{
+//	if(giBadRead)
+//	gEngfuncs.Con_Printf("Msg: %s was received with errors\n", pszName );
+}
+
+
 int READ_CHAR( void )
 {
 	int c;

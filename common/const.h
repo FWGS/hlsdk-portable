@@ -576,6 +576,41 @@
 // byte ( color ) this is an index into an array of color vectors in the engine. (0 - )
 // byte ( length * 10 )
 
+
+// RenderSystem follow flags, ICNF - if cannot follow
+#define RENDERSYSTEM_FFLAG_ICNF_KEEPSEARCHING	0
+#define RENDERSYSTEM_FFLAG_ICNF_REMOVE			1
+#define RENDERSYSTEM_FFLAG_ICNF_STAYANDFORGET	2
+#define RENDERSYSTEM_FFLAG_ICNF_NODRAW			4
+#define RENDERSYSTEM_FFLAG_CLIPREMOVE			8
+#define RENDERSYSTEM_FFLAG_5					16
+#define RENDERSYSTEM_FFLAG_6					32
+#define RENDERSYSTEM_FFLAG_DONTFOLLOW			64
+
+// RenderSystem base flags
+#define RENDERSYSTEM_FLAG_RANDOMFRAME			1// random frame sequence
+#define RENDERSYSTEM_FLAG_CLIPREMOVE			2// remove upon touching architecture
+#define RENDERSYSTEM_FLAG_NOCLIP			4// persist inside architecture
+#define RENDERSYSTEM_FLAG_LOOPFRAMES			8// don't remove after displaying last frame (when no life time set)
+#define RENDERSYSTEM_FLAG_ADDPHYSICS			16
+#define RENDERSYSTEM_FLAG_DRAWALWAYS			32
+#define RENDERSYSTEM_FLAG_DONTFOLLOW			64
+#define RENDERSYSTEM_FLAG_SIMULTANEOUS			128
+#define RENDERSYSTEM_FLAG_ADDGRAVITY			256
+#define RENDERSYSTEM_FLAG_ZROTATION			512// rotate around Z axis only (when parallel to viewport)
+#define RENDERSYSTEM_FLAG_NODRAW			1024// don't draw (but still update normally)
+
+enum
+{
+	PARTSYSTEM_TYPE_REMOVEANY = 0,
+	PARTSYSTEM_TYPE_SYSTEM,
+	PARTSYSTEM_TYPE_FLAMECONE,
+	PARTSYSTEM_TYPE_BEAM,
+	PARTSYSTEM_TYPE_SPARKS,
+	PARTSYSTEM_TYPE_DRIPS,
+	PARTSYSTEM_TYPE_FLATTRAIL
+};
+
 #define MSG_BROADCAST		0	// unreliable to all
 #define MSG_ONE			1	// reliable to one (msg_entity)
 #define MSG_ALL			2	// reliable to all
@@ -586,6 +621,10 @@
 #define MSG_PAS_R			7	// Reliable to PAS
 #define MSG_ONE_UNRELIABLE		8	// Send to one client, but don't put in reliable stream, put in unreliable datagram ( could be dropped )
 #define MSG_SPEC			9	// Sends to all spectator proxies
+
+#define CONTENT_SPECIAL1		-20
+#define CONTENT_SPECIAL2		-21
+#define CONTENT_SPECIAL3		-22
 
 // contents of a spot in the world
 #define CONTENTS_EMPTY		-1
@@ -632,6 +671,8 @@
 
 // attenuation values
 #define ATTN_NONE			0
+#define ATTN_LOW			(float)0.3
+#define ATTN_LOW_HIGH		(float)0.5
 #define ATTN_NORM			(float)0.8
 #define ATTN_IDLE			(float)2
 #define ATTN_STATIC			(float)1.25 
@@ -731,7 +772,8 @@ enum
 	kRenderFxExplode,			// Scale up really big!
 	kRenderFxGlowShell,			// Glowing Shell
 	kRenderFxClampMinScale,		// Keep this sprite from getting very small (SPRITES only!)
-	kRenderFxLightMultiplier	//CTM !!!CZERO added to tell the studiorender that the value in iuser2 is a lightmultiplier
+	kRenderFxLightMultiplier,	//CTM !!!CZERO added to tell the studiorender that the value in iuser2 is a lightmultiplier
+	kRenderFxAurora 			// set particle trail for this entity
 };
 
 typedef unsigned int		func_t;

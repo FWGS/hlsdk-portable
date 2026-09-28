@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include "parsemsg.h"
 
+extern int iMouseInUse;
+
 DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoVal )
 DECLARE_MESSAGE( m_AmmoSecondary, SecAmmoIcon )
 
@@ -55,12 +57,12 @@ int CHudAmmoSecondary::VidInit( void )
 
 int CHudAmmoSecondary::Draw( float flTime )
 {
-	if( ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
+	if( iMouseInUse || ( gHUD.m_iHideHUDDisplay & ( HIDEHUD_WEAPONS | HIDEHUD_ALL ) ) )
 		return 1;
 
 	// draw secondary ammo icons above normal ammo readout
 	int a, x, y, r, g, b, AmmoWidth;
-	UnpackRGB( r, g, b, RGB_YELLOWISH );
+	UnpackRGB( r, g, b, RGB_WHITE );
 	a = (int)Q_max( MIN_ALPHA, m_fFade );
 	if( m_fFade > 0 )
 		m_fFade -= ( (float)gHUD.m_flTimeDelta * 20.0f );  // slowly lower alpha to fade out icons

@@ -39,7 +39,7 @@ struct DeathNoticeItem {
 	float *VictimColor;
 };
 
-#define MAX_DEATHNOTICES	4
+#define MAX_DEATHNOTICES	10
 static int DEATHNOTICE_DISPLAY_TIME = 6;
 
 #define DEATHNOTICE_TOP		32
@@ -54,14 +54,21 @@ float g_ColorGrey[3]	= { 0.8, 0.8, 0.8 };
 
 float *GetClientColor( int clientIndex )
 {
-	switch( g_PlayerExtraInfo[clientIndex].teamnumber )
+	if(clientIndex == 0)
 	{
-	case 1:	return g_ColorBlue;
-	case 2: return g_ColorRed;
-	case 3: return g_ColorYellow;
-	case 4: return g_ColorGreen;
-	case 0: return g_ColorYellow;
-	default: return g_ColorGrey;
+		return g_ColorYellow;
+	}
+	else if(clientIndex == 1)
+	{
+		return g_ColorBlue;
+	}
+	else if(clientIndex == 2)
+	{
+		return g_ColorRed;
+	}
+	else if(clientIndex == 3)
+	{
+		return g_ColorGrey;
 	}
 
 	return NULL;
@@ -73,7 +80,7 @@ int CHudDeathNotice::Init( void )
 
 	HOOK_MESSAGE( DeathMsg );
 
-	CVAR_CREATE( "hud_deathnotice_time", "6", FCVAR_ARCHIVE );
+	CVAR_CREATE( "hud_deathnotice_time", "7", FCVAR_ARCHIVE );
 
 	return 1;
 }
@@ -94,7 +101,7 @@ int CHudDeathNotice::Draw( float flTime )
 {
 	int x, y, r, g, b;
 
-	int gap = 20;
+	int gap = 25;
 
 	const wrect_t& sprite = gHUD.GetSpriteRect(m_HUD_d_skull);
 	gap = sprite.bottom - sprite.top;
@@ -126,7 +133,7 @@ int CHudDeathNotice::Draw( float flTime )
 		if( gViewPort && gViewPort->AllowedToPrintText() )
 		{
 			// Draw the death notice
-			y = YRES( DEATHNOTICE_TOP ) + 2 + ( gap * i );  //!!!
+			y = YRES( DEATHNOTICE_TOP ) + 8 + ( gap * i );  //!!!
 
 			int id = ( rgDeathNoticeList[i].iId == -1 ) ? m_HUD_d_skull : rgDeathNoticeList[i].iId;
 			x = ScreenWidth - ConsoleStringLen( rgDeathNoticeList[i].szVictim ) - ( gHUD.GetSpriteRect(id).right - gHUD.GetSpriteRect(id).left ) - 4;
@@ -141,7 +148,7 @@ int CHudDeathNotice::Draw( float flTime )
 				x = 5 + DrawConsoleString( x, y + 4, rgDeathNoticeList[i].szKiller );
 			}
 
-			r = 255; g = 80; b = 0;
+			r = 255; g = 255; b = 255;
 			if( rgDeathNoticeList[i].iTeamKill )
 			{
 				r = 10;	g = 240; b = 10;  // display it in sickly green
@@ -181,6 +188,15 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 	strcpy( killedwith, "d_" );
 	strlcat( killedwith, READ_STRING(), sizeof( killedwith ));
 
+	char npc_ally_name[32];
+	strcpy( npc_ally_name, READ_STRING());
+
+	char npc_killer_name[32];
+	strcpy( npc_killer_name, READ_STRING());
+
+	int killer_color = READ_BYTE();
+	int victim_color = READ_BYTE();
+
 	gHUD.m_Scoreboard.DeathMsg( killer, victim );
 
 	gHUD.m_Spectator.DeathMessage( victim );
@@ -200,34 +216,18 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 	gHUD.GetAllPlayersInfo();
 
 	// Get the Killer's name
-	const char *killer_name = "";
-	killer_name = g_PlayerInfoList[killer].name;
-	if( !killer_name )
+	if( !npc_killer_name )
 	{
-		killer_name = "";
 		rgDeathNoticeList[i].szKiller[0] = 0;
 	}
 	else
 	{
-		rgDeathNoticeList[i].KillerColor = GetClientColor( killer );
-		strlcpy( rgDeathNoticeList[i].szKiller, killer_name, MAX_PLAYER_NAME_LENGTH );
+		rgDeathNoticeList[i].KillerColor = GetClientColor( killer_color );
+		strlcpy( rgDeathNoticeList[i].szKiller, npc_killer_name, MAX_PLAYER_NAME_LENGTH );
 	}
 
-	// Get the Victim's name
-	const char *victim_name = "";
-	// If victim is -1, the killer killed a specific, non-player object (like a sentrygun)
-	if( ( (signed char)victim ) != -1 )
-		victim_name = g_PlayerInfoList[victim].name;
-	if( !victim_name )
-	{
-		victim_name = "";
-		rgDeathNoticeList[i].szVictim[0] = 0;
-	}
-	else
-	{
-		rgDeathNoticeList[i].VictimColor = GetClientColor( victim );
-		strlcpy( rgDeathNoticeList[i].szVictim, victim_name, MAX_PLAYER_NAME_LENGTH );
-	}
+	rgDeathNoticeList[i].VictimColor = GetClientColor( victim_color );
+	strlcpy( rgDeathNoticeList[i].szVictim, npc_ally_name, MAX_PLAYER_NAME_LENGTH );
 
 	// Is it a non-player object kill?
 	if( ( (signed char)victim ) == -1 )
@@ -239,7 +239,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 	}
 	else
 	{
-		if( killer == victim || killer == 0 )
+		if( killer == victim )
 			rgDeathNoticeList[i].iSuicide = TRUE;
 
 		if( !strcmp( killedwith, "d_teammate" ) )
@@ -290,7 +290,7 @@ int CHudDeathNotice::MsgFunc_DeathMsg( const char *pszName, int iSize, void *pbu
 			ConsolePrint( rgDeathNoticeList[i].szVictim );
 		}
 
-		if( *killedwith && (*killedwith > 13 ) && strcmp( killedwith, "d_world" ) && !rgDeathNoticeList[i].iTeamKill )
+		if( killedwith && *killedwith && (*killedwith > 13 ) && strcmp( killedwith, "d_world" ) && !rgDeathNoticeList[i].iTeamKill )
 		{
 			ConsolePrint( " with " );
 

@@ -35,5 +35,14 @@ DLL_GLOBAL Vector		g_vecAttackDir;
 DLL_GLOBAL int			g_iSkillLevel;
 DLL_GLOBAL int			gDisplayTitle;
 DLL_GLOBAL BOOL			g_fGameOver;
+DLL_GLOBAL int			g_restore_fix;
+DLL_GLOBAL int			g_gibexp_max;
+DLL_GLOBAL int			g_causality_add;
+DLL_GLOBAL int			g_ChangeLevelLimit;
+DLL_GLOBAL BOOL			g_StartDark;
+DLL_GLOBAL BOOL			g_fCantSave;
+DLL_GLOBAL int			g_fGameJumpCG;
+DLL_GLOBAL int			g_fGameSkipCG;
+DLL_GLOBAL BOOL			g_Spawnpreacheally = FALSE;
 DLL_GLOBAL const Vector		g_vecZero = Vector( 0, 0, 0 );
 

@@ -130,3 +130,23 @@ HSPRITE LoadSprite( const char *pszName )
 
 	return SPR_Load( sz );
 }
+
+void VectorRandom(float *v, float min, float max)
+{
+	v[0] = gEngfuncs.pfnRandomFloat(min, max);
+	v[1] = gEngfuncs.pfnRandomFloat(min, max);
+	v[2] = gEngfuncs.pfnRandomFloat(min, max);
+}
+
+vec3_t VectorRandom(void)
+{
+	vec3_t v;
+	VectorRandom(v);
+	return v;
+}
+
+int LoadModel(const char *pszName)
+{
+	int i = 0;
+	return i;
+}

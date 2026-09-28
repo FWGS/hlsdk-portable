@@ -25,6 +25,9 @@
 #define RGB_YELLOWISH 0x00FFA000 //255,160,0
 #define RGB_REDISH 0x00FF1010 //255,160,0
 #define RGB_GREENISH 0x0000A000 //0,160,0
+#define RGB_WHITE 0x00FFFFFF //255,255,255
+
+#define FOG_LIMIT 30000
 
 #include "wrect.h"
 #include "cl_dll.h"
@@ -34,7 +37,7 @@
 #define DHN_DRAWZERO 1
 #define DHN_2DIGITS  2
 #define DHN_3DIGITS  4
-#define MIN_ALPHA	 100	
+#define MIN_ALPHA	 160	
 
 #define		HUDELEM_ACTIVE	1
 
@@ -366,6 +369,7 @@ public:
 	friend class CHudSpectator;
 
 private:
+	int	m_iUpdata;
 	struct cvar_s *	m_HUD_saytext;
 	struct cvar_s *	m_HUD_saytext_time;
 };
@@ -525,6 +529,390 @@ private:
 	icon_sprite_t m_IconList[MAX_ICONSPRITES];
 };
 
+class CHudTbutton : public CHudBase
+{
+
+public:
+	int		Init				( void );
+	int		VidInit				( void );
+	int		Draw				( float flTime );
+	int		MsgFunc_Tbutton		( const char *pszName, int iSize, void *pbuf );
+
+	void	DrawDefaultProgressBar	( float var );
+	void	DrawProgressBar			( int width, int height, int x, int y, int bwidth, int bheight, float var );
+
+	float	f_starttime;
+	float	f_endtime;
+
+};
+
+class CHudHealthBar: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+	int MsgFunc_CheckHPbar(const char *pszName,  int iSize, void *pbuf );
+	
+private:
+	HSPRITE m_hSprite1;
+	HSPRITE m_hSprite2;
+	HSPRITE m_hSprite3;
+	HSPRITE m_hSprite4;
+	wrect_t *m_prc1;
+	wrect_t *m_prc2;
+	int	m_flHealth;	
+	int	m_iOn;
+	int	m_iMaxHealth;
+	int m_inumber;
+};
+
+class CHudArmorBar: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+	int MsgFunc_CheckAPbar(const char *pszName,  int iSize, void *pbuf );
+	
+private:
+	HSPRITE m_hSprite1;
+	HSPRITE m_hSprite2;
+	HSPRITE m_hSprite3;
+	HSPRITE m_hSprite4;
+	wrect_t *m_prc1;
+	wrect_t *m_prc2;
+	int	m_flHealth;	
+	int	m_iOn;
+	int	m_iMaxHealth;
+	int m_inumber;
+};
+
+class CHudDarkHoles: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+
+	void Reset( void );
+	int MsgFunc_FDarkHoles(const char *pszName, int iSize, void *pbuf);
+
+private:
+	HSPRITE m_hSprite1;
+	HSPRITE m_hSprite2;
+	int	m_ifloat1;	
+	int	m_ifloat2;
+
+	int m_iOn;
+	int m_alpha;
+	int m_ddf;
+};
+
+class CHudGunScope: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+	int MsgFunc_FGunScope(const char *pszName,  int iSize, void *pbuf );
+	
+private:
+	HSPRITE m_hCrosshair;
+	HSPRITE m_hCrosshair2;
+	HSPRITE m_hCrosshair3;
+	HSPRITE m_hCrosshair4;
+	HSPRITE m_hCrosshair5;
+	int	m_iHudMode;	
+	int m_ifucktime;
+};
+
+class CHudGameOver: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+	int MsgFunc_FGameOver(const char *pszName,  int iSize, void *pbuf );
+	
+private:
+	HSPRITE m_hSprite1;
+	HSPRITE m_hSprite2;
+	HSPRITE m_hSprite3;
+	int	m_ifloat1;	
+	int	m_ifloat2;
+};
+
+
+class CHudAirBar: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+	int MsgFunc_CheckAirbar(const char *pszName,  int iSize, void *pbuf );
+	
+private:
+	HSPRITE m_hSprite1;
+	HSPRITE m_hSprite2;
+	HSPRITE m_hSprite3;
+	wrect_t *m_prc1;
+	wrect_t *m_prc2;
+	wrect_t *m_prc3;
+	int	m_flHealth;	
+	int	m_iMaxHealth;
+	int	m_iOn;
+};
+
+class CHudModeShow: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+	int MsgFunc_FModeShow(const char *pszName,  int iSize, void *pbuf );
+	
+private:
+	HSPRITE m_hSprite1;
+	HSPRITE m_hSprite2;
+	HSPRITE m_hSprite3;
+	wrect_t *m_prc1;
+	int	m_ifucker1;	
+	int	m_icons;	
+};
+
+class CHudRPGMenu: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+	int MsgFunc_WRPGMenu(const char *pszName,  int iSize, void *pbuf );
+	
+private:
+	HSPRITE m_spr_menu1;
+	HSPRITE m_spr_menu2;
+	HSPRITE m_spr_menu3;
+	HSPRITE m_spr_menu4;
+	HSPRITE m_spr_menu5;
+	HSPRITE m_spr_menu_itemtext;
+	HSPRITE m_spr_menu_icons;
+	HSPRITE m_spr_menu_icons_drk;
+	HSPRITE m_spr_menu_select;
+	HSPRITE m_spr_menu_select2;
+	HSPRITE m_spr_hspr;
+
+	HSPRITE m_spr_actor1;
+	HSPRITE m_spr_actor1_hp;
+	HSPRITE m_spr_actor1_maxhp;
+	HSPRITE m_spr_actor1_exp;
+	HSPRITE m_spr_actor1_maxexp;
+	HSPRITE m_spr_actor1_status;
+
+	HSPRITE m_spr_actor2;
+	HSPRITE m_spr_actor2_hp;
+	HSPRITE m_spr_actor2_maxhp;
+	HSPRITE m_spr_actor2_exp;
+	HSPRITE m_spr_actor2_maxexp;
+	HSPRITE m_spr_actor2_status;
+
+	HSPRITE m_spr_actor3;
+	HSPRITE m_spr_actor3_hp;
+	HSPRITE m_spr_actor3_maxhp;
+	HSPRITE m_spr_actor3_exp;
+	HSPRITE m_spr_actor3_maxexp;
+	HSPRITE m_spr_actor3_status;
+
+	HSPRITE m_spr_actor4;
+	HSPRITE m_spr_actor4_hp;
+	HSPRITE m_spr_actor4_maxhp;
+	HSPRITE m_spr_actor4_exp;
+	HSPRITE m_spr_actor4_maxexp;
+	HSPRITE m_spr_actor4_status;
+
+	HSPRITE m_spr_actor5;
+	HSPRITE m_spr_actor5_hp;
+	HSPRITE m_spr_actor5_maxhp;
+	HSPRITE m_spr_actor5_exp;
+	HSPRITE m_spr_actor5_maxexp;
+	HSPRITE m_spr_actor5_status;
+
+	wrect_t *m_prc1_hp;
+	wrect_t *m_prc1_exp;
+	wrect_t *m_prc2_hp;
+	wrect_t *m_prc2_exp;
+	wrect_t *m_prc3_hp;
+	wrect_t *m_prc3_exp;
+	wrect_t *m_prc4_hp;
+	wrect_t *m_prc4_exp;
+	wrect_t *m_prc5_hp;
+	wrect_t *m_prc5_exp;
+	
+	int m_menu_on;
+	int m_menu_select;
+	int m_menu_select_alpha;
+
+	int m_actor1;
+	int m_hp1;
+	int m_maxhp1;
+	int m_numhp1;
+	int m_level1;
+	int m_exp1;
+	int m_maxexp1;
+	int m_status1;
+
+	int m_actor2;
+	int m_hp2;
+	int m_maxhp2;
+	int m_numhp2;
+	int m_level2;
+	int m_exp2;
+	int m_maxexp2;
+	int m_status2;
+
+	int m_actor3;
+	int m_hp3;
+	int m_maxhp3;
+	int m_numhp3;
+	int m_level3;
+	int m_exp3;
+	int m_maxexp3;
+	int m_status3;
+
+	int m_actor4;
+	int m_hp4;
+	int m_maxhp4;
+	int m_numhp4;
+	int m_level4;
+	int m_exp4;
+	int m_maxexp4;
+	int m_status4;
+
+	int m_actor5;
+	int m_hp5;
+	int m_maxhp5;
+	int m_numhp5;
+	int m_level5;
+	int m_exp5;
+	int m_maxexp5;
+	int m_status5;
+
+	int m_item1;
+	int m_item2;
+	int m_item3;
+	int m_item4;
+	int m_item5;
+	int m_item6;
+	int m_item7;
+	int m_item8;
+	int m_item9;
+	int m_item10;
+	int m_item11;
+	int m_item12;
+	int m_item_s;
+	int m_item_e;
+	int m_skill0;
+	int m_skill1;
+	int m_skill2;
+	int m_skill3;
+	int m_skill4;
+	int m_skill5;
+	int m_skill6;
+	int m_skill7;
+	int m_skill8;
+	int m_skill9;
+	int m_skill10;
+	int m_skill11;
+	int m_skill12;
+};
+
+class CHudLoadLife: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+	int MsgFunc_FLoadLife(const char *pszName,  int iSize, void *pbuf );
+	
+private:
+	HSPRITE m_hSprite1;
+	HSPRITE m_hSprite2;
+    HSPRITE m_hSprite3;
+    HSPRITE m_hSprite4;
+	HSPRITE m_hSprite5;
+	HSPRITE m_hSprite6;
+	wrect_t *m_prc1;
+	wrect_t *m_prc2;
+    wrect_t *m_prc3;
+    wrect_t *m_prc4;
+	int	m_flHealth;	
+	int	m_flHealth2;	
+	int	m_iOn;
+	int m_type;
+};
+
+class CHudNVG: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+	void Reset( void );
+	int MsgFunc_NVGActivate(const char *pszName, int iSize, void *pbuf);
+
+private:
+	HSPRITE m_hFlicker;
+	HSPRITE m_hFlicker2;
+	HSPRITE m_hFlicker3;
+	int m_iOn;
+	int m_color;
+};
+
+class CHudRTPbar: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+	int MsgFunc_CheckRTPbar(const char *pszName,  int iSize, void *pbuf );
+	
+private:
+	HSPRITE m_hSprite1;
+	HSPRITE m_hSprite2;
+	HSPRITE m_hSprite3;
+	wrect_t *m_prc1;
+	wrect_t *m_prc2;
+	wrect_t *m_prc3;
+	int	m_flHealth;	
+	int	m_iOn;
+	int	m_iMaxHealth;
+};
+
+class CHudPWBord: public CHudBase
+{
+public:
+	int Init( void );
+	int VidInit( void );
+	int Draw(float flTime);
+	int MsgFunc_WPWBord(const char *pszName,  int iSize, void *pbuf );
+	
+private:
+	HSPRITE m_hSprite1;
+	HSPRITE m_hSprite2;
+	HSPRITE m_hSprite3;
+	int	m_select;	
+	int	m_iOn;
+	int	m_light1;
+	int	m_light2;
+	int	m_light3;
+	int	m_light4;
+	int	m_light5;
+	int	m_light6;
+	int	m_light7;
+	int	m_light8;
+	int	m_light9;
+};
+
 //
 //-----------------------------------------------------
 //
@@ -538,7 +926,6 @@ private:
 	int							m_iSpriteCount;
 	int							m_iSpriteCountAllRes;
 	float						m_flMouseSensitivity;
-	int							m_iConcussionEffect; 
 
 public:
 	HSPRITE						m_hsprCursor;
@@ -561,8 +948,26 @@ public:
 	cvar_t  *m_pCvarMOTDVGUI;
 	cvar_t  *m_pCvarScoreboardVGUI;
 
+	int m_iPaused;
+
+	int m_xdmtime;
+	int m_xdmtime2;
+
+	int m_iSkin;//set skin for view weaponmodel
+	int m_iBody;//set body for view weaponmodel
+	
+	int m_iConcussionEffect;
+
+	cvar_t	*RainInfo; // rain tutorial
+
+	// Client effects (wallgibs, shells, human gibs - gib life)
+	cvar_t	*TempEntLifeCvar;
+	cvar_t	*GibsLifeCvar;
+	cvar_t	*SmokingShells;
+	
 	int m_iFontHeight;
 	int DrawHudNumber( int x, int y, int iFlags, int iNumber, int r, int g, int b );
+	int DrawHudNumberLarge(int x, int y, int iFlags, int iNumber, int r, int g, int b );
 	int DrawHudString( int x, int y, int iMaxX, const char *szString, int r, int g, int b );
 	int DrawHudStringReverse( int xpos, int ypos, int iMinX, const char *szString, int r, int g, int b );
 	int DrawHudNumberString( int xpos, int ypos, int iMinX, int iNumber, int r, int g, int b );
@@ -616,6 +1021,20 @@ public:
 	CHudScoreboard	m_Scoreboard;
 	CHudMOTD	m_MOTD;
 
+   	CHudHealthBar		m_HealthBar;
+	CHudArmorBar 		m_ArmorBar;
+	CHudDarkHoles       m_DarkHoles;
+    CHudNVG             m_NVG;
+	CHudRTPbar          m_RTPbar;
+	CHudGunScope        m_GunScope;
+	CHudLoadLife        m_loadlife;
+	CHudAirBar          m_AirBar;
+	CHudGameOver        m_GameOver;
+	CHudTbutton			m_Tbutton;
+	CHudModeShow		m_ModeShow;
+	CHudRPGMenu			m_RPGMenu;
+	CHudPWBord			m_PWBord;
+
 	void Init( void );
 	void VidInit( void );
 	void Think(void);
@@ -634,6 +1053,8 @@ public:
 	void _cdecl MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf );
 	int _cdecl MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf );
 	int  _cdecl MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf );
+
+	void _cdecl MsgFunc_SetFog( const char *pszName, int iSize, void *pbuf );
 
 	// Screen information
 	SCREENINFO	m_scrinfo;

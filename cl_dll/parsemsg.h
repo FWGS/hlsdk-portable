@@ -22,6 +22,7 @@
 #define ASSERT( x )
 
 void BEGIN_READ( void *buf, int size );
+void END_READ( const char *pszName );
 int READ_CHAR( void );
 int READ_BYTE( void );
 int READ_SHORT( void );

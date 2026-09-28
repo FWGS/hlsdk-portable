@@ -184,12 +184,12 @@ void CBloater::Spawn()
 {
 	Precache();
 
-	SET_MODEL( ENT( pev ), "models/floater.mdl" );
+	SET_MODEL( ENT( pev ), "models/zombie.mdl" );
 	UTIL_SetSize( pev, VEC_HUMAN_HULL_MIN, VEC_HUMAN_HULL_MAX );
 
 	pev->solid = SOLID_SLIDEBOX;
 	pev->movetype = MOVETYPE_FLY;
-	pev->spawnflags |= FL_FLY;
+	//pev->spawnflags |= FL_FLY;
 	m_bloodColor = BLOOD_COLOR_GREEN;
 	pev->health = 40;
 	pev->view_ofs = VEC_VIEW;// position of the eyes relative to monster's origin.
@@ -204,7 +204,7 @@ void CBloater::Spawn()
 //=========================================================
 void CBloater::Precache()
 {
-	PRECACHE_MODEL( "models/floater.mdl" );
+	PRECACHE_MODEL( "models/zombie.mdl" );
 }	
 
 //=========================================================

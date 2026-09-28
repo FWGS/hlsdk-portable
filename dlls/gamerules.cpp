@@ -64,7 +64,14 @@ edict_t *CGameRules::GetPlayerSpawnSpot( CBasePlayer *pPlayer )
 {
 	edict_t *pentSpawnSpot = EntSelectSpawnPoint( pPlayer );
 
-	pPlayer->pev->origin = VARS( pentSpawnSpot )->origin + Vector( 0, 0, 1 );
+	if(pPlayer->m_fDeadRespawn == 2)
+	{
+		pPlayer->pev->origin = pPlayer->m_old_Respawn_origin + Vector(0,0,1);
+	}
+	else
+	{
+		pPlayer->pev->origin = VARS( pentSpawnSpot )->origin + Vector( 0, 0, 1 );
+	}
 	pPlayer->pev->v_angle  = g_vecZero;
 	pPlayer->pev->velocity = g_vecZero;
 	pPlayer->pev->angles = VARS( pentSpawnSpot )->angles;
@@ -131,7 +138,7 @@ void CGameRules::RefreshSkillData ( void )
 	ALERT( at_console, "\nGAME SKILL LEVEL:%d\n",iSkill );
 
 	//Agrunt		
-	gSkillData.agruntHealth = GetSkillCvar( "sk_agrunt_health" );
+	/*gSkillData.agruntHealth = GetSkillCvar( "sk_agrunt_health" );
 	gSkillData.agruntDmgPunch = GetSkillCvar( "sk_agrunt_dmg_punch" );
 
 	// Apache 
@@ -300,7 +307,7 @@ void CGameRules::RefreshSkillData ( void )
 	gSkillData.plrChest = GetSkillCvar( "sk_player_chest" );
 	gSkillData.plrStomach = GetSkillCvar( "sk_player_stomach" );
 	gSkillData.plrLeg = GetSkillCvar( "sk_player_leg" );
-	gSkillData.plrArm = GetSkillCvar( "sk_player_arm" );
+	gSkillData.plrArm = GetSkillCvar( "sk_player_arm" );*/
 }
 
 void CGameRules::ClientUserInfoChanged( CBasePlayer *pPlayer, char *infobuffer )

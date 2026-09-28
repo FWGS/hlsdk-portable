@@ -163,7 +163,7 @@ entvars_t *CGraph::LinkEntForLink( CLink *pLink, CNode *pNode )
 		///!!!UNDONE - check for TOGGLE or STAY open doors here. If a door is in the way, and is 
 		// TOGGLE or STAY OPEN, even monsters that can't open doors can go that way.
 
-		if( ( pevLinkEnt->spawnflags & SF_DOOR_USE_ONLY ) )
+		if( !FStringNull( pevLinkEnt->targetname ) || ( pevLinkEnt->spawnflags & SF_DOOR_USE_ONLY ) )
 		{
 			// door is use only, so the door is all the monster has to worry about
 			return pevLinkEnt;
@@ -194,7 +194,7 @@ entvars_t *CGraph::LinkEntForLink( CLink *pLink, CNode *pNode )
 				// !!!HACKHACK Use bodyqueue here cause there are no ents we really wish to ignore!
 				UTIL_TraceLine( pNode->m_vecOrigin, VecBModelOrigin( pevTrigger ), ignore_monsters, g_pBodyQueueHead, &tr );
 
-				if( VARS(tr.pHit) == pevTrigger )
+				if( FStringNull ( pevTrigger->targetname ) && VARS(tr.pHit) == pevTrigger )
 				{
 					// good to go!
 					return VARS( tr.pHit );
@@ -240,6 +240,9 @@ int CGraph::HandleLinkEnt( int iNode, entvars_t *pevLinkEnt, int afCapMask, NODE
 	{
 		// ent is a door.
 		pDoor = ( CBaseEntity::Instance( pevLinkEnt ) );
+
+		if( !FStringNull ( pevLinkEnt->targetname ) )
+			return FALSE;
 
 		if( ( pevLinkEnt->spawnflags & SF_DOOR_USE_ONLY ) ) 
 		{
@@ -1163,7 +1166,7 @@ void CGraph::ShowNodeConnections( int iNode )
 		pLinkNode = &Node( NodeLink( iNode, i ).m_iDestNode );
 		vecSpot = pLinkNode->m_vecOrigin;
 
-		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
+		/*MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 			WRITE_BYTE( TE_SHOWLINE );
 
 			WRITE_COORD( m_pNodes[iNode].m_vecOrigin.x );
@@ -1173,7 +1176,7 @@ void CGraph::ShowNodeConnections( int iNode )
 			WRITE_COORD( vecSpot.x );
 			WRITE_COORD( vecSpot.y );
 			WRITE_COORD( vecSpot.z + NODE_HEIGHT );
-		MESSAGE_END();
+		MESSAGE_END();*/
 
 	}
 }
@@ -1668,6 +1671,10 @@ void CTestHull::BuildNodeGraph( void )
 	int i, j, hull;
 
 	int iBadNode;// this is the node that caused graph generation to fail
+	int		cMaxInitialLinks = 0;
+	int		cMaxValidLinks	= 0;
+
+	int		iPoolIndex = 0;
 
 	//int cMaxInitialLinks = 0;
 	//int cMaxValidLinks = 0;
@@ -3824,7 +3831,7 @@ void CNodeViewer::DrawThink( void )
 			return;
 		}
 
-		extern short g_sModelIndexLaser;
+		/*extern short g_sModelIndexLaser;
 		MESSAGE_BEGIN( MSG_BROADCAST, SVC_TEMPENTITY );
 			WRITE_BYTE( TE_BEAMPOINTS );
 			WRITE_COORD( WorldGraph.m_pNodes[m_aFrom[m_iDraw]].m_vecOrigin.x );
@@ -3845,7 +3852,7 @@ void CNodeViewer::DrawThink( void )
 			WRITE_BYTE( m_vecColor.z );   // r, g, b
 			WRITE_BYTE( 128 );	// brightness
 			WRITE_BYTE( 0 );		// speed
-		MESSAGE_END();
+		MESSAGE_END();*/
 
 		m_iDraw++;
 	}

@@ -26,6 +26,10 @@
 #include "saverestore.h"
 #include "nodes.h"
 #include "doors.h"
+#include "weapons.h"
+#include "monsters.h"
+#include "animation.h"
+#include "player.h"
 
 extern CGraph WorldGraph;
 
@@ -67,6 +71,7 @@ private:
 LINK_ENTITY_TO_CLASS( info_player_deathmatch, CBaseDMStart )
 LINK_ENTITY_TO_CLASS( info_player_start, CPointEntity )
 LINK_ENTITY_TO_CLASS( info_landmark, CPointEntity )
+LINK_ENTITY_TO_CLASS( info_player_coop,CPointEntity );
 
 void CBaseDMStart::KeyValue( KeyValueData *pkvd )
 {
@@ -121,6 +126,23 @@ void CBaseEntity::SUB_Remove( void )
 	}
 
 	REMOVE_ENTITY( ENT( pev ) );
+}
+
+
+void CBaseEntity :: SUB_Remove_fx( void )
+{
+
+	FX_Trail( pev->origin, entindex(), PROJ_REMOVE );
+
+	UpdateOnRemove();
+	if (pev->health > 0)
+	{
+		// this situation can screw up monsters who can't tell their entity pointers are invalid.
+		pev->health = 0;
+		ALERT( at_aiconsole, "SUB_Remove called on entity with health > 0\n");
+	}
+
+	REMOVE_ENTITY(ENT(pev));
 }
 
 // Convenient way to explicitly do nothing (passed to functions that require a method)
@@ -179,6 +201,59 @@ void CBaseEntity::SUB_UseTargets( CBaseEntity *pActivator, USE_TYPE useType, flo
 	{
 		FireTargets( STRING( pev->target ), pActivator, this, useType, value );
 	}
+}
+
+void Remove_Targets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	edict_t *pentTarget = NULL;
+	if ( !targetName )
+		return;
+
+	ALERT( at_aiconsole, "Remove: (%s)\n", targetName );
+
+	for (;;)
+	{
+		pentTarget = FIND_ENTITY_BY_TARGETNAME(pentTarget, targetName);
+		if (FNullEnt(pentTarget)){
+			break;
+		}
+		if ( !UTIL_IsValidEntity( pentTarget) )
+		{
+		break;
+		}
+
+		CBaseEntity *pTarget = CBaseEntity::Instance( pentTarget );
+		
+		if ( pTarget && !(pTarget->pev->flags & FL_KILLME) )	// Don't use dying ents
+		{
+			UTIL_Remove(pTarget);
+		}
+
+	}
+}
+
+void CBaseEntity::SUB_Animate_think( void )
+{
+	CBaseMonster *pEnemyMonster;
+	pEnemyMonster = MyMonsterPointer();
+	if(pEnemyMonster){
+		pev->nextthink = gpGlobals->time + 0.1;
+
+		pEnemyMonster->StudioFrameAdvance ( );
+
+		if (pEnemyMonster->m_fSequenceFinished && !pEnemyMonster->m_fSequenceLoops)
+		{
+			// ResetSequenceInfo();
+			// hack to avoid reloading model every frame
+			pev->animtime = gpGlobals->time;
+			pev->framerate = 1.0;
+			pEnemyMonster->m_fSequenceFinished = FALSE;
+			pEnemyMonster->m_flLastEventCheck = gpGlobals->time;
+			pev->frame = 0;
+			pev->framerate = 0.0;	// FIX: don't reset framerate
+		}
+	}
+	
 }
 
 void FireTargets( const char *targetName, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )

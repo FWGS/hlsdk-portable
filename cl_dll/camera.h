@@ -20,4 +20,5 @@ void CAM_Init( void );
 void CAM_ClearStates( void );
 void CAM_StartMouseMove( void );
 void CAM_EndMouseMove( void );
+void CAM_FuckMouseMove( void );
 #endif // _CAMERA_H_

@@ -46,8 +46,8 @@ int CHudMessage::Init( void )
 
 int CHudMessage::VidInit( void )
 {
-	m_HUD_title_half = gHUD.GetSpriteIndex( "title_half" );
-	m_HUD_title_life = gHUD.GetSpriteIndex( "title_life" );
+	m_HUD_title_half = gHUD.GetSpriteIndex( "wdoor_title" );
+	//m_HUD_title_life = gHUD.GetSpriteIndex( "title_life" );
 
 	return 1;
 }
@@ -331,7 +331,7 @@ int CHudMessage::Draw( float fTime )
 			brightness = FadeBlend( m_pGameTitle->fadein, m_pGameTitle->fadeout, m_pGameTitle->holdtime, localTime );
 
 			int halfWidth = gHUD.GetSpriteRect( m_HUD_title_half ).right - gHUD.GetSpriteRect( m_HUD_title_half ).left;
-			int fullWidth = halfWidth + gHUD.GetSpriteRect( m_HUD_title_life ).right - gHUD.GetSpriteRect( m_HUD_title_life ).left;
+			int fullWidth = gHUD.GetSpriteRect( m_HUD_title_half ).right - gHUD.GetSpriteRect( m_HUD_title_half ).left;
 			int fullHeight = gHUD.GetSpriteRect( m_HUD_title_half ).bottom - gHUD.GetSpriteRect( m_HUD_title_half ).top;
 
 			int x = XPosition( m_pGameTitle->x, fullWidth, fullWidth );
@@ -340,8 +340,8 @@ int CHudMessage::Draw( float fTime )
 			SPR_Set( gHUD.GetSprite( m_HUD_title_half ), brightness * m_pGameTitle->r1, brightness * m_pGameTitle->g1, brightness * m_pGameTitle->b1 );
 			SPR_DrawAdditive( 0, x, y, &gHUD.GetSpriteRect( m_HUD_title_half ) );
 
-			SPR_Set( gHUD.GetSprite( m_HUD_title_life ), brightness * m_pGameTitle->r1, brightness * m_pGameTitle->g1, brightness * m_pGameTitle->b1 );
-			SPR_DrawAdditive( 0, x + halfWidth, y, &gHUD.GetSpriteRect( m_HUD_title_life ) );
+			//SPR_Set( gHUD.GetSprite( m_HUD_title_life ), brightness * m_pGameTitle->r1, brightness * m_pGameTitle->g1, brightness * m_pGameTitle->b1 );
+			//SPR_DrawAdditive( 0, x + halfWidth, y, &gHUD.GetSpriteRect( m_HUD_title_life ) );
 
 			drawn = 1;
 		}
