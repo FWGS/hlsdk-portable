@@ -20,7 +20,6 @@
 #include "VGUI_ScrollPanel.h"
 #include "VGUI_TextImage.h"
 
-#include <VGUI_StackLayout.h>
 
 #include "hud.h"
 #include "cl_util.h"
