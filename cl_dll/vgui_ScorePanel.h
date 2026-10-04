@@ -9,9 +9,6 @@
 #define SCOREPANEL_H
 
 #include<VGUI_Panel.h>
-#include<VGUI_TablePanel.h>
-#include<VGUI_HeaderPanel.h>
-#include<VGUI_TextGrid.h>
 #include<VGUI_Label.h>
 #include<VGUI_TextImage.h>
 #include "../game_shared/vgui_listbox.h"
