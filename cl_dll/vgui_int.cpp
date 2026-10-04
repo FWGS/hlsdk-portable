@@ -6,10 +6,8 @@
 //=============================================================================
 
 #include "vgui_int.h"
-#include <VGUI_Label.h>
 #include <VGUI_BorderLayout.h>
 #include <VGUI_LineBorder.h>
-#include <VGUI_SurfaceBase.h>
 #include <VGUI_TextEntry.h>
 #include <VGUI_ActionSignal.h>
 #include <string.h>
