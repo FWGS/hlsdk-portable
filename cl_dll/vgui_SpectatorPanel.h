@@ -14,7 +14,6 @@
 
 #include <VGUI_Panel.h>
 #include <VGUI_Label.h>
-#include <VGUI_Button.h>
 
 using namespace vgui;
 
