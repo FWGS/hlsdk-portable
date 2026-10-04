@@ -685,6 +685,8 @@ void CHalfLifeMultiplay::DeathNotice( CBasePlayer *pVictim, entvars_t *pKiller, 
 		killer_weapon_name += 8;
 	else if( strncmp( killer_weapon_name, "func_", 5 ) == 0 )
 		killer_weapon_name += 5;
+	else if( strncmp( killer_weapon_name, "crossbow_bolt", 13 ) == 0 )
+		killer_weapon_name = "bolt";
 
 	MESSAGE_BEGIN( MSG_ALL, gmsgDeathMsg );
 		WRITE_BYTE( killer_index );						// the killer

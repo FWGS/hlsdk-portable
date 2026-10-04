@@ -1022,16 +1022,16 @@ void CBasePlayer::SetAnimation( PLAYER_ANIM playerAnim )
 		break;
 	case PLAYER_IDLE:
 	case PLAYER_WALK:
-		if( !FBitSet( pev->flags, FL_ONGROUND ) && ( m_Activity == ACT_HOP || m_Activity == ACT_LEAP ) )	// Still jumping
-		{
-			m_IdealActivity = m_Activity;
-		}
-		else if( pev->waterlevel > 1 )
+		if( pev->waterlevel > 1 )
 		{
 			if( speed == 0 )
 				m_IdealActivity = ACT_HOVER;
 			else
 				m_IdealActivity = ACT_SWIM;
+		}
+		else if( !FBitSet( pev->flags, FL_ONGROUND ) && ( m_Activity == ACT_HOP || m_Activity == ACT_LEAP ) )	// Still jumping
+		{
+			m_IdealActivity = m_Activity;
 		}
 		else
 		{
