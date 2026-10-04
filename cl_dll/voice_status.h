@@ -11,11 +11,8 @@
 
 
 #include "VGUI_Label.h"
-#include "VGUI_LineBorder.h"
 #include "VGUI_ImagePanel.h"
 #include "VGUI_BitmapTGA.h"
-#include "VGUI_InputSignal.h"
-#include "VGUI_Button.h"
 #include "voice_common.h"
 #include "cl_entity.h"
 #include "voice_banmgr.h"
