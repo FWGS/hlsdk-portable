@@ -17,12 +17,9 @@
 #include "voice_status.h"
 #include "r_efx.h"
 #include "entity_types.h"
-#include "VGUI_ActionSignal.h"
 #include "VGUI_Scheme.h"
-#include "VGUI_TextImage.h"
 #include "vgui_loadtga.h"
 #include "vgui_helpers.h"
-#include "VGUI_MouseCode.h"
 
 
 
