@@ -204,7 +204,13 @@ install(TARGETS ${SVDLL_LIBRARY}
 		WORLD_READ WORLD_EXECUTE)
 
 if(CMAKE_BUILD_TYPE MATCHES "Release" AND NOT WIN32)
+	if(APPLE)
+		# Apple strip treats -s as a symbol list file, -x keeps exported symbols
+		set(STRIP_FLAGS -x)
+	else()
+		set(STRIP_FLAGS -s)
+	endif()
 	add_custom_command(TARGET ${SVDLL_LIBRARY}
 			POST_BUILD DEPENDS ${SVDLL_LIBRARY}
-			COMMAND ${CMAKE_STRIP} -s $<TARGET_FILE:${SVDLL_LIBRARY}>)
+			COMMAND ${CMAKE_STRIP} ${STRIP_FLAGS} $<TARGET_FILE:${SVDLL_LIBRARY}>)
 endif()
