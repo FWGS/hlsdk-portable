@@ -10,6 +10,7 @@ Half-Life SDK for GoldSource & Xash3D with some bugfixes.
 - Fixed a bug that caused talk monsters (scientists and security guards) to face a wrong direction during scripted sequence sometimes. [Patch](https://github.com/FWGS/hlsdk-portable/commit/3e2808de62e479e83068c075cb88b4f177f9acc7)
 - Fixed squad member removal. This bug affected houndeye attacks as their attack depends on percieved number of squad members. [Patch](https://github.com/FWGS/hlsdk-portable/commit/b4502f71336a08f3f2c72b7b061b2838a149a11b)
 - Scientists now react to smells. [Patch](https://github.com/FWGS/hlsdk-portable/commit/2de4e7ab003d5b1674d12525f5aefb1e57a49fa3)
+- Fixed scientists selecting a wrong voice pitch. [Patch](https://github.com/FWGS/hlsdk-portable/commit/b69d37e30e0d6a16f07f5beff8aad5606f86b17a)
 - Tau-cannon (gauss) plays idle animations.
 - Tau-cannon (gauss) beam color depends on the charge as it was before the prediction code was introduced in Half-Life. [Patch](https://github.com/FWGS/hlsdk-portable/commit/0a29ec49c8183ebb8da22a6d2ef395eae9c3dffe)
 - Brought back gluon flare in singleplayer. [Patch](https://github.com/FWGS/hlsdk-portable/commit/9d7ab6acf46a8b71ef119d9c252767865522d21d)
@@ -20,6 +21,21 @@ Half-Life SDK for GoldSource & Xash3D with some bugfixes.
 - Fixed alien controllers facing wrong direction in non-combat state. [Patch](https://github.com/FWGS/hlsdk-portable/commit/e51878c45b618f9b3920b46357545cbb47befeda)
 - Fixed weapon deploy animations not playing sometimes on fast switching between weapons. [Patch](https://github.com/FWGS/hlsdk-portable/commit/ed676a5413c2d26b2982e5b014e0731f0eda6a0d) [Patch2](https://github.com/FWGS/hlsdk-portable/commit/4053dca7a9cf999391cbd77224144da207e4540b)
 - Fixed tripmine sometimes having wrong body on pickup [Patch](https://github.com/FWGS/hlsdk-portable/commit/abf08e4520e3b6cd12a40f269f4a256cf8496227)
+- Fixed human grunts dropping their weapon again if player has save-loaded during the human grunt's death animation. [Patch](https://github.com/FWGS/hlsdk-portable/commit/8d337020b515f54e10554b72347d94f7bcab898f)
+- Prevented `game_zone_player` from transitioning across levels. [Patch](https://github.com/FWGS/hlsdk-portable/commit/1a29908ead4d76c57896c53cb1b9376edfdd4347)
+- Fixed possible crash in `game_score`. [Patch](https://github.com/FWGS/hlsdk-portable/commit/35f1388bd79ddc000076f8a9b16a42b916015ac8)
+- Fixed timed-base damage effect getting removed upon save-load or level transition. [Patch](https://github.com/FWGS/hlsdk-portable/commit/3dfd9dc059a8c593dbb2c990453262260e245717)
+- Fixed crowbar applying breakable glass decals to unbreakable `func_pushable`. [Patch](https://github.com/FWGS/hlsdk-portable/commit/75b38fcdfffaf5b0da1b56893a9825c6a4ea069b)
+- Fixed the damage took by player becoming negative due to the integer overflow on very high damage values. [Patch](https://github.com/FWGS/hlsdk-portable/commit/e53009991a48cce8eea8bacc474ef886c4b70db5)
+- Fixed the tracer effect end positions when something hits the `monster_alien_grunt` armor. [Patch](https://github.com/FWGS/hlsdk-portable/commit/588e56acfdde9a5cb30288e1f6dbc216b7c7c709)
+- Fixed geiger sounds not playing when `hud_draw` is set to 0. [Patch](https://github.com/FWGS/hlsdk-portable/commit/bff949217ddd723bd321cca6735488595249f4e2)
+- Fixed integer underflow/overflow on high and low explosion damages which led to incorrect fireball and smoke visuals. [Patch](https://github.com/FWGS/hlsdk-portable/commit/7c785489f9fcf9e6d375da9a9ab1f42f3fca6e66)
+- Fixed `monster_ichthyosaur` using the wrong formula to probe the environment before selecting a steering vector. [Patch](https://github.com/FWGS/hlsdk-portable/commit/43f0111470d012149def1e7f75ffd0576952930d)
+- Fixed `monster_apache` and `monster_osprey` not finishing their crash sequence if they land on another monster or a `func_pushable`. [Patch](https://github.com/FWGS/hlsdk-portable/commit/5142f7fb15030a87fbc6a5cae1a8fe3894bf774c)
+- Fixed the client drawing zoom crosshairs if `default_fov` is less than 90. [Patch](https://github.com/FWGS/hlsdk-portable/commit/526028f515bc9bb85f160c6dbd15792601cb7518)
+- Fixed corpses released from barnacle being resurrected if barnacle has died while he had a victim which also died. [Patch](https://github.com/FWGS/hlsdk-portable/commit/f27ee56ffdfc5e87f20a1e079c2683254d011caf)
+- Fixed the player getting wrong view entity (and thus an incorrect PVS) if the restart or map change is initiated while the `trigger_camera` is active. [Patch](https://github.com/FWGS/hlsdk-portable/commit/9de0f8a72476d837e0c459f9d2c97d32f1c5e6e0)
+- Fixed the player getting wrong view entity (and thus an incorrect PVS) if the `trigger_camera` was still active during the changelevel. [Patch](https://github.com/FWGS/hlsdk-portable/commit/eaf14167e329874e87c6ff79115b3320fc08c2e4)
 
 Bugfix-related macros that can be enabled during the compilation:
 
@@ -49,6 +65,12 @@ Other server cvars:
 - **mp_bhopcap**: if set to 0, disable bunny-hop restriction.
 - **chargerfix**: if set to 1, wall-mounted health and battery chargers will play reject sounds if player has the full health or armor.
 - **corpsephysics**: if set to 1, corpses of killed monsters will fly a bit from an impact. It's a cut feature from Half-Life.
+
+New client cvars:
+
+- **cl_motd_vgui**: if set to 0, the old MOTD interface is used instead of the VGUI one.
+- **cl_scoreboard_vgui**: if set to 0, the old scoreboard interface is used instead of the VGUI one.
+- **cl_scoreboard_bg**: whether to draw a dark background for non-VGUI scoreboard.
 
 </p>
 </details>

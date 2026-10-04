@@ -9,12 +9,6 @@ on:
         options:
         - Release
         - Debug
-      usevgui:
-        type: choice
-        description: Use VGUI
-        options:
-        - 'OFF'
-        - 'ON'
       steamrt_snapshot:
         type: string
         description: SteamRT Snapshot
@@ -63,16 +57,10 @@ jobs:
         ./steam-runtime/setup_chroot.sh --i386 --tarball ./com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
         sudo sed -i 's/groups=sudo/groups=adm/g' /etc/schroot/chroot.d/steamrt_scout_i386.conf
 
-    - name: Copy vgui.so
-      if: ${{ startsWith(matrix.os, 'ubuntu') && github.event.inputs.usevgui == 'ON' }}
-      run: |
-        mkdir -p build/cl_dll
-        cp vgui_support/vgui-dev/lib/vgui.so build/cl_dll
-        cp vgui_support/vgui-dev/lib/vgui.so build
     - name: Build on Linux
       if: startsWith(matrix.os, 'ubuntu')
       run: |
-        schroot --chroot steamrt_scout_i386 -- cmake -GNinja -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_BUILD_TYPE=${{ github.event.inputs.buildtype }} -DCMAKE_INSTALL_PREFIX="$PWD/dist" -DUSE_VGUI=${{ github.event.inputs.usevgui }}
+        schroot --chroot steamrt_scout_i386 -- cmake -GNinja -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_BUILD_TYPE=${{ github.event.inputs.buildtype }} -DCMAKE_INSTALL_PREFIX="$PWD/dist"
         schroot --chroot steamrt_scout_i386 -- cmake --build build --target all
         schroot --chroot steamrt_scout_i386 -- cmake --build build --target install
 
@@ -84,8 +72,8 @@ jobs:
     - name: Build on Windows
       if: startsWith(matrix.os, 'windows')
       run: |
-        cmake -G Ninja -B build -S . -DCMAKE_BUILD_TYPE=${{ github.event.inputs.buildtype }} -DCMAKE_INSTALL_PREFIX="dist" -DUSE_VGUI=${{ github.event.inputs.usevgui }}
-        cmake --build build --target all\
+        cmake -G Ninja -B build -S . -DCMAKE_BUILD_TYPE=${{ github.event.inputs.buildtype }} -DCMAKE_INSTALL_PREFIX="dist"
+        cmake --build build --target all
         cmake --build build --target install
 
     - name: Extract branch name
@@ -99,8 +87,8 @@ jobs:
     - name: Copy pdbs to dist dir
       if: ${{ startsWith(matrix.os, 'windows') && github.event.inputs.buildtype == 'Debug' }}
       run: |
-        copy build/cl_dll/Debug/client.pdb dist/${{ steps.extract_gamedir.outputs.gamedir }}/cl_dlls/
-        copy build/dlls/Debug/hl.pdb dist/${{ steps.extract_gamedir.outputs.gamedir }}/dlls/
+        copy build/cl_dll/client.pdb dist/${{ steps.extract_gamedir.outputs.gamedir }}/cl_dlls/
+        copy build/dlls/hl.pdb dist/${{ steps.extract_gamedir.outputs.gamedir }}/dlls/
     - name: Upload linux artifact
       if: startsWith(matrix.os, 'ubuntu')
       uses: actions/upload-artifact@v4
