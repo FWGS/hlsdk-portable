@@ -141,6 +141,8 @@ CMessageWindowPanel::CMessageWindowPanel( const char *szMOTD, const char *szTitl
 	CommandButton *pButton = new CommandButton( CHudTextMessage::BufferedLocaliseTextString( "#Menu_OK" ), iXPos + XRES( 16 ), iYPos + iYSize - YRES( 16 ) - BUTTON_SIZE_Y, CMENU_SIZE_X, BUTTON_SIZE_Y );
 	pButton->addActionSignal( new CMenuHandler_TextWindow( HIDE_TEXTWINDOW ) );
 	pButton->setParent( this );
+	// the only button is highlighted, so it's clear that Enter or gamepad button closes the window
+	pButton->setArmed( true );
 }
 
 
