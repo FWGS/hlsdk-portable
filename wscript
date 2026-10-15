@@ -78,6 +78,9 @@ def configure(conf):
 	# Load compilers early
 	conf.load('xcompile compiler_c compiler_cxx')
 
+	if conf.env.DEST_OS == 'ps4':
+		conf.load('ps4')
+
 	# Disable compiler-backed dependency calculation with caching
 	# bug: https://gitlab.com/ita1024/waf/-/issues/2478
 	if not conf.options.WAFCACHE:

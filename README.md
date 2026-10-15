@@ -357,6 +357,37 @@ cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="$VITASDK/share/vita.toolchain.c
 make -j
 ```
 
+## PlayStation 4
+
+Game libraries for the experimental PS4 port of [Xash3D FWGS](https://github.com/FWGS/xash3d-fwgs), only waf is supported.
+
+### Prerequisites
+
+1. Install `clang-18`, `lld-18` and `llvm-18`.
+2. Download [OpenOrbis PS4 Toolchain](https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain) built for LLVM 18 and set the `OO_PS4_TOOLCHAIN` environment variable to its `PS4Toolchain` directory:
+```
+export OO_PS4_TOOLCHAIN=/path/to/OpenOrbis/PS4Toolchain
+```
+
+### Building with waf
+```
+./waf configure -T release --ps4
+./waf build
+./waf install --destdir=build/ps4
+```
+Libraries are converted to `.prx` modules, `build/ps4/valve/cl_dlls` and `build/ps4/valve/dlls` have the result.
+Every `.prx` has a `.prx.sym` file next to it with names of the functions, which the engine needs to load saved games.
+
+### Installing on the console
+
+Copy the modules and their `.sym` files to the game directory with [GoldHEN FTP](https://github.com/GoldHEN/GoldHEN) (port 2121), e.g.
+```
+for f in build/ps4/valve/*/*.prx build/ps4/valve/*/*.prx.sym; do
+    dir=$(basename "$(dirname "$f")")
+    curl --ftp-create-dirs -T "$f" "ftp://PS4_IP:2121/data/xash/valve/$dir/"
+done
+```
+
 ## Other platforms
 
 Building on other architectures (e.g. x86_64 or arm) and POSIX-compliant OSes (e.g. FreeBSD) is supported.
