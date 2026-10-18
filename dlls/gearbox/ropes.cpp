@@ -661,7 +661,8 @@ void GetAlignmentAngles( const Vector& vecTop, const Vector& vecBottom, Vector& 
 
 	Vector vecResult = vecDist.Normalize();
 
-	const float flRoll = acos( DotProduct( vecResult, RIGHT ) ) * ( 180.0 / M_PI );
+	// clamp: a dot product of normalized vectors can round slightly past +-1, and acos() then returns NaN
+	const float flRoll = acos( Q_max( -1.0f, Q_min( 1.0f, DotProduct( vecResult, RIGHT ) ) ) ) * ( 180.0 / M_PI );
 
 	vecOut.z = -flRoll;
 
@@ -669,7 +670,7 @@ void GetAlignmentAngles( const Vector& vecTop, const Vector& vecBottom, Vector& 
 
 	vecResult = vecDist.Normalize();
 
-	const float flPitch = acos( DotProduct( vecResult, DOWN ) ) * ( 180.0 / M_PI );
+	const float flPitch = acos( Q_max( -1.0f, Q_min( 1.0f, DotProduct( vecResult, DOWN ) ) ) ) * ( 180.0 / M_PI );
 
 	vecOut.x = ( vecResult.x >= 0.0 ) ? flPitch : -flPitch;
 	vecOut.y = 0;
