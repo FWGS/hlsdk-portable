@@ -76,11 +76,10 @@ extern "C" size_t strlcpy(char * __restrict dst, const char * __restrict src, si
 #if !HAVE_STRLCAT
 extern "C" size_t strlcat(char * __restrict dst, const char * __restrict src, size_t dsize);
 #endif
-#if HAVE_CMATH
-#include <cmath>
-#else
+// NOTE: Never use cmath header in HLSDK
+// because it's required to use std namespace
+// directly if you want to override math calls.
 #include <math.h>
-#endif
 
 #if !defined(M_PI_F)
 #define M_PI_F          (float)M_PI
