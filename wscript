@@ -78,6 +78,9 @@ def configure(conf):
 	# Load compilers early
 	conf.load('xcompile compiler_c compiler_cxx')
 
+	if conf.env.DEST_OS == 'ps4':
+		conf.load('ps4')
+
 	# Disable compiler-backed dependency calculation with caching
 	# bug: https://gitlab.com/ita1024/waf/-/issues/2478
 	if not conf.options.WAFCACHE:
@@ -299,6 +302,9 @@ def configure(conf):
 		conf.env.USE_STATIC_FREEVGUI = True
 
 	conf.load('library_naming')
+	if conf.env.DEST_OS == 'ps4':
+		conf.add_subproject('external/ps4compat')
+
 	conf.add_subproject('game_shared dlls freevgui cl_dll')
 
 def build(bld):
@@ -312,5 +318,8 @@ def build(bld):
 	bld.clean_files = bld.bldnode.ant_glob('**',
 		excl='*.user configuration.py .lock* *conf_check_*/** config.log %s/*' % Build.CACHE_DIR,
 		quiet=True, generator=True)
+
+	if bld.env.DEST_OS == 'ps4':
+		bld.add_subproject('external/ps4compat')
 
 	bld.add_subproject('game_shared dlls freevgui cl_dll')
