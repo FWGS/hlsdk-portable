@@ -363,11 +363,13 @@ Game libraries for the experimental PS4 port of [Xash3D FWGS](https://github.com
 
 ### Prerequisites
 
-1. Install LLVM/Clang 18 with lld (OpenOrbis libraries are built with LLVM 18, newer versions don't work), e.g. on Debian or Ubuntu:
+1. Install LLVM/Clang 18 with lld (OpenOrbis libraries are built with LLVM 18, newer versions don't work).
+
+#### Ubuntu/Debian:
 ```
 sudo apt install clang-18 lld-18 llvm-18
 ```
-on Fedora:
+#### RedHat/Fedora/CentOS:
 ```
 sudo dnf install clang18 lld18 llvm18
 ```
@@ -390,18 +392,17 @@ cmake --build build
 cmake --install build --prefix <your installation path>
 ```
 
-Libraries are converted to `.prx` modules, `<gamedir>/cl_dlls` and `<gamedir>/dlls` in the installation path have the result.
+Libraries are converted to `.prx` modules, and `<gamedir>` with `cl_dlls` and `dlls` in the installation path have the result.
 Every `.prx` has a `.prx.sym` file next to it with names of the functions, which the engine needs to load saved games.
 
 ### Installing on the console
 
 Copy the modules and their `.sym` files to the game directory with [GoldHEN FTP](https://github.com/GoldHEN/GoldHEN) (port 2121).
-For example, for Half-Life built with default options, in `<your installation path>/<gamedir>`:
 ```
-curl --ftp-create-dirs -T cl_dlls/client_ps4_amd64.prx ftp://<console IP>:2121/data/xash/<gamedir>/cl_dlls/
-curl --ftp-create-dirs -T cl_dlls/client_ps4_amd64.prx.sym ftp://<console IP>:2121/data/xash/<gamedir>/cl_dlls/
-curl --ftp-create-dirs -T dlls/hl_ps4_amd64.prx ftp://<console IP>:2121/data/xash/<gamedir>/dlls/
-curl --ftp-create-dirs -T dlls/hl_ps4_amd64.prx.sym ftp://<console IP>:2121/data/xash/<gamedir>/dlls/
+curl --ftp-create-dirs -T <gamedir>/cl_dlls/client_ps4_amd64.prx ftp://<console IP>:2121/data/xash/<gamedir>/cl_dlls/
+curl --ftp-create-dirs -T <gamedir>/cl_dlls/client_ps4_amd64.prx.sym ftp://<console IP>:2121/data/xash/<gamedir>/cl_dlls/
+curl --ftp-create-dirs -T <gamedir>/dlls/hl_ps4_amd64.prx ftp://<console IP>:2121/data/xash/<gamedir>/dlls/
+curl --ftp-create-dirs -T <gamedir>/dlls/hl_ps4_amd64.prx.sym ftp://<console IP>:2121/data/xash/<gamedir>/dlls/
 ```
 
 ## Other platforms
