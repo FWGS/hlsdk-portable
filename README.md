@@ -357,6 +357,54 @@ cmake -G"Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE="$VITASDK/share/vita.toolchain.c
 make -j
 ```
 
+## PlayStation 4
+
+Game libraries for the experimental PS4 port of [Xash3D FWGS](https://github.com/FWGS/xash3d-fwgs).
+
+### Prerequisites
+
+1. Install LLVM/Clang 18 with lld (OpenOrbis libraries are built with LLVM 18, newer versions don't work).
+
+#### Ubuntu/Debian:
+```
+sudo apt install clang-18 lld-18 llvm-18
+```
+#### RedHat/Fedora/CentOS:
+```
+sudo dnf install clang18 lld18 llvm18
+```
+2. Download [OpenOrbis PS4 Toolchain](https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain) built for LLVM 18 and unpack it.
+
+The compilers and the path to the `PS4Toolchain` directory are given at the configuration stage.
+
+### Building with waf
+```
+OO_PS4_TOOLCHAIN=/path/to/OpenOrbis/PS4Toolchain CC=clang-18 CXX=clang++-18 ./waf configure -T release --ps4
+./waf build
+./waf install --destdir=<your installation path>
+```
+The toolchain can be passed with `--ps4-toolchain=/path/to/OpenOrbis/PS4Toolchain` as well.
+
+### Building with CMake
+```
+OO_PS4_TOOLCHAIN=/path/to/OpenOrbis/PS4Toolchain CC=clang-18 CXX=clang++-18 cmake -DCMAKE_TOOLCHAIN_FILE=cmake/PS4Toolchain.cmake -DCMAKE_BUILD_TYPE=Release -B build -S .
+cmake --build build
+cmake --install build --prefix <your installation path>
+```
+
+Libraries are converted to `.prx` modules, and `<gamedir>` with `cl_dlls` and `dlls` in the installation path have the result.
+Every `.prx` has a `.prx.sym` file next to it with names of the functions, which the engine needs to load saved games.
+
+### Installing on the console
+
+Copy the modules and their `.sym` files to the game directory with [GoldHEN FTP](https://github.com/GoldHEN/GoldHEN) (port 2121).
+```
+curl --ftp-create-dirs -T <gamedir>/cl_dlls/client_ps4_amd64.prx ftp://<console IP>:2121/data/xash/<gamedir>/cl_dlls/
+curl --ftp-create-dirs -T <gamedir>/cl_dlls/client_ps4_amd64.prx.sym ftp://<console IP>:2121/data/xash/<gamedir>/cl_dlls/
+curl --ftp-create-dirs -T <gamedir>/dlls/hl_ps4_amd64.prx ftp://<console IP>:2121/data/xash/<gamedir>/dlls/
+curl --ftp-create-dirs -T <gamedir>/dlls/hl_ps4_amd64.prx.sym ftp://<console IP>:2121/data/xash/<gamedir>/dlls/
+```
+
 ## Other platforms
 
 Building on other architectures (e.g. x86_64 or arm) and POSIX-compliant OSes (e.g. FreeBSD) is supported.
