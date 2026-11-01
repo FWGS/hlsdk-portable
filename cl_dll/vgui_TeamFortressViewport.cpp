@@ -1917,8 +1917,10 @@ int TeamFortressViewport::KeyInput( int down, int keynum, const char *pszCurrent
 			}
 		}
 
-		// Grab enter keys to close TextWindows
-		if( down && ( keynum == K_ENTER || keynum == K_KP_ENTER || keynum == K_SPACE || keynum == K_ESCAPE ) )
+		// Grab enter keys to close TextWindows, gamepads close them with A (Cross) or B (Circle),
+		// K_AUX1 and K_AUX2 in Xash3D FWGS
+		if( down && ( keynum == K_ENTER || keynum == K_KP_ENTER || keynum == K_SPACE || keynum == K_ESCAPE
+			|| keynum == K_AUX1 || keynum == K_AUX2 ) )
 		{
 			if( iMenuID == MENU_MAPBRIEFING || iMenuID == MENU_INTRO || iMenuID == MENU_CLASSHELP )
 			{
