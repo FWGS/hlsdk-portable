@@ -78,6 +78,9 @@ def configure(conf):
 	# Load compilers early
 	conf.load('xcompile compiler_c compiler_cxx')
 
+	if conf.env.DEST_OS == 'ps4':
+		conf.load('ps4')
+
 	# Disable compiler-backed dependency calculation with caching
 	# bug: https://gitlab.com/ita1024/waf/-/issues/2478
 	if not conf.options.WAFCACHE:
@@ -243,10 +246,6 @@ def configure(conf):
 		conf.define_cond('HAVE_TGMATH_H', tgmath_usable)
 	else:
 		conf.undefine('HAVE_TGMATH_H')
-	cmath_usable = conf.check_cxx(fragment='''#include<cmath>
-			int main(void){ return (int)sqrt(2.0f); }''',
-			msg='Checking if cmath is usable', mandatory = False)
-	conf.define_cond('HAVE_CMATH', cmath_usable)
 
 	if conf.env.COMPILER_CC == 'msvc':
 		conf.define('_CRT_SECURE_NO_WARNINGS', True)
@@ -299,6 +298,9 @@ def configure(conf):
 		conf.env.USE_STATIC_FREEVGUI = True
 
 	conf.load('library_naming')
+	if conf.env.DEST_OS == 'ps4':
+		conf.add_subproject('external/ps4compat')
+
 	conf.add_subproject('game_shared dlls')
 
 def build(bld):
@@ -312,5 +314,8 @@ def build(bld):
 	bld.clean_files = bld.bldnode.ant_glob('**',
 		excl='*.user configuration.py .lock* *conf_check_*/** config.log %s/*' % Build.CACHE_DIR,
 		quiet=True, generator=True)
+
+	if bld.env.DEST_OS == 'ps4':
+		bld.add_subproject('external/ps4compat')
 
 	bld.add_subproject('game_shared dlls')
