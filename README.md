@@ -359,8 +359,6 @@ make -j
 
 ## PlayStation 4
 
-Game libraries for the experimental PS4 port of [Xash3D FWGS](https://github.com/FWGS/xash3d-fwgs).
-
 ### Prerequisites
 
 1. Install LLVM/Clang 18 with lld (OpenOrbis libraries are built with LLVM 18, newer versions don't work).
