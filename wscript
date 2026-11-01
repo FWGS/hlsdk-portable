@@ -299,11 +299,7 @@ def configure(conf):
 		conf.env.USE_STATIC_FREEVGUI = True
 
 	conf.load('library_naming')
-<<<<<<< HEAD
 	conf.add_subproject('game_shared dlls')
-=======
-	conf.add_subproject('game_shared dlls freevgui cl_dll')
->>>>>>> master
 
 def build(bld):
 	if bld.env.WAFCACHE:
