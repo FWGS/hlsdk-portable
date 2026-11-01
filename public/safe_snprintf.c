@@ -17,7 +17,7 @@ int safe_snprintf(char *buffer, int buffersize, const char *format, ...)
 	result = _vsnprintf( buffer, buffersize, format, args );
 	va_end( args );
 
-	if( result >= buffersize )
+	if( result < 0 || result >= buffersize )
 	{
 		buffer[buffersize - 1] = '\0';
 		return -1;
