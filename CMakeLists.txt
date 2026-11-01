@@ -162,6 +162,10 @@ endif()
 # see documentation: https://github.com/FWGS/xash3d-fwgs/blob/master/Documentation/extensions/library-naming.md
 include(LibraryNaming)
 
+if(XASH_PS4)
+	include(PS4)
+endif()
+
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 	message(STATUS "Building for 64 Bit")
 else()
