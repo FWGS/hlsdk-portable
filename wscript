@@ -313,9 +313,4 @@ def build(bld):
 		excl='*.user configuration.py .lock* *conf_check_*/** config.log %s/*' % Build.CACHE_DIR,
 		quiet=True, generator=True)
 
-<<<<<<< HEAD
 	bld.add_subproject('game_shared dlls')
-
-=======
-	bld.add_subproject('game_shared dlls freevgui cl_dll')
->>>>>>> master
