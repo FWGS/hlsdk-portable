@@ -55,11 +55,7 @@ extern "C" size_t strlcpy(char * __restrict dst, const char * __restrict src, si
 #if !HAVE_STRLCAT
 extern "C" size_t strlcat(char * __restrict dst, const char * __restrict src, size_t dsize);
 #endif
-#if HAVE_CMATH
-#include <cmath>
-#else
 #include <math.h>
-#endif
 extern cl_enginefunc_t gEngfuncs;
 #include "../engine/mobility_int.h"
 extern mobile_engfuncs_t *gMobileEngfuncs;
