@@ -53,9 +53,10 @@ void AngleVectors( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up 
 {
 	float sr, sp, sy, cr, cp, cy;
 #if XASH_SIMD_NEON
-	float32x4_t angles_reg = { angles[0], angles[1], angles[2], 0.0f };
 	float32x4x2_t res;
-
+	float32x4_t angles_reg = vsetq_lane_f32(angles[YAW], vdupq_n_f32( 0.0f ), 0);
+	angles_reg = vsetq_lane_f32(angles[PITCH], angles_reg, 1);
+	angles_reg = vsetq_lane_f32(angles[ROLL], angles_reg, 2);
 	sincos_ps( vmulq_n_f32( angles_reg, ( M_PI_F * 2.0f / 360.0f )), &res.val[0], &res.val[1] );
 	sy = vgetq_lane_f32(res.val[0], 0);
 	cy = vgetq_lane_f32(res.val[1], 0);
@@ -100,9 +101,10 @@ void AngleVectorsTranspose( const vec3_t angles, vec3_t forward, vec3_t right, v
 {
 	float sr, sp, sy, cr, cp, cy;
 #if XASH_SIMD_NEON
-	float32x4_t angles_reg = { angles[0], angles[1], angles[2], 0.0f };
 	float32x4x2_t res;
-
+	float32x4_t angles_reg = vsetq_lane_f32(angles[YAW], vdupq_n_f32( 0.0f ), 0);
+	angles_reg = vsetq_lane_f32(angles[PITCH], angles_reg, 1);
+	angles_reg = vsetq_lane_f32(angles[ROLL], angles_reg, 2);
 	sincos_ps( vmulq_n_f32( angles_reg, ( M_PI_F * 2.0f / 360.0f )), &res.val[0], &res.val[1] );
 	sy = vgetq_lane_f32(res.val[0], 0);
 	cy = vgetq_lane_f32(res.val[1], 0);
@@ -147,9 +149,10 @@ void AngleMatrix( const float *angles, float (*matrix)[4] )
 {
 	float sr, sp, sy, cr, cp, cy;
 #if XASH_SIMD_NEON
-	float32x4_t angles_reg = { angles[0], angles[1], angles[2], 0.0f };
 	float32x4x2_t res;
-
+	float32x4_t angles_reg = vsetq_lane_f32(angles[YAW], vdupq_n_f32( 0.0f ), 0);
+	angles_reg = vsetq_lane_f32(angles[PITCH], angles_reg, 1);
+	angles_reg = vsetq_lane_f32(angles[ROLL], angles_reg, 2);
 	sincos_ps( vmulq_n_f32( angles_reg, ( M_PI_F * 2.0f / 360.0f )), &res.val[0], &res.val[1] );
 	sy = vgetq_lane_f32(res.val[0], 0);
 	cy = vgetq_lane_f32(res.val[1], 0);
@@ -189,9 +192,10 @@ void AngleIMatrix( const vec3_t angles, float matrix[3][4] )
 {
 	float sr, sp, sy, cr, cp, cy;
 #if XASH_SIMD_NEON
-	float32x4_t angles_reg = { angles[0], angles[1], angles[2], 0.0f };
 	float32x4x2_t res;
-
+	float32x4_t angles_reg = vsetq_lane_f32(angles[YAW], vdupq_n_f32( 0.0f ), 0);
+	angles_reg = vsetq_lane_f32(angles[PITCH], angles_reg, 1);
+	angles_reg = vsetq_lane_f32(angles[ROLL], angles_reg, 2);
 	sincos_ps( vmulq_n_f32( angles_reg, ( M_PI_F * 2.0f / 360.0f )), &res.val[0], &res.val[1] );
 	sy = vgetq_lane_f32(res.val[0], 0);
 	cy = vgetq_lane_f32(res.val[1], 0);
@@ -307,13 +311,10 @@ float AngleBetweenVectors( const vec3_t v1, const vec3_t v2 )
 void VectorTransform( const vec3_t in1, float in2[3][4], vec3_t out )
 {
 #if XASH_SIMD_NEON
-	const float32x4_t in1_reg = { in1[0], in1[1], in1[2], 1.0f };
-
-	for( int i = 0; i < 3; ++i )
-	{
-		const float32x4_t row = vld1q_f32( in2[i] );
-		out[i] = vaddvq_f32( vmulq_f32( row, in1_reg ));
-	}
+	float32x4_t res = vmulq_n_f32( vld1q_f32( in2[0] ), in1[0] );
+	res = vfmaq_n_f32( res, vld1q_f32( in2[1] ), in1[1] );
+	res = vfmaq_n_f32( res, vld1q_f32( in2[2] ), in1[2] );
+	memcpy( out, &res, sizeof( vec3_t ));
 #else
 	out[0] = DotProduct( in1, in2[0] ) + in2[0][3];
 	out[1] = DotProduct( in1, in2[1] ) + in2[1][3];
