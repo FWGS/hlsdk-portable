@@ -310,16 +310,9 @@ float AngleBetweenVectors( const vec3_t v1, const vec3_t v2 )
 
 void VectorTransform( const vec3_t in1, float in2[3][4], vec3_t out )
 {
-#if XASH_SIMD_NEON
-	float32x4_t res = vmulq_n_f32( vld1q_f32( in2[0] ), in1[0] );
-	res = vfmaq_n_f32( res, vld1q_f32( in2[1] ), in1[1] );
-	res = vfmaq_n_f32( res, vld1q_f32( in2[2] ), in1[2] );
-	memcpy( out, &res, sizeof( vec3_t ));
-#else
 	out[0] = DotProduct( in1, in2[0] ) + in2[0][3];
 	out[1] = DotProduct( in1, in2[1] ) + in2[1][3];
 	out[2] = DotProduct( in1, in2[2] ) + in2[2][3];
-#endif
 }
 
 int VectorCompare( const vec3_t v1, const vec3_t v2 )
