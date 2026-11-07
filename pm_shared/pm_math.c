@@ -22,13 +22,6 @@
 #include "const.h"
 #include "build.h"
 
-#if XASH_ARM >= 8
-#define XASH_SIMD_NEON 1
-#include <arm_neon.h>
-#include "neon_mathfun.h"
-#endif // XASH_ARM >= 8
-
-
 // up / down
 #define	PITCH	0
 // left / right
@@ -51,21 +44,8 @@ float anglemod( float a )
 
 void AngleVectors( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up )
 {
-	float sr, sp, sy, cr, cp, cy;
-#if XASH_SIMD_NEON
-	float32x4x2_t res;
-	float32x4_t angles_reg = vsetq_lane_f32(angles[YAW], vdupq_n_f32( 0.0f ), 0);
-	angles_reg = vsetq_lane_f32(angles[PITCH], angles_reg, 1);
-	angles_reg = vsetq_lane_f32(angles[ROLL], angles_reg, 2);
-	sincos_ps( vmulq_n_f32( angles_reg, ( M_PI_F * 2.0f / 360.0f )), &res.val[0], &res.val[1] );
-	sy = vgetq_lane_f32(res.val[0], 0);
-	cy = vgetq_lane_f32(res.val[1], 0);
-	sp = vgetq_lane_f32(res.val[0], 1);
-	cp = vgetq_lane_f32(res.val[1], 1);
-	sr = vgetq_lane_f32(res.val[0], 2);
-	cr = vgetq_lane_f32(res.val[1], 2);
-#else
 	float angle;
+	float sr, sp, sy, cr, cp, cy;
 
 	angle = angles[YAW] * ( M_PI_F * 2.0f / 360.0f );
 	sy = sin( angle );
@@ -76,7 +56,7 @@ void AngleVectors( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up 
 	angle = angles[ROLL] * ( M_PI_F * 2.0f / 360.0f );
 	sr = sin( angle );
 	cr = cos( angle );
-#endif
+
 	if( forward )
 	{
 		forward[0] = cp * cy;
@@ -99,21 +79,8 @@ void AngleVectors( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up 
 
 void AngleVectorsTranspose( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up )
 {
-	float sr, sp, sy, cr, cp, cy;
-#if XASH_SIMD_NEON
-	float32x4x2_t res;
-	float32x4_t angles_reg = vsetq_lane_f32(angles[YAW], vdupq_n_f32( 0.0f ), 0);
-	angles_reg = vsetq_lane_f32(angles[PITCH], angles_reg, 1);
-	angles_reg = vsetq_lane_f32(angles[ROLL], angles_reg, 2);
-	sincos_ps( vmulq_n_f32( angles_reg, ( M_PI_F * 2.0f / 360.0f )), &res.val[0], &res.val[1] );
-	sy = vgetq_lane_f32(res.val[0], 0);
-	cy = vgetq_lane_f32(res.val[1], 0);
-	sp = vgetq_lane_f32(res.val[0], 1);
-	cp = vgetq_lane_f32(res.val[1], 1);
-	sr = vgetq_lane_f32(res.val[0], 2);
-	cr = vgetq_lane_f32(res.val[1], 2);
-#else
 	float angle;
+	float sr, sp, sy, cr, cp, cy;
 
 	angle = angles[YAW] * ( M_PI_F * 2.0f / 360.0f );
 	sy = sin( angle );
@@ -124,7 +91,7 @@ void AngleVectorsTranspose( const vec3_t angles, vec3_t forward, vec3_t right, v
 	angle = angles[ROLL] * ( M_PI_F * 2.0f / 360.0f );
 	sr = sin( angle );
 	cr = cos( angle );
-#endif
+
 	if( forward )
 	{
 		forward[0] = cp * cy;
@@ -147,21 +114,8 @@ void AngleVectorsTranspose( const vec3_t angles, vec3_t forward, vec3_t right, v
 
 void AngleMatrix( const float *angles, float (*matrix)[4] )
 {
-	float sr, sp, sy, cr, cp, cy;
-#if XASH_SIMD_NEON
-	float32x4x2_t res;
-	float32x4_t angles_reg = vsetq_lane_f32(angles[YAW], vdupq_n_f32( 0.0f ), 0);
-	angles_reg = vsetq_lane_f32(angles[PITCH], angles_reg, 1);
-	angles_reg = vsetq_lane_f32(angles[ROLL], angles_reg, 2);
-	sincos_ps( vmulq_n_f32( angles_reg, ( M_PI_F * 2.0f / 360.0f )), &res.val[0], &res.val[1] );
-	sy = vgetq_lane_f32(res.val[0], 0);
-	cy = vgetq_lane_f32(res.val[1], 0);
-	sp = vgetq_lane_f32(res.val[0], 1);
-	cp = vgetq_lane_f32(res.val[1], 1);
-	sr = vgetq_lane_f32(res.val[0], 2);
-	cr = vgetq_lane_f32(res.val[1], 2);
-#else
 	float angle;
+	float sr, sp, sy, cr, cp, cy;
 
 	angle = angles[YAW] * ( M_PI_F * 2.0f / 360.0f );
 	sy = sin( angle );
@@ -172,7 +126,7 @@ void AngleMatrix( const float *angles, float (*matrix)[4] )
 	angle = angles[ROLL] * ( M_PI_F * 2.0f / 360.0f );
 	sr = sin( angle );
 	cr = cos( angle );
-#endif
+
 	// matrix = (YAW * PITCH) * ROLL
 	matrix[0][0] = cp * cy;
 	matrix[1][0] = cp * sy;
@@ -190,21 +144,8 @@ void AngleMatrix( const float *angles, float (*matrix)[4] )
 
 void AngleIMatrix( const vec3_t angles, float matrix[3][4] )
 {
-	float sr, sp, sy, cr, cp, cy;
-#if XASH_SIMD_NEON
-	float32x4x2_t res;
-	float32x4_t angles_reg = vsetq_lane_f32(angles[YAW], vdupq_n_f32( 0.0f ), 0);
-	angles_reg = vsetq_lane_f32(angles[PITCH], angles_reg, 1);
-	angles_reg = vsetq_lane_f32(angles[ROLL], angles_reg, 2);
-	sincos_ps( vmulq_n_f32( angles_reg, ( M_PI_F * 2.0f / 360.0f )), &res.val[0], &res.val[1] );
-	sy = vgetq_lane_f32(res.val[0], 0);
-	cy = vgetq_lane_f32(res.val[1], 0);
-	sp = vgetq_lane_f32(res.val[0], 1);
-	cp = vgetq_lane_f32(res.val[1], 1);
-	sr = vgetq_lane_f32(res.val[0], 2);
-	cr = vgetq_lane_f32(res.val[1], 2);
-#else
 	float angle;
+	float sr, sp, sy, cr, cp, cy;
 
 	angle = angles[YAW] * ( M_PI_F * 2.0f / 360.0f );
 	sy = sin( angle );
@@ -215,7 +156,7 @@ void AngleIMatrix( const vec3_t angles, float matrix[3][4] )
 	angle = angles[ROLL] * ( M_PI_F * 2.0f / 360.0f );
 	sr = sin( angle );
 	cr = cos( angle );
-#endif
+
 	// matrix = ( YAW * PITCH ) * ROLL
 	matrix[0][0] = cp * cy;
 	matrix[0][1] = cp * sy;
