@@ -339,7 +339,7 @@ StudioSlerpBones
 */
 void CStudioModelRenderer::StudioSlerpBones( vec4_t q1[], float pos1[][3], vec4_t q2[], float pos2[][3], float s )
 {
-	int i;
+	int i, tail;
 	float s1;
 
 	if( s < 0.0f )
@@ -349,24 +349,12 @@ void CStudioModelRenderer::StudioSlerpBones( vec4_t q1[], float pos1[][3], vec4_
 
 	s1 = 1.0f - s;
 
-	switch (m_pStudioHeader->numbones % 4)
-	{
-	case 3:
-		QuaternionSlerp( q1[0], q2[0], s, q1[0] );
-		QuaternionSlerp( q1[1], q2[1], s, q1[1] );
-		QuaternionSlerp( q1[2], q2[2], s, q1[2] );
-		break;
-	case 2:
-		QuaternionSlerp( q1[0], q2[0], s, q1[0] );
-		QuaternionSlerp( q1[1], q2[1], s, q1[1] );
-		break;
-	case 1:
-		QuaternionSlerp( q1[0], q2[0], s, q1[0] );
-		break;
-	case 0:
-		break;
-	}
-	for ( i = m_pStudioHeader->numbones % 4; i < m_pStudioHeader->numbones; i += 4 )
+	tail = m_pStudioHeader->numbones & 3;
+
+	for( i = 0; i < tail; i++ )
+		QuaternionSlerp( q1[i], q2[i], s, q1[i] );
+
+	for( ; i < m_pStudioHeader->numbones; i += 4 )
 		QuaternionSlerpX4( q1 + i, q2 + i, s, q1 + i );
 
 	for( i = 0; i < m_pStudioHeader->numbones; i++ )
