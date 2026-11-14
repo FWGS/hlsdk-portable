@@ -105,7 +105,7 @@ jobs:
         cp ../cl_czeror/src/* cl_dll/
         patch -l -p1 -F3 -i ../cl_czeror/cs16-client.patch
         cd 3rdparty/mainui_cpp
-        for p in czds_mainui czds_mainui_cs16 czds_mainui_locks; do
+        for p in czds_mainui czds_mainui_cs16; do
           patch -l -p1 -F3 -i ../../../cl_czeror/mainui/$p.patch
         done
         git apply --ignore-whitespace ../../../cl_czeror/mainui/mainui_background.patch

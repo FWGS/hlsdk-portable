@@ -161,7 +161,7 @@
  	CEventCallback easyCallback;
  	CEventCallback normCallback;
  	CEventCallback hardCallback;
-@@ -91,6 +93,23 @@
+@@ -94,6 +96,25 @@
  	ui->StartGame( (uintptr_t)pExtra );
  }
  
@@ -178,6 +178,8 @@
 +	EngFuncs::CvarSetValue( "coop", 0.0f );
 +	EngFuncs::PlayBackgroundTrack( NULL, NULL );
 +
++	EngFuncs::CvarSetValue( "cl_newgame", 1.0f ); // the server closes the missions again
++
 +	// the training map of the game info (trainmap in liblist.gam)
 +	EngFuncs::ClientCmdF( false, "map %s\n", gMenu.m_gameinfo.trainmap );
 +}
@@ -185,7 +187,7 @@
  void CMenuNewGame::ShowDialogCb( CMenuBaseItem *pSelf, void *pExtra )
  {
  	CMenuNewGame *ui = (CMenuNewGame*)pSelf->Parent();
-@@ -119,6 +138,13 @@
+@@ -122,6 +143,13 @@
  	hardCallback = StartGameCb;
  	hardCallback.pExtra = (void *)3;
  
