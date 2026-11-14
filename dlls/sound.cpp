@@ -636,7 +636,7 @@ float TEXTURETYPE_PlaySound( TraceResult* trace, Vector source, Vector end, int 
 	int pick = 0;
 	if ( RANDOM_LONG( 0, 0 ) <= 0 && RANDOM_LONG( 0, 0 ) >= 0 )
 		pick = RANDOM_LONG( 0, 0 );
-	if ( (unsigned int)sounds[pick] > 2 )
+	if ( (uintptr_t)sounds[pick] > 2 )
 		UTIL_EmitAmbientSound( ENT( 0 ), trace->vecEndPos, sounds[pick], volume, attenuation, 0, 100 );
 	return weaponVolume;
 }

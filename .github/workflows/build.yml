@@ -4,18 +4,20 @@ on:
   push:
     paths-ignore:
       - 'README.md'
+      - '.github/workflows/manual.yml'
   pull_request:
     paths-ignore:
       - 'README.md'
+      - '.github/workflows/manual.yml'
   workflow_dispatch:
     inputs:
       client_ref:
         description: Branch of sergiopoverony/cs16-client to take the client from
         default: czds
 
-# czeror: the server is built from here. On Windows the client and the menu
-# are built in the same job from sergiopoverony/cs16-client (branch czds) until
-# the client is built from the CZ sources, the package holds both.
+# czeror: the server is built from here (Linux gcc and clang in the Steam Runtime,
+# Windows x86 and x86_64). On Windows x86 the client and the menu are built in the same
+# job from sergiopoverony/cs16-client (branch czds), the package holds both.
 # Run it by hand (workflow_dispatch) after a change of the client.
 
 jobs:
@@ -28,30 +30,51 @@ jobs:
           - os: ubuntu-latest
             cc: gcc
             cxx: g++
+          - os: ubuntu-latest
+            cc: clang
+            cxx: clang++
           - os: windows-latest
             cc: cl
             cxx: cl
     env:
       CC: ${{ matrix.cc }}
       CXX: ${{ matrix.cxx }}
+      STEAMRT_SNAPSHOT: latest-steam-client-general-availability
     steps:
     - name: Checkout
       uses: actions/checkout@v4
       with:
         submodules: recursive
 
-    - name: Install 32-bit toolchain
+    - name: Checkout steam-runtime
+      if: startsWith(matrix.os, 'ubuntu')
+      uses: actions/checkout@v4
+      with:
+        repository: ValveSoftware/steam-runtime
+        path: steam-runtime
+    - name: Cache steam-runtime
+      if: startsWith(matrix.os, 'ubuntu')
+      id: cache-steam-runtime
+      uses: actions/cache@v4
+      with:
+        path: com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
+        key: steam-runtime-${{ env.STEAMRT_SNAPSHOT }}
+    - name: Download steam-runtime
+      if: startsWith(matrix.os, 'ubuntu') && steps.cache-steam-runtime.outputs.cache-hit != 'true'
+      run: wget --no-verbose https://repo.steampowered.com/steamrt-images-scout/snapshots/${{ env.STEAMRT_SNAPSHOT }}/com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
+    - name: Install steam runtime
       if: startsWith(matrix.os, 'ubuntu')
       run: |
-        sudo apt-get update
-        sudo apt-get install -y g++-multilib ninja-build
+        sudo apt update
+        ./steam-runtime/setup_chroot.sh --i386 --tarball ./com.valvesoftware.SteamRuntime.Sdk-i386-scout-sysroot.tar.gz
+        sudo sed -i 's/groups=sudo/groups=adm/g' /etc/schroot/chroot.d/steamrt_scout_i386.conf
 
     - name: Build on Linux
       if: startsWith(matrix.os, 'ubuntu')
       run: |
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_CLIENT=OFF -B build -S . -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_INSTALL_PREFIX="$PWD/dist"
-        cmake --build build --target all
-        cmake --build build --target install
+        schroot --chroot steamrt_scout_i386 -- cmake -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_CLIENT=OFF -DPOLLY=ON -B build -S . -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_INSTALL_PREFIX="$PWD/dist"
+        schroot --chroot steamrt_scout_i386 -- cmake --build build --target all
+        schroot --chroot steamrt_scout_i386 -- cmake --build build --target install
 
     - name: Set developer command prompt for Windows x86
       if: startsWith(matrix.os, 'windows')
@@ -65,6 +88,24 @@ jobs:
         cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_CLIENT=OFF -B build -S . -DCMAKE_INSTALL_PREFIX="dist"
         cmake --build build --target all
         cmake --build build --target install
+
+    - name: Set developer command prompt for Windows x86_64
+      if: startsWith(matrix.os, 'windows')
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+    - name: Build on Windows x64
+      if: startsWith(matrix.os, 'windows')
+      run: |
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_CLIENT=OFF -B build64 -S . -DCMAKE_INSTALL_PREFIX="dist64" -D64BIT=ON
+        cmake --build build64 --target all
+        cmake --build build64 --target install
+
+    - name: Set developer command prompt for Windows x86 (client)
+      if: startsWith(matrix.os, 'windows')
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x86
 
     - name: Checkout client
       if: startsWith(matrix.os, 'windows')
@@ -94,9 +135,12 @@ jobs:
     - name: Strip the package
       shell: bash
       run: |
-        find dist \( -name '*.pdb' -o -name '*.lib' -o -name '*.exp' \) -delete -print
-        find dist -name 'extras.pk3' -delete -print
-        find dist -type f
+        for d in dist dist64; do
+          [ -d "$d" ] || continue
+          find $d \( -name '*.pdb' -o -name '*.lib' -o -name '*.exp' \) -delete -print
+          find $d -name 'extras.pk3' -delete -print
+          find $d -type f
+        done
 
     - name: Extract branch name
       shell: bash
@@ -106,8 +150,21 @@ jobs:
       shell: bash
       run: echo "gamedir=$(grep build/CMakeCache.txt -Ee 'GAMEDIR:STRING=[a-z0-9]+' | cut -d '=' -f 2)" >> $GITHUB_OUTPUT
       id: extract_gamedir
-    - name: Upload artifact
+    - name: Upload linux artifact
+      if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ steps.extract_gamedir.outputs.gamedir }}-${{ startsWith(matrix.os, 'windows') && 'windows' || 'linux' }}
+        name: ${{ steps.extract_gamedir.outputs.gamedir }}-linux
         path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
+    - name: Upload windows artifact
+      if: startsWith(matrix.os, 'windows')
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.extract_gamedir.outputs.gamedir }}-windows
+        path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
+    - name: Upload windows x64 artifact
+      if: startsWith(matrix.os, 'windows')
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.extract_gamedir.outputs.gamedir }}-windows_x64
+        path: dist64/${{ steps.extract_gamedir.outputs.gamedir }}
