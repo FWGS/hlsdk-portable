@@ -15,7 +15,7 @@ on:
     inputs:
       client_ref:
         description: Branch of sergiopoverony/cs16-client to take the client and the menu from
-        default: czds
+        default: main
 
 # czeror: the same build as the other mods, plus the client and the menu of the game
 # (built from sergiopoverony/cs16-client) in the Windows x86 package.
@@ -92,16 +92,29 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: sergiopoverony/cs16-client
-        ref: ${{ github.event.inputs.client_ref || 'czds' }}
+        ref: ${{ github.event.inputs.client_ref || 'main' }}
         path: client-src
         submodules: recursive
+
+    # the client and the menu stay as they are upstream, our part is in cl_czeror
+    - name: Add the mod to the client and the menu
+      if: startsWith(matrix.os, 'windows')
+      shell: bash
+      working-directory: client-src
+      run: |
+        cp ../cl_czeror/src/* cl_dll/
+        patch -l -p1 -F3 -i ../cl_czeror/cs16-client.patch
+        cd 3rdparty/mainui_cpp
+        for p in czds_mainui czds_mainui_cs16 czds_mainui_locks; do
+          patch -l -p1 -F3 -i ../../../cl_czeror/mainui/$p.patch
+        done
+        git apply --ignore-whitespace ../../../cl_czeror/mainui/mainui_background.patch
 
     - name: Build client on Windows
       if: startsWith(matrix.os, 'windows')
       shell: bash
       working-directory: client-src
       run: |
-        git -C 3rdparty/mainui_cpp apply --ignore-whitespace ../../mainui_background.patch
         gd=$(grep ../build/CMakeCache.txt -Ee 'GAMEDIR:STRING=[a-z]+' | cut -d '=' -f 2)
         cmake -G Ninja -B build -S . -DCMAKE_BUILD_TYPE=Release \
           -DBUILD_SERVER=OFF -DENABLE_YY_THUNKS=OFF -DGAME_DIR="$gd" \

@@ -1,0 +1,201 @@
+--- a/menus/Main.cpp
++++ b/menus/Main.cpp
+@@ -53,6 +53,7 @@
+ 	void Think() override;
+ 
+ 	void VidInit(bool connected);
++	void VidInitCZDS( bool connected );
+ 
+ 	void DisconnectCb();
+ 	void DisconnectDialogCb();
+@@ -69,6 +70,7 @@
+ 	CMenuPicButton	hazardCourse;
+ 	CMenuPicButton	configuration;
+ 	CMenuPicButton	saveRestore;
++	CMenuPicButton	saveGame;  // CZ:DS
+ 	CMenuPicButton	worldMap;  // CZ:DS
+ 	CMenuPicButton	multiPlayer;
+ 	CMenuPicButton	customGame;
+@@ -220,12 +222,15 @@
+ 
+ 	saveRestore.iFlags |= QMF_NOTIFY;
+ 
+-	if( UI_IsCZDS( ))
+-	{
+-		worldMap.SetNameAndStatus( L( "CZERO_WorldMap" ), L( "Choose a mission" ) );
+-		worldMap.iFlags |= QMF_NOTIFY;
+-		worldMap.onReleased = UI_WorldMap_Menu;
+-	}
++	// CZ:DS: Save Game and World Map are separate buttons (GameMenu.res of the game)
++	saveGame.SetNameAndStatus( L( "GameUI_SaveGame" ), L( "StringsList_192" ) );
++	saveGame.SetPicture( PC_SAVE_GAME );
++	saveGame.iFlags |= QMF_NOTIFY;
++	saveGame.onReleased = UI_SaveGame_Menu;
++
++	worldMap.SetNameAndStatus( L( "CZERO_WorldMap" ), L( "Choose a mission" ) );
++	worldMap.iFlags |= QMF_NOTIFY;
++	worldMap.onReleased = UI_WorldMap_Menu;
+ 
+ 	customGame.SetNameAndStatus( L( "GameUI_ChangeGame" ), L( "StringsList_530" ) );
+ 	customGame.SetPicture( PC_CUSTOM_GAME );
+@@ -301,9 +306,6 @@
+ 	AddItem( resumeGame );
+ 	AddItem( newGame );
+ 
+-	if( UI_IsCZDS( ))
+-		AddItem( worldMap );
+-
+ 	if ( bTrainMap )
+ 		AddItem( hazardCourse );
+ 
+@@ -319,6 +321,8 @@
+ 	AddItem( quit );
+ 	AddItem( minimizeBtn );
+ 	AddItem( quitButton );
++	AddItem( saveGame );
++	AddItem( worldMap );
+ }
+ 
+ /*
+@@ -326,8 +330,75 @@
+ UI_Main_Init
+ =================
+ */
++// CZ:DS: Resume Game, New Game, World Map, Load Game, Save Game, Disconnect, Options, Quit
++void CMenuMain::VidInitCZDS( bool connected )
++{
++	int hoffset = ( 70 / 640.0 ) * 1024.0;
++	int previews_voffset = ( 404 / 480.0 ) * 768.0;
++	int ygap = (( 404 - 373 ) / 480.0 ) * 768.0;
++	bool single = gpGlobals->maxClients < 2;
++
++	minimizeBtn.SetRect( uiStatic.width - 72, 13, 32, 32 );
++	quitButton.SetRect( uiStatic.width - 36, 13, 32, 32 );
++
++	// the buttons are placed from the bottom to the top
++	quit.SetCoord( hoffset, previews_voffset + ygap );
++	int yoffset = previews_voffset;
++
++	configuration.SetCoord( hoffset, yoffset );
++	yoffset -= ygap;
++
++	if( connected && single )
++	{
++		saveGame.SetCoord( hoffset, yoffset );
++		yoffset -= ygap;
++	}
++
++	saveRestore.SetCoord( hoffset, yoffset );
++	yoffset -= ygap;
++
++	worldMap.SetCoord( hoffset, yoffset );
++	yoffset -= ygap;
++
++	newGame.SetCoord( hoffset, yoffset );
++	yoffset -= ygap;
++
++	if( connected )
++	{
++		resumeGame.SetCoord( hoffset, yoffset );
++		yoffset -= ygap;
++
++		disconnect.SetCoord( hoffset, yoffset );
++		yoffset -= ygap;
++	}
++
++	console.SetCoord( hoffset, yoffset );
++
++	resumeGame.SetVisibility( connected );
++	disconnect.SetVisibility( connected );
++	newGame.SetVisibility( true );
++	worldMap.SetVisibility( true );
++	saveGame.SetVisibility( connected && single );
++
++	hazardCourse.SetVisibility( false );
++	multiPlayer.SetVisibility( false );
++	customGame.SetVisibility( false );
++	previews.SetVisibility( false );
++	readme.SetVisibility( false );
++
++	saveRestore.SetNameAndStatus( L( "GameUI_LoadGame" ), L( "StringsList_191" ) );
++	saveRestore.SetPicture( PC_LOAD_GAME );
++	saveRestore.onReleased = UI_LoadGame_Menu;
++}
++
+ void CMenuMain::VidInit( bool connected )
+ {
++	if( UI_IsCZDS( ))
++	{
++		VidInitCZDS( connected );
++		return;
++	}
++
+ 	int hoffset = ( 70 / 640.0 ) * 1024.0;
+ 
+ 	// in original menu Previews is located at specific point
+@@ -372,12 +443,6 @@
+ 		yoffset -= ygap;
+ 	}
+ 
+-	if( UI_IsCZDS( ))
+-	{
+-		worldMap.SetCoord( hoffset, yoffset );
+-		yoffset -= ygap;
+-	}
+-
+ 	newGame.SetCoord( hoffset, yoffset );
+ 	yoffset -= ygap;
+ 
+--- a/menus/NewGame.cpp
++++ b/menus/NewGame.cpp
+@@ -49,10 +49,12 @@
+ 	void _Init() override;
+ 
+ 	static void StartGameCb( CMenuBaseItem *pSelf, void *pExtra );
++	static void TrainingCb( CMenuBaseItem *pSelf, void *pExtra );
+ 	static void ShowDialogCb( CMenuBaseItem *pSelf, void *pExtra  );
+ 
+ 	CMenuYesNoMessageBox  msgBox;
+ 
++	CEventCallback trainCallback;
+ 	CEventCallback easyCallback;
+ 	CEventCallback normCallback;
+ 	CEventCallback hardCallback;
+@@ -91,6 +93,23 @@
+ 	ui->StartGame( (uintptr_t)pExtra );
+ }
+ 
++void CMenuNewGame::TrainingCb( CMenuBaseItem *pSelf, void *pExtra )
++{
++	if( EngFuncs::GetCvarFloat( "host_serverstate" ) && EngFuncs::GetCvarFloat( "maxplayers" ) > 1 )
++		EngFuncs::HostEndGame( "end of the game" );
++
++	EngFuncs::CvarSetValue( "skill", 1.0f );
++	EngFuncs::CvarSetValue( "deathmatch", 0.0f );
++	EngFuncs::CvarSetValue( "teamplay", 0.0f );
++	EngFuncs::CvarSetValue( "pausable", 1.0f );
++	EngFuncs::CvarSetValue( "maxplayers", 1.0f );
++	EngFuncs::CvarSetValue( "coop", 0.0f );
++	EngFuncs::PlayBackgroundTrack( NULL, NULL );
++
++	// the training map of the game info (trainmap in liblist.gam)
++	EngFuncs::ClientCmdF( false, "map %s\n", gMenu.m_gameinfo.trainmap );
++}
++
+ void CMenuNewGame::ShowDialogCb( CMenuBaseItem *pSelf, void *pExtra )
+ {
+ 	CMenuNewGame *ui = (CMenuNewGame*)pSelf->Parent();
+@@ -119,6 +138,13 @@
+ 	hardCallback = StartGameCb;
+ 	hardCallback.pExtra = (void *)3;
+ 
++	if( UI_IsCZDS() )
++	{
++		// CZ:DS: the training mission first, as in the original New Game window
++		trainCallback = TrainingCb;
++		AddButton( L( "GameUI_TrainingRoom" ), L( "StringsList_190" ), PC_HAZARD_COURSE, trainCallback, QMF_NOTIFY );
++	}
++
+ 	CMenuPicButton *easy = AddButton( L( "GameUI_Easy" ), L( "StringsList_200" ), PC_EASY, easyCallback, QMF_NOTIFY );
+ 	CMenuPicButton *norm = AddButton( L( "GameUI_Medium" ), L( "StringsList_201" ), PC_MEDIUM, normCallback, QMF_NOTIFY );
+ 	CMenuPicButton *hard = AddButton( L( "GameUI_Hard" ), L( "StringsList_202" ), PC_DIFFICULT, hardCallback, QMF_NOTIFY );

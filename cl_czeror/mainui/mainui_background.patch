@@ -1,0 +1,20 @@
+diff --git a/controls/BackgroundBitmap.cpp b/controls/BackgroundBitmap.cpp
+index aa18fea..bc6a22a 100644
+--- a/controls/BackgroundBitmap.cpp
++++ b/controls/BackgroundBitmap.cpp
+@@ -197,14 +197,7 @@ void CMenuBackgroundBitmap::Draw()
+ #endif
+ 
+ 	int xOffset = 0, yOffset = 0;
+-	if( !ui_background_stretch->value )
+-	{
+-		// center wide background (for example if background is wider than our window)
+-		if( s.w * xScale > ScreenWidth )
+-			xOffset = ( ScreenWidth - s.w * xScale ) / 2;
+-		else if( s.h * yScale > ScreenHeight )
+-			yOffset = ( ScreenHeight - s.h * yScale ) / 2;
+-	}
++	// CZ:DS: keep the background anchored to the top-left corner (the game title is in that part)
+ 
+ 	if( s_state == DRAW_WON )
+ 		DrawBackgroundPiece( s_WONBackground, p, xOffset, yOffset, xScale, yScale );

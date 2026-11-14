@@ -1,0 +1,77 @@
+--- a/menus/WorldMap.cpp
++++ b/menus/WorldMap.cpp
+@@ -22,8 +22,12 @@
+ #define WORLDMAP_FONT   "Trebuchet MS"
+ #define WORLDMAP_WEIGHT 500
+ 
+-// all missions are open while the progress is not saved (testing). false = only the ones with "open" flag
+-static const bool g_bAllOpen = true;
++// the unlocked missions: the server keeps the mask (LEVEL_* of the mod) and sends it to the cvar cl_levellocks
++static const int g_iMissionBits[] =
++{
++	2, 8, 4, 16, 32, 64, 128, 256, 512, 2048, 1024, 4096, 8192,   // training .. highrise (the order of g_Missions)
++	16384, 32768, 65536, 131072, 262144, 524288                    // the bonus missions
++};
+ 
+ struct WorldMapMission_t
+ {
+@@ -76,6 +80,7 @@
+ 	void Text( const std::string &str, int x, int y, int w, int h, unsigned int col, int charH, uint justify );
+ 	bool In( int mx, int my, int x, int y, int w, int h ) const;
+ 	int  CurrentMission() const;
++	bool IsOpen( int idx ) const;
+ 	int  MissionAt( int mx, int my ) const;
+ 	void DrawMissionInfo( int idx );
+ 	void StartMission();
+@@ -181,6 +186,11 @@
+ 	return -1;
+ }
+ 
++bool CMenuWorldMap::IsOpen( int idx ) const
++{
++	return ( (int)EngFuncs::GetCvarFloat( "cl_levellocks" ) & g_iMissionBits[idx] ) != 0;
++}
++
+ // the mission of the map that is loaded now, the first one otherwise
+ int CMenuWorldMap::CurrentMission() const
+ {
+@@ -272,7 +282,8 @@
+ 		for( int i = 0; i < g_iMissionCount; i++ )
+ 		{
+ 			const WorldMapMission_t &m = g_Missions[i];
+-			CImage &mark = m_Marker[ i == cur ? 0 : 1 ];
++			const bool open = IsOpen( i );
++			CImage &mark = m_Marker[ !open ? 2 : ( i == cur ? 0 : 1 ) ];
+ 			Image( mark, m.x, m.y + 5, 6, 6 );
+ 			Text( L(( std::string( m.prefix ) + "_TITLE" ).c_str( )), m.x + 10, m.y, m.w, m.h,
+ 				i == hover ? PackRGBA( 255, 255, 0, 255 ) : white, 15, QM_LEFT );
+@@ -374,7 +385,7 @@
+ 	if( !m_bSelect )
+ 	{
+ 		int hit = MissionAt( mx, my );
+-		if( hit >= 0 )
++		if( hit >= 0 && IsOpen( hit ))
+ 		{
+ 			m_iSelected = hit;
+ 			m_bSelect = true;
+--- a/menus/NewGame.cpp
++++ b/menus/NewGame.cpp
+@@ -81,6 +81,9 @@
+ 
+ 	EngFuncs::PlayBackgroundTrack( NULL, NULL );
+ 
++	if( UI_IsCZDS() )
++		EngFuncs::CvarSetValue( "cl_newgame", 1.0f ); // the server closes the missions again
++
+ 	if( startDemoChapter.bChecked )
+ 		EngFuncs::ClientCmdF( false, "newgame \"%s\"\n", gMenu.m_gameinfo.demomap );
+ 	else EngFuncs::ClientCmd( false, "newgame\n" );
+@@ -106,6 +109,8 @@
+ 	EngFuncs::CvarSetValue( "coop", 0.0f );
+ 	EngFuncs::PlayBackgroundTrack( NULL, NULL );
+ 
++	EngFuncs::CvarSetValue( "cl_newgame", 1.0f ); // the server closes the missions again
++
+ 	// the training map of the game info (trainmap in liblist.gam)
+ 	EngFuncs::ClientCmdF( false, "map %s\n", gMenu.m_gameinfo.trainmap );
+ }
