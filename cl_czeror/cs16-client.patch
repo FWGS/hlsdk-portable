@@ -1520,7 +1520,7 @@ index 55d4687b..9baf162d 100644
  	//float m_fAttackFront, m_fAttackRear, m_fAttackLeft, m_fAttackRight;
  	float m_fAttack[ATK_COUNT];
 diff --git a/cl_dll/hud.cpp b/cl_dll/hud.cpp
-index 9ae956c6..de32bb23 100644
+index 9ae956c6..5d78e412 100644
 --- a/cl_dll/hud.cpp
 +++ b/cl_dll/hud.cpp
 @@ -35,6 +35,7 @@
@@ -1541,7 +1541,7 @@ index 9ae956c6..de32bb23 100644
  
  extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, int iRes, int iCount);
  
-@@ -278,6 +282,59 @@ int __MsgFunc_ReceiveW(const char *pszName, int iSize, void *pbuf)
+@@ -278,6 +282,61 @@ int __MsgFunc_ReceiveW(const char *pszName, int iSize, void *pbuf)
  	return g_Environment.MsgFunc_ReceiveW( pszName, iSize, pbuf );
  }
  
@@ -1582,7 +1582,9 @@ index 9ae956c6..de32bb23 100644
 +static int __MsgFunc_LevelLocks( const char *pszName, int iSize, void *pbuf )
 +{
 +	BufferReader reader( pszName, pbuf, iSize );
-+	gEngfuncs.Cvar_SetValue( "cl_levellocks", (float)reader.ReadLong() );
++	// as in the original: the mask of the server is added to the saved one (cl_levellocks is archived), the progress stays after a restart
++	int bits = reader.ReadLong() | (int)gEngfuncs.pfnGetCvarFloat( "cl_levellocks" );
++	gEngfuncs.Cvar_SetValue( "cl_levellocks", (float)bits );
 +	return 1;
 +}
 +
@@ -1601,7 +1603,7 @@ index 9ae956c6..de32bb23 100644
  // This is called every time the DLL is loaded
  void CHud :: Init( void )
  {
-@@ -285,6 +342,14 @@ void CHud :: Init( void )
+@@ -285,6 +344,14 @@ void CHud :: Init( void )
  
  	HOOK_COMMAND_FUNC( "special", __CmdFunc_InputCommandSpecial, );
  	HOOK_COMMAND_FUNC( "gunsmoke", __CmdFunc_GunSmoke, );
@@ -1616,7 +1618,7 @@ index 9ae956c6..de32bb23 100644
  
  #ifdef __ANDROID__
  	HOOK_COMMAND_FUNC( "evdev_mouseopen", __CmdFunc_MouseSucksOpen );
-@@ -313,6 +378,8 @@ void CHud :: Init( void )
+@@ -313,6 +380,8 @@ void CHud :: Init( void )
  	gEngfuncs.pfnHookUserMsg( "Snow", __MsgFunc_Snow );
  	gEngfuncs.pfnHookUserMsg( "WeatherPos", __MsgFunc_WeatherPos );
  	gEngfuncs.pfnHookUserMsg( "ReceiveW", __MsgFunc_ReceiveW );
@@ -1625,7 +1627,7 @@ index 9ae956c6..de32bb23 100644
  
  	CVAR_CREATE( "_vgui_menus", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );
  	CVAR_CREATE( "_cl_autowepswitch", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );
-@@ -353,11 +420,17 @@ void CHud :: Init( void )
+@@ -353,11 +422,17 @@ void CHud :: Init( void )
  	m_pShowMoney = CVAR_CREATE( "scoreboard_showmoney", "1", FCVAR_ARCHIVE );
  
  	// The cvar was taken from the OpenAG client
@@ -1644,7 +1646,7 @@ index 9ae956c6..de32bb23 100644
  		cl_fog_r = CVAR_CREATE( "cl_fog_r", "0", 0 );
  		cl_fog_g = CVAR_CREATE( "cl_fog_g", "0", 0 );
  		cl_fog_b = CVAR_CREATE( "cl_fog_b", "0", 0 );
-@@ -455,6 +528,9 @@ CHud :: ~CHud()
+@@ -455,6 +530,9 @@ CHud :: ~CHud()
  
  void CHud :: VidInit( void )
  {

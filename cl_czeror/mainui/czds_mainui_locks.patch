@@ -13,15 +13,16 @@
  
  struct WorldMapMission_t
  {
-@@ -76,6 +80,7 @@
+@@ -74,6 +80,8 @@
  	void Text( const std::string &str, int x, int y, int w, int h, unsigned int col, int charH, uint justify );
  	bool In( int mx, int my, int x, int y, int w, int h ) const;
  	int  CurrentMission() const;
 +	bool IsOpen( int idx ) const;
++	int  LatestOpen() const;
  	int  MissionAt( int mx, int my ) const;
  	void DrawMissionInfo( int idx );
  	void StartMission();
-@@ -181,6 +186,11 @@
+@@ -179,6 +187,23 @@
  	return -1;
  }
  
@@ -30,20 +31,38 @@
 +	return ( (int)EngFuncs::GetCvarFloat( "cl_levellocks" ) & g_iMissionBits[idx] ) != 0;
 +}
 +
++// the newest open mission (the highest bit of the campaign ones): the next one to play, as in the original
++int CMenuWorldMap::LatestOpen() const
++{
++	int best = -1;
++	for( int i = 0; i < 13; i++ )
++	{
++		if( IsOpen( i ) && ( best < 0 || g_iMissionBits[i] > g_iMissionBits[best] ))
++			best = i;
++	}
++	return best;
++}
++
  // the mission of the map that is loaded now, the first one otherwise
  int CMenuWorldMap::CurrentMission() const
  {
-@@ -272,7 +282,8 @@
+@@ -265,12 +290,14 @@
+ 				Image( m_Tiles1[i][j], xs[i], ys[j], ws[i], hs[j] );
+ 
+ 		int cur = CurrentMission();
++		const int latest = LatestOpen();
+ 		int hover = MissionAt( mx, my );
+ 
  		for( int i = 0; i < g_iMissionCount; i++ )
  		{
  			const WorldMapMission_t &m = g_Missions[i];
 -			CImage &mark = m_Marker[ i == cur ? 0 : 1 ];
 +			const bool open = IsOpen( i );
-+			CImage &mark = m_Marker[ !open ? 2 : ( i == cur ? 0 : 1 ) ];
++			CImage &mark = m_Marker[ !open ? 2 : ( i == latest ? 0 : 1 ) ];
  			Image( mark, m.x, m.y + 5, 6, 6 );
  			Text( L(( std::string( m.prefix ) + "_TITLE" ).c_str( )), m.x + 10, m.y, m.w, m.h,
  				i == hover ? PackRGBA( 255, 255, 0, 255 ) : white, 15, QM_LEFT );
-@@ -374,7 +385,7 @@
+@@ -372,7 +399,7 @@
  	if( !m_bSelect )
  	{
  		int hit = MissionAt( mx, my );
