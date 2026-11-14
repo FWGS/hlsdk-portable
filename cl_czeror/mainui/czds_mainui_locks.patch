@@ -1,11 +1,9 @@
 --- a/menus/WorldMap.cpp
 +++ b/menus/WorldMap.cpp
-@@ -22,8 +22,12 @@
+@@ -22,6 +22,12 @@
  #define WORLDMAP_FONT   "Trebuchet MS"
  #define WORLDMAP_WEIGHT 500
  
--// all missions are open while the progress is not saved (testing). false = only the ones with "open" flag
--static const bool g_bAllOpen = true;
 +// the unlocked missions: the server keeps the mask (LEVEL_* of the mod) and sends it to the cvar cl_levellocks
 +static const int g_iMissionBits[] =
 +{

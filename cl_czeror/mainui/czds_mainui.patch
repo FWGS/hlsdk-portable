@@ -100,10 +100,10 @@ index 4d1a382..dd58c2e 100644
  
 diff --git a/menus/WorldMap.cpp b/menus/WorldMap.cpp
 new file mode 100644
-index 0000000..74934f9
+index 0000000..51c5cb4
 --- /dev/null
 +++ b/menus/WorldMap.cpp
-@@ -0,0 +1,401 @@
+@@ -0,0 +1,399 @@
 +/*
 +WorldMap.cpp - Condition Zero world map and mission select (CZ:DS)
 +Own drawing in the menu library: the original window is VGUI2 and its controls are not available.
@@ -128,8 +128,6 @@ index 0000000..74934f9
 +#define WORLDMAP_FONT   "Trebuchet MS"
 +#define WORLDMAP_WEIGHT 500
 +
-+// all missions are open while the progress is not saved (testing). false = only the ones with "open" flag
-+static const bool g_bAllOpen = true;
 +
 +struct WorldMapMission_t
 +{
