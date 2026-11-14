@@ -63,7 +63,7 @@ public:
 	const Entry *Find(const std::string &fileName, const std::string &entryName);
 
 	// Pick a sentence (path to sound without extension) from a group, nullptr if none.
-	const std::string *PickSentence(const std::string &groupName, int *picked = nullptr) const;
+	const std::string *PickSentence(const std::string &groupName, int *picked = NULL) const;
 	const std::vector<std::string> *GetGroup(const std::string &groupName) const;
 
 private:
@@ -86,7 +86,7 @@ private:
 
 	std::vector<RawEntry> m_raw;
 	std::map<std::string, Entry> m_built;       // key: lower(file)+"|"+lower(name)
-	std::map<std::string, std::vector<std::string>> m_groups; // lower(group) -> paths
+	std::map<std::string, std::vector<std::string> > m_groups; // lower(group) -> paths
 	std::vector<std::string> m_files;           // lower-case loaded file names
 };
 

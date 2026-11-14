@@ -3,28 +3,27 @@ name: build
 on:
   push:
     paths-ignore:
+      - 'appveyor.yml'
       - 'README.md'
       - '.github/workflows/manual.yml'
   pull_request:
     paths-ignore:
+      - 'appveyor.yml'
       - 'README.md'
       - '.github/workflows/manual.yml'
   workflow_dispatch:
     inputs:
       client_ref:
-        description: Branch of sergiopoverony/cs16-client to take the client from
+        description: Branch of sergiopoverony/cs16-client to take the client and the menu from
         default: czds
 
-# czeror: the server is built from here (Linux gcc and clang in the Steam Runtime,
-# Windows x86 and x86_64). On Windows x86 the client and the menu are built in the same
-# job from sergiopoverony/cs16-client (branch czds), the package holds both.
-# Run it by hand (workflow_dispatch) after a change of the client.
+# czeror: the same build as the other mods, plus the client and the menu of the game
+# (built from sergiopoverony/cs16-client) in the Windows x86 package.
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
@@ -72,10 +71,9 @@ jobs:
     - name: Build on Linux
       if: startsWith(matrix.os, 'ubuntu')
       run: |
-        schroot --chroot steamrt_scout_i386 -- cmake -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_CLIENT=OFF -DPOLLY=ON -B build -S . -DCMAKE_SHARED_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_INSTALL_PREFIX="$PWD/dist"
+        schroot --chroot steamrt_scout_i386 -- cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLIENT=OFF -DPOLLY=ON -B build -S . -DCMAKE_EXE_LINKER_FLAGS="-Wl,--no-undefined" -DCMAKE_INSTALL_PREFIX="$PWD/dist"
         schroot --chroot steamrt_scout_i386 -- cmake --build build --target all
         schroot --chroot steamrt_scout_i386 -- cmake --build build --target install
-
     - name: Set developer command prompt for Windows x86
       if: startsWith(matrix.os, 'windows')
       uses: ilammy/msvc-dev-cmd@v1
@@ -85,27 +83,9 @@ jobs:
     - name: Build on Windows
       if: startsWith(matrix.os, 'windows')
       run: |
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_CLIENT=OFF -B build -S . -DCMAKE_INSTALL_PREFIX="dist"
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLIENT=OFF -B build -S . -DCMAKE_INSTALL_PREFIX="dist"
         cmake --build build --target all
         cmake --build build --target install
-
-    - name: Set developer command prompt for Windows x86_64
-      if: startsWith(matrix.os, 'windows')
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
-    - name: Build on Windows x64
-      if: startsWith(matrix.os, 'windows')
-      run: |
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_CLIENT=OFF -B build64 -S . -DCMAKE_INSTALL_PREFIX="dist64" -D64BIT=ON
-        cmake --build build64 --target all
-        cmake --build build64 --target install
-
-    - name: Set developer command prompt for Windows x86 (client)
-      if: startsWith(matrix.os, 'windows')
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x86
 
     - name: Checkout client
       if: startsWith(matrix.os, 'windows')
@@ -122,25 +102,33 @@ jobs:
       working-directory: client-src
       run: |
         git -C 3rdparty/mainui_cpp apply --ignore-whitespace ../../mainui_background.patch
-        gd=$(grep ../build/CMakeCache.txt -Ee 'GAMEDIR:STRING=[a-z0-9]+' | cut -d '=' -f 2)
-        cmake -G Ninja -B build -S . -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+        gd=$(grep ../build/CMakeCache.txt -Ee 'GAMEDIR:STRING=[a-z]+' | cut -d '=' -f 2)
+        cmake -G Ninja -B build -S . -DCMAKE_BUILD_TYPE=Release \
           -DBUILD_SERVER=OFF -DENABLE_YY_THUNKS=OFF -DGAME_DIR="$gd" \
           -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/dist"
         cmake --build build
         cmake --install build
         echo "client: $(git rev-parse --short HEAD)"
 
-    # while testing the package holds only the libraries: no debug and link files
-    # and no extras.pk3 of the client (the game folder already has it)
+    # the package holds only the libraries: no debug and link files, no extras.pk3 of the client
     - name: Strip the package
+      if: startsWith(matrix.os, 'windows')
       shell: bash
       run: |
-        for d in dist dist64; do
-          [ -d "$d" ] || continue
-          find $d \( -name '*.pdb' -o -name '*.lib' -o -name '*.exp' \) -delete -print
-          find $d -name 'extras.pk3' -delete -print
-          find $d -type f
-        done
+        find dist \( -name '*.pdb' -o -name '*.lib' -o -name '*.exp' \) -delete -print
+        find dist -name 'extras.pk3' -delete -print
+
+    - name: Set developer command prompt for Windows x86_64
+      if: startsWith(matrix.os, 'windows')
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+    - name: Build on Windows x64
+      if: startsWith(matrix.os, 'windows')
+      run: |
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLIENT=OFF -B build64 -S . -DCMAKE_INSTALL_PREFIX="dist64" -D64BIT=ON
+        cmake --build build64 --target all
+        cmake --build build64 --target install
 
     - name: Extract branch name
       shell: bash
@@ -148,23 +136,23 @@ jobs:
       id: extract_branch
     - name: Extract gamedir
       shell: bash
-      run: echo "gamedir=$(grep build/CMakeCache.txt -Ee 'GAMEDIR:STRING=[a-z0-9]+' | cut -d '=' -f 2)" >> $GITHUB_OUTPUT
+      run: echo "gamedir=$(grep build/CMakeCache.txt -Ee 'GAMEDIR:STRING=[a-z]+' | cut -d '=' -f 2)" >> $GITHUB_OUTPUT
       id: extract_gamedir
     - name: Upload linux artifact
       if: startsWith(matrix.os, 'ubuntu') && matrix.cc == 'gcc'
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ steps.extract_gamedir.outputs.gamedir }}-linux
+        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-linux
         path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
     - name: Upload windows artifact
       if: startsWith(matrix.os, 'windows')
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ steps.extract_gamedir.outputs.gamedir }}-windows
+        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows
         path: dist/${{ steps.extract_gamedir.outputs.gamedir }}
     - name: Upload windows x64 artifact
       if: startsWith(matrix.os, 'windows')
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ steps.extract_gamedir.outputs.gamedir }}-windows_x64
+        name: hlsdk-${{ steps.extract_branch.outputs.branch }}-windows_x64
         path: dist64/${{ steps.extract_gamedir.outputs.gamedir }}

@@ -55,7 +55,7 @@ static std::string StripTrailingDigits(const std::string &s)
 }
 
 // split "k = v, k2 = v2" (commas inside quotes are kept)
-static void SplitPairs(const std::string &s, std::vector<std::pair<std::string, std::string>> &out)
+static void SplitPairs(const std::string &s, std::vector<std::pair<std::string, std::string> > &out)
 {
 	std::vector<std::string> parts;
 	std::string cur;
@@ -235,7 +235,7 @@ int Library::ParseText(const char *text, size_t length, const std::string &fileN
 			{
 				Op op2;
 				op2.type = tail[0];
-				std::vector<std::pair<std::string, std::string>> pairs2;
+				std::vector<std::pair<std::string, std::string> > pairs2;
 				SplitPairs(tail.substr(1), pairs2);
 				if (!pairs2.empty())
 				{
@@ -257,7 +257,7 @@ int Library::ParseText(const char *text, size_t length, const std::string &fileN
 			//	#sound = deltaDialogFirst,
 			//		speaker = delta,
 			//		pause = 4.0
-			std::vector<std::pair<std::string, std::string>> pairs;
+			std::vector<std::pair<std::string, std::string> > pairs;
 			SplitPairs(line, pairs);
 			for (size_t i = 0; i < pairs.size(); i++)
 			{
@@ -270,7 +270,7 @@ int Library::ParseText(const char *text, size_t length, const std::string &fileN
 		else if (op.type == '$' || op.type == '#')
 		{
 			std::string body = line.substr(1);
-			std::vector<std::pair<std::string, std::string>> pairs;
+			std::vector<std::pair<std::string, std::string> > pairs;
 			SplitPairs(body, pairs);
 			if (pairs.empty())
 				continue;
@@ -464,14 +464,14 @@ const Entry *Library::Find(const std::string &fileName, const std::string &entry
 	if (it != m_built.end())
 		return &it->second;
 
-	const RawEntry *found = nullptr;
+	const RawEntry *found = NULL;
 	for (size_t i = 0; i < m_raw.size(); i++)
 	{
 		if (ToLower(m_raw[i].name) != n)
 			continue;
 		if (!f.empty() && m_raw[i].fileName != f)
 		{
-			if (!found) found = nullptr; // keep looking for exact file
+			if (!found) found = NULL; // keep looking for exact file
 			continue;
 		}
 		found = &m_raw[i];
@@ -484,7 +484,7 @@ const Entry *Library::Find(const std::string &fileName, const std::string &entry
 			if (ToLower(m_raw[i].name) == n) { found = &m_raw[i]; break; }
 	}
 	if (!found)
-		return nullptr;
+		return NULL;
 
 	Entry e;
 	e.fileName = found->fileName;
@@ -496,9 +496,9 @@ const Entry *Library::Find(const std::string &fileName, const std::string &entry
 
 const std::vector<std::string> *Library::GetGroup(const std::string &groupName) const
 {
-	std::map<std::string, std::vector<std::string>>::const_iterator it = m_groups.find(ToLower(groupName));
+	std::map<std::string, std::vector<std::string> >::const_iterator it = m_groups.find(ToLower(groupName));
 	if (it == m_groups.end() || it->second.empty())
-		return nullptr;
+		return NULL;
 	return &it->second;
 }
 
@@ -506,7 +506,7 @@ const std::string *Library::PickSentence(const std::string &groupName, int *pick
 {
 	const std::vector<std::string> *g = GetGroup(groupName);
 	if (!g)
-		return nullptr;
+		return NULL;
 	int idx = (int)(rand() % g->size());
 	if (picked)
 		*picked = idx;
