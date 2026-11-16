@@ -114,10 +114,10 @@ index 6acc37a..a0b658b 100644
  	else EngFuncs::ClientCmd( false, "newgame\n" );
 diff --git a/menus/WorldMap.cpp b/menus/WorldMap.cpp
 new file mode 100644
-index 0000000..5c0bc78
+index 0000000..7c74d8f
 --- /dev/null
 +++ b/menus/WorldMap.cpp
-@@ -0,0 +1,426 @@
+@@ -0,0 +1,442 @@
 +/*
 +WorldMap.cpp - Condition Zero world map and mission select (CZ:DS)
 +Own drawing in the menu library: the original window is VGUI2 and its controls are not available.
@@ -138,14 +138,41 @@ index 0000000..5c0bc78
 +#include "FontManager.h"
 +#include <math.h>
 +
-+// the menu font (same as in FontManager.cpp)
 +#define WORLDMAP_FONT   "Trebuchet MS"
 +#define WORLDMAP_WEIGHT 500
 +
-+// the unlocked missions: the server keeps the mask (LEVEL_* of the mod) and sends it to the cvar cl_levellocks
++enum
++{
++	WORLDMAP_WIDTH = 640,
++	WORLDMAP_HEIGHT = 480,
++	WORLDMAP_TILES_X = 3,
++	WORLDMAP_TILES_Y = 2,
++	WORLDMAP_FONT_COUNT = 3,
++	WORLDMAP_SKILL_COUNT = 3,
++	WORLDMAP_CAMPAIGN_COUNT = 13 // missions before the bonus ones
++};
++
++enum
++{
++	WORLDMAP_FONT_SMALL = 14,
++	WORLDMAP_FONT_MEDIUM = 16,
++	WORLDMAP_FONT_LARGE = 20
++};
++
++struct WorldMapRect_t
++{
++	int x, y, w, h;
++};
++
++static const WorldMapRect_t g_CancelButton = { 384, 410, 110, 22 };
++static const WorldMapRect_t g_OkButton = { 510, 410, 100, 22 };
++static const WorldMapRect_t g_ResumeButton = { 504, 437, 80, 26 };
++static const int g_iSkillY[WORLDMAP_SKILL_COUNT] = { 314, 341, 370 };
++
++// bit of the mission in cl_levellocks (LEVEL_* of the mod)
 +static const int g_iMissionBits[] =
 +{
-+	2, 8, 4, 16, 32, 64, 128, 256, 512, 2048, 1024, 4096, 8192,   // training .. highrise (the order of g_Missions)
++	2, 8, 4, 16, 32, 64, 128, 256, 512, 2048, 1024, 4096, 8192,   // the order of g_Missions
 +	16384, 32768, 65536, 131072, 262144, 524288                    // the bonus missions
 +};
 +
@@ -185,7 +212,7 @@ index 0000000..5c0bc78
 +{
 +public:
 +	CMenuWorldMap() : CMenuBaseWindow( "CMenuWorldMap" ), m_bSelect( false ), m_iSelected( -1 ), m_iSkill( 1 ),
-+		m_bLoaded( false ), m_flFontScale( 0 ) { for( int i = 0; i < 3; i++ ) m_hFonts[i] = -1; }
++		m_bLoaded( false ), m_flFontScale( 0 ) { for( int i = 0; i < WORLDMAP_FONT_COUNT; i++ ) m_hFonts[i] = -1; }
 +
 +	void Show() override;
 +	void Draw() override;
@@ -213,33 +240,36 @@ index 0000000..5c0bc78
 +	float m_flScale;
 +	int  m_iOffX, m_iOffY;
 +
-+	HFont m_hFonts[3];      // 14, 16, 20 px at 480p
++	HFont m_hFonts[WORLDMAP_FONT_COUNT];
 +	float m_flFontScale;
-+	CImage m_Tiles1[3][2];
-+	CImage m_Tiles2[3][2];
++	CImage m_Tiles1[WORLDMAP_TILES_X][WORLDMAP_TILES_Y];
++	CImage m_Tiles2[WORLDMAP_TILES_X][WORLDMAP_TILES_Y];
 +	CImage m_Marker[3]; // current, unlocked, locked
-+	CImage m_MissionImg[32];
-+	bool   m_MissionImgLoaded[32];
++	CImage m_MissionImg[g_iMissionCount];
++	bool   m_MissionImgLoaded[g_iMissionCount];
 +};
 +
 +static CMenuWorldMap *g_pWorldMap = NULL;
 +
-+// the menu has only the 26 px default font and the 20 px small one: own fonts, made again when the scale changes
++static std::string MissionPicture( const char *image )
++{
++	return std::string( "gfx/vgui/" ) + image + "_large.tga";
++}
++
 +HFont CMenuWorldMap::GetFont( int heightAt480 )
 +{
-+	// the sizes are in the units of the menu (like UI_SMALL_CHAR_HEIGHT), scaled by uiStatic.scaleY
 +	const float fs = uiStatic.scaleY;
 +	if( fabs( m_flFontScale - fs ) > 0.01f )
 +	{
-+		for( int i = 0; i < 3; i++ )
++		for( int i = 0; i < WORLDMAP_FONT_COUNT; i++ )
 +			if( m_hFonts[i] != -1 )
 +				g_FontMgr->DeleteFont( m_hFonts[i] );
-+		const int h[3] = { 14, 16, 20 };
-+		for( int i = 0; i < 3; i++ )
++		const int h[WORLDMAP_FONT_COUNT] = { WORLDMAP_FONT_SMALL, WORLDMAP_FONT_MEDIUM, WORLDMAP_FONT_LARGE };
++		for( int i = 0; i < WORLDMAP_FONT_COUNT; i++ )
 +			m_hFonts[i] = CFontBuilder( WORLDMAP_FONT, h[i] * fs, WORLDMAP_WEIGHT ).Create();
 +		m_flFontScale = fs;
 +	}
-+	return heightAt480 <= 14 ? m_hFonts[0] : ( heightAt480 <= 16 ? m_hFonts[1] : m_hFonts[2] );
++	return heightAt480 <= WORLDMAP_FONT_SMALL ? m_hFonts[0] : ( heightAt480 <= WORLDMAP_FONT_MEDIUM ? m_hFonts[1] : m_hFonts[2] );
 +}
 +
 +void CMenuWorldMap::LoadImages()
@@ -248,32 +278,28 @@ index 0000000..5c0bc78
 +		return;
 +	m_bLoaded = true;
 +
-+	for( int i = 0; i < 3; i++ )
-+		for( int j = 0; j < 2; j++ )
++	for( int i = 0; i < WORLDMAP_TILES_X; i++ )
++		for( int j = 0; j < WORLDMAP_TILES_Y; j++ )
 +		{
-+			char buf[64];
-+			snprintf( buf, sizeof( buf ), "gfx/vgui/worldmap_%d_%d.tga", i, j );
-+			m_Tiles1[i][j].Load( buf );
-+			snprintf( buf, sizeof( buf ), "gfx/vgui/worldmap2_%d_%d.tga", i, j );
-+			m_Tiles2[i][j].Load( buf );
++			const std::string index = std::to_string( i ) + "_" + std::to_string( j ) + ".tga";
++			m_Tiles1[i][j].Load(( "gfx/vgui/worldmap_" + index ).c_str( ));
++			m_Tiles2[i][j].Load(( "gfx/vgui/worldmap2_" + index ).c_str( ));
 +		}
 +	m_Marker[0].Load( "gfx/vgui/missioncurrent.tga" );
 +	m_Marker[1].Load( "gfx/vgui/missionunlocked.tga" );
 +	m_Marker[2].Load( "gfx/vgui/missionlocked.tga" );
-+	for( int i = 0; i < 32; i++ )
++	for( int i = 0; i < g_iMissionCount; i++ )
 +		m_MissionImgLoaded[i] = false;
 +}
 +
-+// the map is 4:3, centered, black bars on wide screens
 +void CMenuWorldMap::Layout()
 +{
-+	float sx = ScreenWidth / 640.0f, sy = ScreenHeight / 480.0f;
++	float sx = ScreenWidth / (float)WORLDMAP_WIDTH, sy = ScreenHeight / (float)WORLDMAP_HEIGHT;
 +	m_flScale = sx < sy ? sx : sy;
-+	m_iOffX = (int)( ( ScreenWidth - 640 * m_flScale ) * 0.5f );
-+	m_iOffY = (int)( ( ScreenHeight - 480 * m_flScale ) * 0.5f );
++	m_iOffX = (int)( ( ScreenWidth - WORLDMAP_WIDTH * m_flScale ) * 0.5f );
++	m_iOffY = (int)( ( ScreenHeight - WORLDMAP_HEIGHT * m_flScale ) * 0.5f );
 +}
 +
-+// alpha: the picture has an alpha channel (the mission pictures have transparent rounded corners)
 +void CMenuWorldMap::Image( CImage &img, int x, int y, int w, int h, bool alpha )
 +{
 +	UI_DrawPic( m_iOffX + (int)( x * m_flScale ), m_iOffY + (int)( y * m_flScale ),
@@ -283,11 +309,9 @@ index 0000000..5c0bc78
 +
 +void CMenuWorldMap::Text( const std::string &str, int x, int y, int w, int h, unsigned int col, int charH, uint justify )
 +{
-+	// the default font of the menu is 26 px: too big here. Headings take a 20 px font,
-+	// the names on the map (15) a 14 px one, all the other texts a 16 px one
-+	int fontH = 16;
-+	if( charH >= 18 ) fontH = 20;
-+	else if( charH == 15 ) fontH = 14;
++	int fontH = WORLDMAP_FONT_MEDIUM;
++	if( charH >= 18 ) fontH = WORLDMAP_FONT_LARGE;
++	else if( charH == 15 ) fontH = WORLDMAP_FONT_SMALL;
 +	HFont font = GetFont( fontH );
 +	UI_DrawString( font, m_iOffX + (int)( x * m_flScale ), m_iOffY + (int)( y * m_flScale ),
 +		(int)( w * m_flScale ), (int)( h * m_flScale ), str.c_str(), col, (int)( fontH * uiStatic.scaleY ), justify, ETF_FORCECOL );
@@ -312,11 +336,11 @@ index 0000000..5c0bc78
 +	return ( (int)EngFuncs::GetCvarFloat( "cl_levellocks" ) & g_iMissionBits[idx] ) != 0;
 +}
 +
-+// the newest open mission (the highest bit of the campaign ones): the next one to play, as in the original
++// the highest bit among the open campaign missions is the next one to play
 +int CMenuWorldMap::LatestOpen() const
 +{
 +	int best = -1;
-+	for( int i = 0; i < 13; i++ )
++	for( int i = 0; i < WORLDMAP_CAMPAIGN_COUNT; i++ )
 +	{
 +		if( IsOpen( i ) && ( best < 0 || g_iMissionBits[i] > g_iMissionBits[best] ))
 +			best = i;
@@ -324,7 +348,6 @@ index 0000000..5c0bc78
 +	return best;
 +}
 +
-+// the mission of the map that is loaded now, the first one otherwise
 +int CMenuWorldMap::CurrentMission() const
 +{
 +	const char *map = EngFuncs::GetCvarString( "hostmap" );
@@ -332,7 +355,6 @@ index 0000000..5c0bc78
 +	{
 +		for( int i = 0; i < g_iMissionCount; i++ )
 +		{
-+			// cz_brecon01.. -> cz_brecon, cz_recoil-intro -> cz_recoil
 +			size_t l = strlen( g_Missions[i].image );
 +			if( !strncmp( map, g_Missions[i].image, l ))
 +				return i;
@@ -371,7 +393,6 @@ index 0000000..5c0bc78
 +	EngFuncs::ClientCmdF( false, "map %s\n", g_Missions[m_iSelected].map );
 +}
 +
-+// text block of one mission: the picture and the description under the world map
 +void CMenuWorldMap::DrawMissionInfo( int idx )
 +{
 +	const unsigned int green = PackRGBA( 40, 210, 60, 255 );
@@ -380,9 +401,7 @@ index 0000000..5c0bc78
 +
 +	if( !m_MissionImgLoaded[idx] )
 +	{
-+		char buf[96];
-+		snprintf( buf, sizeof( buf ), "gfx/vgui/%s_large.tga", g_Missions[idx].image );
-+		m_MissionImg[idx].Load( buf );
++		m_MissionImg[idx].Load( MissionPicture( g_Missions[idx].image ).c_str( ));
 +		m_MissionImgLoaded[idx] = true;
 +	}
 +	Image( m_MissionImg[idx], 20, 374, 87, 87, true );
@@ -399,14 +418,14 @@ index 0000000..5c0bc78
 +	UI_FillRect( 0, 0, ScreenWidth, ScreenHeight, PackRGBA( 0, 0, 0, 255 ));
 +
 +	const int mx = uiStatic.cursorX, my = uiStatic.cursorY;
-+	const int xs[3] = { 0, 256, 512 }, ys[2] = { 0, 256 };
-+	const int ws[3] = { 256, 256, 128 }, hs[2] = { 256, 224 };
++	const int xs[WORLDMAP_TILES_X] = { 0, 256, 512 }, ys[WORLDMAP_TILES_Y] = { 0, 256 };
++	const int ws[WORLDMAP_TILES_X] = { 256, 256, 128 }, hs[WORLDMAP_TILES_Y] = { 256, 224 };
 +	const unsigned int white = PackRGBA( 255, 255, 255, 255 );
 +
 +	if( !m_bSelect )
 +	{
-+		for( int i = 0; i < 3; i++ )
-+			for( int j = 0; j < 2; j++ )
++		for( int i = 0; i < WORLDMAP_TILES_X; i++ )
++			for( int j = 0; j < WORLDMAP_TILES_Y; j++ )
 +				Image( m_Tiles1[i][j], xs[i], ys[j], ws[i], hs[j] );
 +
 +		int cur = CurrentMission();
@@ -427,7 +446,7 @@ index 0000000..5c0bc78
 +
 +		// Resume: only when a game is running
 +		const bool inGame = EngFuncs::ClientInGame() != 0;
-+		const bool onResume = inGame && In( mx, my, 504, 437, 80, 26 );
++		const bool onResume = inGame && In( mx, my, g_ResumeButton.x, g_ResumeButton.y, g_ResumeButton.w, g_ResumeButton.h );
 +		UI_DrawRectangle( m_iOffX + (int)( 504 * m_flScale ), m_iOffY + (int)( 437 * m_flScale ),
 +			(int)( 80 * m_flScale ), (int)( 26 * m_flScale ), inGame ? white : PackRGBA( 110, 110, 110, 255 ));
 +		Text( L( "CZERO_Resume" ), 504, 437, 80, 26, onResume ? PackRGBA( 255, 255, 0, 255 ) : ( inGame ? white : PackRGBA( 110, 110, 110, 255 )), 14, QM_CENTER );
@@ -459,37 +478,35 @@ index 0000000..5c0bc78
 +
 +		if( !m_MissionImgLoaded[m_iSelected] )
 +		{
-+			char buf[96];
-+			snprintf( buf, sizeof( buf ), "gfx/vgui/%s_large.tga", m.image );
-+			m_MissionImg[m_iSelected].Load( buf );
++			m_MissionImg[m_iSelected].Load( MissionPicture( m.image ).c_str( ));
 +			m_MissionImgLoaded[m_iSelected] = true;
 +		}
 +		Image( m_MissionImg[m_iSelected], 381, 60, 243, 243, true );
 +
-+		const char *skillKeys[3] = { "CZERO_EasySkill", "CZERO_MediumSkill", "CZERO_HardSkill" };
-+		const int skillY[3] = { 314, 341, 370 };
-+		for( int i = 0; i < 3; i++ )
++		const char *skillKeys[WORLDMAP_SKILL_COUNT] = { "CZERO_EasySkill", "CZERO_MediumSkill", "CZERO_HardSkill" };
++		for( int i = 0; i < WORLDMAP_SKILL_COUNT; i++ )
 +		{
 +			const bool sel = m_iSkill == i + 1;
-+			const bool hov = In( mx, my, 430, skillY[i], 200, 30 );
-+			const int cx = 430 + 6, cy = skillY[i] + 6;
++			const bool hov = In( mx, my, 430, g_iSkillY[i], 200, 30 );
++			const int cx = 430 + 6, cy = g_iSkillY[i] + 6;
 +			UI_DrawRectangle( m_iOffX + (int)( cx * m_flScale ), m_iOffY + (int)( cy * m_flScale ),
 +				(int)( 10 * m_flScale ), (int)( 10 * m_flScale ), white );
 +			if( sel )
 +				UI_FillRect( m_iOffX + (int)( ( cx + 3 ) * m_flScale ), m_iOffY + (int)( ( cy + 3 ) * m_flScale ),
 +					(int)( 4 * m_flScale ), (int)( 4 * m_flScale ), white );
-+			Text( L( skillKeys[i] ), 430 + 24, skillY[i], 176, 30,
++			Text( L( skillKeys[i] ), 430 + 24, g_iSkillY[i], 176, 30,
 +				sel ? white : ( hov ? PackRGBA( 255, 255, 0, 255 ) : PackRGBA( 170, 170, 170, 255 )), 14, QM_LEFT );
 +		}
 +
-+		struct { int x, y, w, h; const char *key; } btn[2] = {
-+			{ 384, 410, 110, 22, "CZERO_Cancel" }, { 510, 410, 100, 22, "CZERO_Okay" } };
++		const WorldMapRect_t *buttons[] = { &g_CancelButton, &g_OkButton };
++		const char *buttonKeys[] = { "CZERO_Cancel", "CZERO_Okay" };
 +		for( int i = 0; i < 2; i++ )
 +		{
-+			const bool hov = In( mx, my, btn[i].x, btn[i].y, btn[i].w, btn[i].h );
-+			UI_DrawRectangle( m_iOffX + (int)( btn[i].x * m_flScale ), m_iOffY + (int)( btn[i].y * m_flScale ),
-+				(int)( btn[i].w * m_flScale ), (int)( btn[i].h * m_flScale ), white );
-+			Text( L( btn[i].key ), btn[i].x, btn[i].y, btn[i].w, btn[i].h, hov ? PackRGBA( 255, 255, 0, 255 ) : white, 13, QM_CENTER );
++			const WorldMapRect_t &b = *buttons[i];
++			const bool hov = In( mx, my, b.x, b.y, b.w, b.h );
++			UI_DrawRectangle( m_iOffX + (int)( b.x * m_flScale ), m_iOffY + (int)( b.y * m_flScale ),
++				(int)( b.w * m_flScale ), (int)( b.h * m_flScale ), white );
++			Text( L( buttonKeys[i] ), b.x, b.y, b.w, b.h, hov ? PackRGBA( 255, 255, 0, 255 ) : white, 13, QM_CENTER );
 +		}
 +	}
 +}
@@ -529,14 +546,13 @@ index 0000000..5c0bc78
 +	}
 +	else
 +	{
-+		const int skillY[3] = { 314, 341, 370 };
-+		for( int i = 0; i < 3; i++ )
-+			if( In( mx, my, 430, skillY[i], 200, 30 ))
++		for( int i = 0; i < WORLDMAP_SKILL_COUNT; i++ )
++			if( In( mx, my, 430, g_iSkillY[i], 200, 30 ))
 +				m_iSkill = i + 1;
 +
-+		if( In( mx, my, 384, 410, 110, 22 ))
++		if( In( mx, my, g_CancelButton.x, g_CancelButton.y, g_CancelButton.w, g_CancelButton.h ))
 +			m_bSelect = false;
-+		else if( In( mx, my, 510, 410, 100, 22 ))
++		else if( In( mx, my, g_OkButton.x, g_OkButton.y, g_OkButton.w, g_OkButton.h ))
 +			StartMission();
 +	}
 +	return true;
