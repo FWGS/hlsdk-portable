@@ -40,8 +40,7 @@
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
 #endif
 
-float	vJumpOrigin[3];
-float	vJumpAngles[3];
+extern "C" { float	vJumpOrigin[3]; float	vJumpAngles[3]; }
 
 
 extern engine_studio_api_t IEngineStudio;
