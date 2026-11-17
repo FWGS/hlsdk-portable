@@ -30,7 +30,7 @@ extern Vector g_vPlayerVelocity;
 extern const Vector g_vecZero;
 extern vec3_t v_origin, v_angles;
 
-void VectorAngles( const float *forward, float *angles );
+extern "C" void VectorAngles( const float *forward, float *angles );
 
 static inline Vector ReadVector(BufferReader& reader)
 {
