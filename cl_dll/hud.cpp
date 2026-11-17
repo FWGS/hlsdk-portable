@@ -419,15 +419,10 @@ void CHud :: Init( void )
 	// Game HUD things
 	m_Ammo.Init();
 	m_Health.Init();
-	m_Radio.Init();
-	m_Timer.Init();
-	m_Money.Init();
 	m_AmmoSecondary.Init();
 	m_Train.Init();
 	m_Battery.Init();
 	m_StatusIcons.Init();
-	m_Radar.Init();
-	m_Scenario.Init();
 
 	// chat, death notice, status bars and other
 	m_SayText.Init();
@@ -443,10 +438,6 @@ void CHud :: Init( void )
 	// all things that have own background and must be drawn last
 	m_ProgressBar.Init();
 	m_Menu.Init();
-
-	// Spectator GUI is not need in singleplayer czeror
-	if( GetGameType() != GAME_CZERODS )
-		m_SpectatorGui.Init();
 
 	m_Scoreboard.Init();
 

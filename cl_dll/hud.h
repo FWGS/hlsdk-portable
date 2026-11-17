@@ -294,7 +294,6 @@ private:
 
 
 #include "health.h"
-#include "radar.h"
 
 #define FADE_TIME 100
 
@@ -760,72 +759,7 @@ private:
 };
 
 
-//
-//-----------------------------------------------------
-//
-#define MONEY_YPOS ScreenHeight - 3 * gHUD.m_iFontHeight
 
-class CHudMoney : public CHudBase
-{
-public:
-	int Init( void );
-	int VidInit( void );
-	int Draw( float flTime );
-	CHudMsgFunc(Money);
-	CHudMsgFunc(BlinkAcct);
-
-private:
-	int m_iMoneyCount;
-	int m_iDelta;
-	int m_iBlinkAmt;
-	float m_fBlinkTime;
-	float m_fFade;
-	CClientSprite m_hDollar;
-	CClientSprite m_hPlus;
-	CClientSprite m_hMinus;
-};
-//
-//-----------------------------------------------------
-//
-class CHudRadio: public CHudBase
-{
-public:
-	int Init( void );
-	void Voice(int entindex, bool bTalking );
-	// play a sentence from a radio
-	// [byte] unknown (always 1)
-	// [string] sentence name
-	// [short] unknown. (always 100, it's a volume?)
-	CHudMsgFunc(SendAudio);
-	CHudMsgFunc(ReloadSound);
-	CHudMsgFunc(BotVoice);
-};
-
-//
-//-----------------------------------------------------
-//
-class CHudTimer: public CHudBase
-{
-	friend class CHudSpectatorGui;
-public:
-	int Init( void );
-	int VidInit( void );
-	int Draw(float fTime);
-	// set up the timer.
-	// [short]
-	CHudMsgFunc(RoundTime);
-	// show the timer
-	// [empty]
-	CHudMsgFunc(ShowTimer);
-
-	int m_right;
-private:
-	int m_HUD_timer;
-	int m_iTime;
-	float m_fStartTime;
-	bool m_bPanicColorChange;
-	float m_flPanicTime;
-};
 //
 //-----------------------------------------------------
 //
@@ -894,79 +828,7 @@ private:
 	bool m_bOn = false;
 };
 
-//
-//-----------------------------------------------------
-//
 
-class CHudScenario : public CHudBase
-{
-public:
-	int Init();
-	int VidInit();
-	int Draw(float flTime);
-	void Reset();
-
-	CHudMsgFunc(Scenario);
-private:
-	CClientSprite m_sprite;
-	int m_iAlpha;
-	int m_iFlashAlpha;
-	float m_fFlashRate;
-	float m_fNextFlash;
-};
-
-//
-//-----------------------------------------------------
-//
-
-class CHudSpectatorGui: public CHudBase
-{
-public:
-	int Init();
-	int VidInit();
-	int Draw( float flTime );
-	void InitHUDData();
-	void Reset();
-	void Shutdown();
-
-	CHudMsgFunc( SpecHealth );
-	CHudMsgFunc( SpecHealth2 );
-
-	CHudUserCmd( ToggleSpectatorMenu );
-	CHudUserCmd( ToggleSpectatorMenuOptions );
-	CHudUserCmd( ToggleSpectatorMenuOptionsSettings );
-	CHudUserCmd( ToggleSpectatorMenuSpectateOptions );
-
-	void CalcAllNeededData( );
-
-	bool m_bBombPlanted;
-
-private:	
-	// szMapName is 64 bytes only. Removing "maps/" and ".bsp" gived me this result
-	class Labels
-	{
-	public:
-		short m_iTerrorists;
-		short m_iCounterTerrorists;
-		char m_szTimer[64];
-		char m_szMap[64];
-		char m_szNameAndHealth[80];
-	} label;
-	int m_hTimerTexture;
-	int m_hChecked;
-	int m_hArrowDown;
-	int m_hArrowUp;
-	int m_hArrowLeft;
-	int m_hArrowRight;
-
-	enum {
-		ROOT_MENU = (1<<0),
-		MENU_OPTIONS = (1<<1),
-		MENU_OPTIONS_SETTINGS = (1<<2),
-		MENU_SPEC_OPTIONS = (1<<3)
-	};
-	byte m_menuFlags;
-};
 
 //
 //-----------------------------------------------------
@@ -1093,16 +955,10 @@ public:
 	CHudStatusIcons m_StatusIcons;
 	CHudScoreboard  m_Scoreboard;
 	CHudMOTD        m_MOTD;
-	CHudMoney       m_Money;
-	CHudTimer       m_Timer;
-	CHudRadio       m_Radio;
-	CHudProgressBar m_ProgressBar;
+				CHudProgressBar m_ProgressBar;
 	CHudSniperScope m_SniperScope;
 	CHudNVG         m_NVG;
-	CHudRadar       m_Radar;
-	CHudSpectatorGui m_SpectatorGui;
-	CHudScenario	m_Scenario;
-
+			
 	// user messages
 	CHudMsgFunc(Damage);
 	CHudMsgFunc(GameMode);
