@@ -239,9 +239,6 @@ int CHudMenu::MsgFunc_BuyClose(const char *pszName, int iSize, void *pbuf)
 {
 	Touch_CloseMenu();
 
-	if (g_pMenu)
-		g_pMenu->HideVGUIMenu();
-
 	return 1;
 }
 
@@ -276,47 +273,6 @@ void CHudMenu::ShowVGUIMenu( int menuType )
 	int team = g_PlayerExtraInfo[gHUD.m_Scoreboard.m_iPlayerNum].teamnumber;
 	int haveCancel = team != TEAM_UNASSIGNED ? 1 : 0;
 
-	if( g_pMenu && !UseOldTouchMenusEnabled() )
-	{
-		switch( menuType )
-		{
-		case MENU_TEAM:
-		{
-			int param = 0;
-			if( m_bAllowSpec )
-			{
-				if( g_iTeamNumber == TEAM_UNASSIGNED ||
-					g_PlayerExtraInfo[gHUD.m_Scoreboard.m_iPlayerNum].dead ||
-					!g_iFreezeTimeOver )
-				{
-					param |= 1 << 0;
-				}
-			}
-
-			if( IsASMapType() && g_iTeamNumber == TEAM_CT )
-				param |= 1 << 1;
-
-			if( haveCancel )
-				param |= 1 << 2;
-
-			g_pMenu->ShowVGUIMenu( menuType, param, 0 );
-			return;
-		}
-		case MENU_CLASS_T:
-		case MENU_CLASS_CT:
-			g_pMenu->ShowVGUIMenu( menuType, gHUD.GetGameType() == GAME_CZERO, haveCancel );
-			return;
-		case MENU_BUY:
-		case MENU_BUY_PISTOL:
-		case MENU_BUY_SHOTGUN:
-		case MENU_BUY_RIFLE:
-		case MENU_BUY_SUBMACHINEGUN:
-		case MENU_BUY_MACHINEGUN:
-		case MENU_BUY_ITEM:
-			g_pMenu->ShowVGUIMenu( menuType, gHUD.GetGameType() == GAME_CZERO, team );
-			return;
-		}
-	}
 
 	const char *szCmd;
 

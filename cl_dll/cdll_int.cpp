@@ -29,7 +29,6 @@
 #include "render_api.h"
 #include "mobility_int.h"
 #include "vgui_parser.h"
-#include "cl_dll/IGameMenuExports.h"
 #include "particleman.h"
 #include "IParticleMan_Active.h"
 #include "CMiniMem.h"
@@ -44,44 +43,7 @@ CHud gHUD;
 int g_iXash = 0; // indicates a buildnum
 int g_iMobileAPIVersion = 0;
 
-IGameMenuExports *g_pMenu = nullptr;
 IParticleMan *g_pParticleMan = NULL;
-
-static IGameMenuExports *GetNativeMenuExports( void )
-{
-	if( !g_iMobileAPIVersion || !gMobileAPI.pfnGetNativeObject )
-		return nullptr;
-
-	void *nativeFactory = gMobileAPI.pfnGetNativeObject( "MenuFactory" );
-	if( !nativeFactory )
-		return nullptr;
-
-	CreateInterfaceFn menuFactory = reinterpret_cast<CreateInterfaceFn>( nativeFactory );
-	return static_cast<IGameMenuExports *>( menuFactory( GAMEMENUEXPORTS_INTERFACE_VERSION, NULL ) );
-}
-
-static bool HUD_MessageBox( const char *msg )
-{
-	gEngfuncs.Con_Printf( "%s", msg );
-
-	if( g_iMobileAPIVersion && gMobileAPI.pfnSys_Warn )
-	{
-		gMobileAPI.pfnSys_Warn( "%s", msg );
-		return true;
-	}
-
-	return false;
-}
-
-static void LoadMenuInterface( void )
-{
-	if( g_pMenu )
-		return;
-
-	g_pMenu = GetNativeMenuExports();
-	if( !g_pMenu )
-		HUD_MessageBox( "Error: native object \"MenuFactory\" is unavailable\n" );
-}
 
 void InitInput (void);
 void Game_HookEvents( void );
@@ -273,15 +235,8 @@ the hud variables.
 
 void DLLEXPORT HUD_Init( void )
 {
-	LoadMenuInterface();
 	InitInput();
 	gHUD.Init();
-	
-	// Initialize menu if it's loaded
-	if( g_pMenu && !g_pMenu->Initialize( Sys_GetFactoryThis() ) )
-	{
-		gEngfuncs.Con_Printf( "Warning: Menu initialization failed\n" );
-	}
 	//Scheme_Init();
 }
 
@@ -349,17 +304,6 @@ void DLLEXPORT HUD_Frame( double time )
 #ifdef _CS16CLIENT_ENABLE_GSRC_SUPPORT
 	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
 #endif
-
-	// Handle menu input and mouse movement
-	if( g_pMenu )
-	{
-		int x = 0, y = 0;
-		if( g_pMenu->IsActive() )
-		{
-			gEngfuncs.GetMousePosition( &x, &y );
-			g_pMenu->MouseMove( x, y );
-		}
-	}
 
 }
 
