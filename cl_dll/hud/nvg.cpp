@@ -37,6 +37,8 @@ version.
 int CHudNVG::Init()
 {
 	HOOK_MESSAGE( gHUD.m_NVG, NVGToggle);
+	// the server of the game sends the night vision as "NightVision": 1 byte, 0 off / 1 on
+	HOOK_MESSAGE_FUNC( "NightVision", gHUD.m_NVG.MsgFunc_NVGToggle );
 	HOOK_COMMAND( gHUD.m_NVG,"+nvgadjust", NVGAdjustUp);
 	HOOK_COMMAND( gHUD.m_NVG, "-nvgadjust", NVGAdjustDown);
 	HOOK_COMMAND( gHUD.m_NVG, "nvgadjustup", NVGAdjustUp);
