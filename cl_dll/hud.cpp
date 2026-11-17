@@ -18,487 +18,529 @@
 // implementation of CHud class
 //
 
+#include <new>
+
 #include "hud.h"
 #include "cl_util.h"
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 #include "parsemsg.h"
-#include "vgui_int.h"
-#include "vgui_TeamFortressViewport.h"
 
 #include "demo.h"
 #include "demo_api.h"
+#include "vgui_parser.h"
+#include "environment.h"
 
-hud_player_info_t	 g_PlayerInfoList[MAX_PLAYERS+1];	   // player info from the engine
-extra_player_info_t  g_PlayerExtraInfo[MAX_PLAYERS+1];   // additional player info sent directly to the client dll
-team_info_t		g_TeamInfo[MAX_TEAMS + 1];
-int		g_IsSpectator[MAX_PLAYERS+1];
-int g_iPlayerClass;
-int g_iTeamNumber;
-int g_iUser1 = 0;
-int g_iUser2 = 0;
-int g_iUser3 = 0;
+#include "camera.h"
 
-#include "vgui_ScorePanel.h"
+#include "draw_util.h"
+#include "cz_fibercamera.h"
 
-class CHLVoiceStatusHelper : public IVoiceStatusHelper
+#if _WIN32
+#define strncasecmp _strnicmp
+#endif
+
+cvar_t *cl_fog_r;
+cvar_t *cl_fog_g;
+cvar_t *cl_fog_b;
+cvar_t *cl_fog_density;
+cvar_t *cl_fog_scale;
+cvar_t *cl_glow_alpha;
+cvar_t *cl_glow_size;
+
+extern client_sprite_t *GetSpriteList(client_sprite_t *pList, const char *psz, int iRes, int iCount);
+
+// Team Colors
+int iNumberOfTeamColors = 3;
+int iTeamColors[3][3] =
 {
-public:
-	virtual void GetPlayerTextColor(int entindex, int color[3])
-	{
-		color[0] = color[1] = color[2] = 255;
-
-		if( entindex >= 0 && entindex < sizeof(g_PlayerExtraInfo)/sizeof(g_PlayerExtraInfo[0]) )
-		{
-			int iTeam = g_PlayerExtraInfo[entindex].teamnumber;
-
-			if ( iTeam < 0 )
-			{
-				iTeam = 0;
-			}
-
-			iTeam = iTeam % iNumberOfTeamColors;
-
-			color[0] = iTeamColors[iTeam][0];
-			color[1] = iTeamColors[iTeam][1];
-			color[2] = iTeamColors[iTeam][2];
-		}
-	}
-
-	virtual void UpdateCursorState()
-	{
-		gViewPort->UpdateCursorState();
-	}
-
-	virtual int	GetAckIconHeight()
-	{
-		return ScreenHeight - gHUD.m_iFontHeight*3 - 6;
-	}
-
-	virtual bool			CanShowSpeakerLabels()
-	{
-		if( gViewPort && gViewPort->m_pScoreBoard )
-			return !gViewPort->m_pScoreBoard->isVisible();
-		else
-			return false;
-	}
+	{ 204, 204, 204 }, // Spectators
+	{ 255, 64, 64 }, // CT's
+	{ 153, 204, 255 }  // T's
 };
-static CHLVoiceStatusHelper g_VoiceStatusHelper;
 
-cvar_t *hud_textmode;
-float g_hud_text_color[3];
 
-extern client_sprite_t *GetSpriteList( client_sprite_t *pList, const char *psz, int iRes, int iCount );
-
-extern cvar_t *sensitivity;
-cvar_t *cl_lw = NULL;
-cvar_t *cl_viewbob = NULL;
-
-void ShutdownInput( void );
-
-//DECLARE_MESSAGE( m_Logo, Logo )
-int __MsgFunc_Logo( const char *pszName, int iSize, void *pbuf )
+wrect_t nullrc = { 0, 0, 0, 0 };
+float g_lastFOV = 0.0;
+const char *sPlayerModelFiles[12] =
 {
-	return gHUD.MsgFunc_Logo( pszName, iSize, pbuf );
+	"models/player.mdl",
+	"models/player/leet/leet.mdl", // t
+	"models/player/gign/gign.mdl", // ct
+	"models/player/vip/vip.mdl", //ct
+	"models/player/gsg9/gsg9.mdl", // ct
+	"models/player/guerilla/guerilla.mdl", // t
+	"models/player/arctic/arctic.mdl", // t
+	"models/player/sas/sas.mdl", // ct
+	"models/player/terror/terror.mdl", // t
+	"models/player/urban/urban.mdl", // ct
+	"models/player/spetsnaz/spetsnaz.mdl", // ct
+	"models/player/militia/militia.mdl" // t
+};
+
+void __CmdFunc_InputCommandSpecial()
+{
+#ifdef _CS16CLIENT_ALLOW_SPECIAL_SCRIPTING
+	gEngfuncs.pfnClientCmd("_special");
+#endif
 }
 
-//DECLARE_MESSAGE( m_Logo, Logo )
-int __MsgFunc_ResetHUD( const char *pszName, int iSize, void *pbuf )
+void __CmdFunc_GunSmoke()
 {
-	return gHUD.MsgFunc_ResetHUD( pszName, iSize, pbuf );
+	if( gHUD.cl_gunsmoke->value )
+		gEngfuncs.Cvar_SetValue( "cl_gunsmoke", 0 );
+	else
+		gEngfuncs.Cvar_SetValue( "cl_gunsmoke", 1 );
 }
 
-int __MsgFunc_InitHUD( const char *pszName, int iSize, void *pbuf )
+/*
+============
+COM_FileBase
+============
+*/
+// Extracts the base name of a file (no path, no extension, assumes '/' as path separator)
+void COM_FileBase ( const char *in, char *out)
 {
-	gHUD.MsgFunc_InitHUD( pszName, iSize, pbuf );
-	return 1;
+	int len, start, end;
+
+	len = strlen( in );
+
+	// scan backward for '.'
+	end = len - 1;
+	while ( end && in[end] != '.' && in[end] != '/' && in[end] != '\\' )
+		end--;
+
+	if ( in[end] != '.' )		// no '.', copy to end
+		end = len-1;
+	else
+		end--;					// Found ',', copy to left of '.'
+
+
+	// Scan backward for '/'
+	start = len-1;
+	while ( start >= 0 && in[start] != '/' && in[start] != '\\' )
+		start--;
+
+	if ( in[start] != '/' && in[start] != '\\' )
+		start = 0;
+	else
+		start++;
+
+	// Length of new sting
+	len = end - start + 1;
+
+	// Copy partial string
+	strncpy( out, &in[start], len );
+	// Terminate it
+	out[len] = 0;
 }
 
-int __MsgFunc_ViewMode( const char *pszName, int iSize, void *pbuf )
-{
-	gHUD.MsgFunc_ViewMode( pszName, iSize, pbuf );
-	return 1;
-}
+/*
+=================
+HUD_IsGame
 
-int __MsgFunc_SetFOV( const char *pszName, int iSize, void *pbuf )
+=================
+*/
+int HUD_IsGame( const char *game )
 {
-	return gHUD.MsgFunc_SetFOV( pszName, iSize, pbuf );
-}
+	const char *gamedir;
+	char gd[ 1024 ];
 
-int __MsgFunc_Concuss( const char *pszName, int iSize, void *pbuf )
-{
-	return gHUD.MsgFunc_Concuss( pszName, iSize, pbuf );
-}
-
-int __MsgFunc_GameMode( const char *pszName, int iSize, void *pbuf )
-{
-	return gHUD.MsgFunc_GameMode( pszName, iSize, pbuf );
-}
-
-// TFFree Command Menu
-void __CmdFunc_OpenCommandMenu( void )
-{
-	if ( gViewPort )
+	gamedir = gEngfuncs.pfnGetGameDirectory();
+	if ( gamedir && gamedir[0] )
 	{
-		gViewPort->ShowCommandMenu( gViewPort->m_StandardMenu );
-	}
-}
-
-// TFC "special" command
-void __CmdFunc_InputPlayerSpecial( void )
-{
-	if ( gViewPort )
-	{
-		gViewPort->InputPlayerSpecial();
-	}
-}
-
-void __CmdFunc_CloseCommandMenu( void )
-{
-	if ( gViewPort )
-	{
-		gViewPort->InputSignalHideCommandMenu();
-	}
-}
-
-void __CmdFunc_ForceCloseCommandMenu( void )
-{
-	if ( gViewPort )
-	{
-		gViewPort->HideCommandMenu();
-	}
-}
-
-// TFFree Command Menu Message Handlers
-int __MsgFunc_ValClass( const char *pszName, int iSize, void *pbuf )
-{
-	if (gViewPort)
-			return gViewPort->MsgFunc_ValClass( pszName, iSize, pbuf );
-	return 0;
-}
-
-int __MsgFunc_TeamNames( const char *pszName, int iSize, void *pbuf )
-{
-	if (gViewPort)
-		return gViewPort->MsgFunc_TeamNames( pszName, iSize, pbuf );
-	return 0;
-}
-
-int __MsgFunc_Feign( const char *pszName, int iSize, void *pbuf )
-{
-	if (gViewPort)
-		return gViewPort->MsgFunc_Feign( pszName, iSize, pbuf );
-	return 0;
-}
-
-int __MsgFunc_Detpack( const char *pszName, int iSize, void *pbuf )
-{
-	if (gViewPort)
-		return gViewPort->MsgFunc_Detpack( pszName, iSize, pbuf );
-	return 0;
-}
-
-int __MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf )
-{
-	if (gViewPort)
-		return gViewPort->MsgFunc_VGUIMenu( pszName, iSize, pbuf );
-	return 0;
-}
-
-int __MsgFunc_MOTD(const char *pszName, int iSize, void *pbuf)
-{
-	bool finished = gHUD.m_MOTD.HandleMOTDMessage(pszName, iSize, pbuf);
-	if (finished)
-	{
-		if (gHUD.UseVguiMOTD() && gViewPort)
-		{
-			gViewPort->ShowMOTD();
+		COM_FileBase( gamedir, gd );
+		if ( !stricmp( gd, game ) )
 			return 1;
-		}
-
-		gHUD.m_MOTD.m_bShow = true;
 	}
+	return 0;
+}
+
+#define XASH_GENERATE_BUILDNUM
+
+#if defined(XASH_GENERATE_BUILDNUM)
+static const char *date = __DATE__;
+static const char *mon[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+static char mond[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+#endif
+
+char *Q_buildnum( void )
+{
+// do not touch this! Only author of Xash3D can increase buildnumbers!
+// Xash3D SDL: HAHAHA! I TOUCHED THIS!
+	int m = 0, d = 0, y = 0;
+	static int b = 0;
+	static char buildnum[16];
+
+	if( b != 0 )
+		return buildnum;
+
+	for( m = 0; m < 11; m++ )
+	{
+		if( !strncasecmp( &date[0], mon[m], 3 ))
+			break;
+		d += mond[m];
+	}
+
+	d += atoi( &date[4] ) - 1;
+	y = atoi( &date[7] ) - 1900;
+	b = d + (int)((y - 1) * 365.25f );
+
+	if((( y % 4 ) == 0 ) && m > 1 )
+	{
+		b += 1;
+	}
+	//b -= 38752; // Feb 13 2007
+	b -= 41940; // Oct 29 2015.
+	// Happy birthday, cs16client! :)
+
+	snprintf( buildnum, sizeof(buildnum), "%i", b );
+
+	return buildnum;
+}
+
+int __MsgFunc_ADStop( const char *name, int size, void *buf ) { return 1; }
+int __MsgFunc_ItemStatus( const char *name, int size, void *buf ) { return 1; }
+// int __MsgFunc_ReqState( const char *name, int size, void *buf ) { return 1; }
+int __MsgFunc_ForceCam( const char *name, int size, void *buf ) { return 1; }
+int __MsgFunc_Spectator( const char *name, int size, void *buf ) { return 1; }
+
+#ifdef __ANDROID__
+bool evdev_open = false;
+void __CmdFunc_MouseSucksOpen( void ) { evdev_open = true; }
+void __CmdFunc_MouseSucksClose( void ) { evdev_open = false; }
+#endif
+
+int __MsgFunc_Rain(const char *pszName, int iSize, void *pbuf)
+{
+	return g_Environment.MsgFunc_Rain( pszName, iSize, pbuf );
+}
+
+int __MsgFunc_Snow(const char *pszName, int iSize, void *pbuf)
+{
+	return g_Environment.MsgFunc_Snow( pszName, iSize, pbuf );
+}
+
+int __MsgFunc_WeatherPos(const char *pszName, int iSize, void *pbuf)
+{
+	return g_Environment.MsgFunc_WeatherPos( pszName, iSize, pbuf );
+}
+
+int __MsgFunc_ReceiveW(const char *pszName, int iSize, void *pbuf)
+{
+	return g_Environment.MsgFunc_ReceiveW( pszName, iSize, pbuf );
+}
+
+// CZ:DS: wind / grass settings of the map (original CHudHealth::MsgFunc_WindInfo / MsgFunc_GrassInfo)
+int __MsgFunc_WindInfo(const char *pszName, int iSize, void *pbuf)
+{
+	return g_Environment.MsgFunc_WindInfo( pszName, iSize, pbuf );
+}
+
+int __MsgFunc_GrassInfo(const char *pszName, int iSize, void *pbuf)
+{
+	return g_Environment.MsgFunc_GrassInfo( pszName, iSize, pbuf );
+}
+
+// CZ:DS music from trigger_cdaudio. Xash pauses a background track for good if it was started while the
+// loading screen (menu) was up: S_StartBackgroundTrack stores source = key_menu and S_StreamBackgroundTrack
+// never plays such a track in the game (cz_recoil intro music stayed silent, test 30.10). The server sends
+// "cz_music <intro> <loop>"; the client keeps it and starts it once the game view is really drawn.
+char g_szCzMusic[2][260];
+bool g_bCzMusicPending = false;
+float g_flCzMusicAt = 0.0f;
+float g_flCzMapDrawn = 0.0f; // first HUD redraw of this map (reset in VidInit)
+
+// opens the world map window of the menu library (menu_worldmap)
+static void __CmdFunc_WorldMap( void )
+{
+	gEngfuncs.pfnClientCmd( "menu_worldmap\n" );
+}
+
+// the server sends it from item_worldmap (map cz_worldmap, where a finished mission leads): open the world map
+static int __MsgFunc_MapInfo( const char *pszName, int iSize, void *pbuf )
+{
+	gEngfuncs.pfnClientCmd( "menu_worldmap\n" );
 	return 1;
 }
 
-int __MsgFunc_BuildSt( const char *pszName, int iSize, void *pbuf )
+// unlocked missions of the world map: the server sends the mask, the menu reads the cvar
+static int __MsgFunc_LevelLocks( const char *pszName, int iSize, void *pbuf )
 {
-	if (gViewPort)
-		return gViewPort->MsgFunc_BuildSt( pszName, iSize, pbuf );
-	return 0;
+	BufferReader reader( pszName, pbuf, iSize );
+	// as in the original: the mask of the server is added to the saved one (cl_levellocks is archived), the progress stays after a restart
+	int bits = reader.ReadLong() | (int)gEngfuncs.pfnGetCvarFloat( "cl_levellocks" );
+	gEngfuncs.Cvar_SetValue( "cl_levellocks", (float)bits );
+	return 1;
 }
 
-int __MsgFunc_RandomPC( const char *pszName, int iSize, void *pbuf )
+static void __CmdFunc_CzMusic( void )
 {
-	if (gViewPort)
-		return gViewPort->MsgFunc_RandomPC( pszName, iSize, pbuf );
-	return 0;
-}
- 
-int __MsgFunc_ServerName( const char *pszName, int iSize, void *pbuf )
-{
-	if (gViewPort)
-		return gViewPort->MsgFunc_ServerName( pszName, iSize, pbuf );
-	return 0;
+	if( gEngfuncs.Cmd_Argc() < 2 )
+		return;
+	strncpy( g_szCzMusic[0], gEngfuncs.Cmd_Argv( 1 ), sizeof( g_szCzMusic[0] ) - 1 );
+	g_szCzMusic[0][sizeof( g_szCzMusic[0] ) - 1] = 0;
+	strncpy( g_szCzMusic[1], gEngfuncs.Cmd_Argc() > 2 ? gEngfuncs.Cmd_Argv( 2 ) : "*", sizeof( g_szCzMusic[1] ) - 1 );
+	g_szCzMusic[1][sizeof( g_szCzMusic[1] ) - 1] = 0;
+	g_bCzMusicPending = true;
+	g_flCzMusicAt = 0.0f;
 }
 
-int __MsgFunc_ScoreInfo(const char *pszName, int iSize, void *pbuf)
-{
-	return gHUD.m_Scoreboard.MsgFunc_ScoreInfo( pszName, iSize, pbuf );
-}
-
-int __MsgFunc_TeamScore(const char *pszName, int iSize, void *pbuf)
-{
-	return gHUD.m_Scoreboard.MsgFunc_TeamScore( pszName, iSize, pbuf );
-}
-
-int __MsgFunc_TeamInfo(const char *pszName, int iSize, void *pbuf)
-{
-	int result = gHUD.m_Scoreboard.MsgFunc_TeamInfo( pszName, iSize, pbuf );
-	if (gViewPort)
-		gViewPort->m_pScoreBoard->Update();
-	return result;
-}
-
-int __MsgFunc_Spectator( const char *pszName, int iSize, void *pbuf )
-{
-	if (gViewPort)
-		return gViewPort->MsgFunc_Spectator( pszName, iSize, pbuf );
-	return 0;
-}
-
-int __MsgFunc_SpecFade(const char *pszName, int iSize, void *pbuf)
-{
-	if (gViewPort)
-		return gViewPort->MsgFunc_SpecFade( pszName, iSize, pbuf );
-	return 0;
-}
-
-int __MsgFunc_ResetFade(const char *pszName, int iSize, void *pbuf)
-{
-	if (gViewPort)
-		return gViewPort->MsgFunc_ResetFade( pszName, iSize, pbuf );
-	return 0;
-
-}
-
-int __MsgFunc_AllowSpec( const char *pszName, int iSize, void *pbuf )
-{
-	if (gViewPort)
-		return gViewPort->MsgFunc_AllowSpec( pszName, iSize, pbuf );
-	return 0;
-}
- 
 // This is called every time the DLL is loaded
-void CHud::Init( void )
+void CHud :: Init( void )
 {
-	HOOK_MESSAGE( Logo );
-	HOOK_MESSAGE( ResetHUD );
-	HOOK_MESSAGE( GameMode );
-	HOOK_MESSAGE( InitHUD );
-	HOOK_MESSAGE( ViewMode );
-	HOOK_MESSAGE( SetFOV );
-	HOOK_MESSAGE( Concuss );
+	SetGameType(); // call it first, so we will know gamedir at very early stage
 
-	// TFFree CommandMenu
-	HOOK_COMMAND( "+commandmenu", OpenCommandMenu );
-	HOOK_COMMAND( "-commandmenu", CloseCommandMenu );
-	HOOK_COMMAND( "ForceCloseCommandMenu", ForceCloseCommandMenu );
-	HOOK_COMMAND( "special", InputPlayerSpecial );
+	HOOK_COMMAND_FUNC( "special", __CmdFunc_InputCommandSpecial, );
+	HOOK_COMMAND_FUNC( "gunsmoke", __CmdFunc_GunSmoke, );
+	HOOK_COMMAND_FUNC( "cz_music", __CmdFunc_CzMusic, );
+	HOOK_COMMAND_FUNC( "worldmap", __CmdFunc_WorldMap, );
+	HOOK_MESSAGE_FUNC( "MapInfo", __MsgFunc_MapInfo );
+	HOOK_MESSAGE_FUNC( "LevelLocks", __MsgFunc_LevelLocks );
+	// training + recoil + the six bonus missions are open on a new game (LEVEL_* in the server)
+	CVAR_CREATE( "cl_levellocks", "1032198", FCVAR_ARCHIVE );
+	CVAR_CREATE( "cl_newgame", "0", 0 );
+	CzFiber_Init();
 
-	HOOK_MESSAGE( ValClass );
-	HOOK_MESSAGE( TeamNames );
-	HOOK_MESSAGE( Feign );
-	HOOK_MESSAGE( Detpack );
-	HOOK_MESSAGE( BuildSt );
-	HOOK_MESSAGE( RandomPC );
-	HOOK_MESSAGE( ServerName );
+#ifdef __ANDROID__
+	HOOK_COMMAND_FUNC( "evdev_mouseopen", __CmdFunc_MouseSucksOpen );
+	HOOK_COMMAND_FUNC( "evdev_mouseclose", __CmdFunc_MouseSucksClose );
+#endif
+	
+	HOOK_MESSAGE( gHUD, Logo );
+	HOOK_MESSAGE( gHUD, ResetHUD );
+	HOOK_MESSAGE( gHUD, GameMode );
+	HOOK_MESSAGE( gHUD, InitHUD );
+	HOOK_MESSAGE( gHUD, ViewMode );
+	HOOK_MESSAGE( gHUD, SetFOV );
+	HOOK_MESSAGE( gHUD, Concuss );
+	HOOK_MESSAGE( gHUD, ServerName );
+	HOOK_MESSAGE( gHUD, ShadowIdx );
 
-	HOOK_MESSAGE( MOTD );
+	gEngfuncs.pfnHookUserMsg( "ADStop", __MsgFunc_ADStop );
+	gEngfuncs.pfnHookUserMsg( "ItemStatus", __MsgFunc_ItemStatus );
+	// gEngfuncs.pfnHookUserMsg( "ReqState", __MsgFunc_ReqState );
+	gEngfuncs.pfnHookUserMsg( "ForceCam", __MsgFunc_ForceCam );
+	gEngfuncs.pfnHookUserMsg( "Spectator", __MsgFunc_Spectator );
 
-	HOOK_MESSAGE( ScoreInfo );
-	HOOK_MESSAGE( TeamScore );
-	HOOK_MESSAGE( TeamInfo );
+	HOOK_MESSAGE( gHUD, Fog );
 
-	HOOK_MESSAGE( Spectator );
-	HOOK_MESSAGE( AllowSpec );
+	gEngfuncs.pfnHookUserMsg( "Rain", __MsgFunc_Rain );
+	gEngfuncs.pfnHookUserMsg( "Snow", __MsgFunc_Snow );
+	gEngfuncs.pfnHookUserMsg( "WeatherPos", __MsgFunc_WeatherPos );
+	gEngfuncs.pfnHookUserMsg( "ReceiveW", __MsgFunc_ReceiveW );
+	gEngfuncs.pfnHookUserMsg( "WindInfo", __MsgFunc_WindInfo );
+	gEngfuncs.pfnHookUserMsg( "GrassInfo", __MsgFunc_GrassInfo );
 
-	HOOK_MESSAGE( SpecFade );
-	HOOK_MESSAGE( ResetFade );
+	CVAR_CREATE( "_vgui_menus", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );
+	CVAR_CREATE( "_cl_autowepswitch", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );
+	CVAR_CREATE( "_ah", "0", FCVAR_ARCHIVE | FCVAR_USERINFO );
 
-	// VGUI Menus
-	HOOK_MESSAGE( VGUIMenu );
+	// TODO remove hack later
+	CVAR_CREATE( "numericalmenu", "1", FCVAR_ARCHIVE );
+	CVAR_CREATE( "numericalmenu_clientonly", "1", FCVAR_ARCHIVE );
+	CVAR_CREATE( "checkscoreboard", "1", FCVAR_ARCHIVE );
+	cscl_currentmap = CVAR_CREATE( "cscl_currentmap", "", 0 );
+	cscl_mapprefix = CVAR_CREATE( "cscl_mapprefix", "", 0 );
+	cscl_currentmoney = CVAR_CREATE( "cscl_currentmoney", "0", 0 );
+	CVAR_CREATE( "teammenu_showscores", "0", FCVAR_ARCHIVE );
+	CVAR_CREATE( "menu_bg_fill", "0", FCVAR_ARCHIVE );
+	CVAR_CREATE( "buymenu_stayon", "0", FCVAR_ARCHIVE );
 
-	CVAR_CREATE( "hud_classautokill", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );		// controls whether or not to suicide immediately on TF class switch
-	CVAR_CREATE( "hud_takesshots", "0", FCVAR_ARCHIVE );		// controls whether or not to automatically take screenshots at the end of a round
-	hud_textmode = CVAR_CREATE ( "hud_textmode", "0", FCVAR_ARCHIVE );
+	hud_textmode = CVAR_CREATE( "hud_textmode", "0", FCVAR_ARCHIVE );
+	hud_colored  = CVAR_CREATE( "hud_colored", "0", FCVAR_ARCHIVE );
+	cl_righthand = CVAR_CREATE( "cl_righthand", "1", FCVAR_ARCHIVE );
+	cl_weather   = CVAR_CREATE( "cl_weather", "1", FCVAR_ARCHIVE );
+	cl_minmodels = CVAR_CREATE( "cl_minmodels", "0", FCVAR_ARCHIVE );
+	cl_min_t     = CVAR_CREATE( "cl_min_t", "1", FCVAR_ARCHIVE );
+	cl_min_ct    = CVAR_CREATE( "cl_min_ct", "2", FCVAR_ARCHIVE );
+	default_fov  = CVAR_CREATE( "default_fov", "90", 0 );
+	m_pCvarDraw  = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
+	fastsprites  = CVAR_CREATE( "fastsprites", "0", FCVAR_ARCHIVE );
+	cl_gunsmoke  = CVAR_CREATE( "cl_gunsmoke", "0", FCVAR_ARCHIVE );
+	cl_weapon_sparks = CVAR_CREATE( "cl_weapon_sparks", "1", FCVAR_ARCHIVE );
+	cl_weapon_wallpuff = CVAR_CREATE( "cl_weapon_wallpuff", "1", FCVAR_ARCHIVE );
+	zoom_sens_ratio = CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", 0 );
+
+	cl_charset = gEngfuncs.pfnGetCvarPointer( "cl_charset" );
+	con_charset = gEngfuncs.pfnGetCvarPointer( "con_charset" );
+
+	cl_viewbob = CVAR_CREATE( "cl_viewbob", "1", FCVAR_ARCHIVE );
+
+	m_pShowHealth = CVAR_CREATE( "scoreboard_showhealth", "1", FCVAR_ARCHIVE );
+	m_pShowMoney = CVAR_CREATE( "scoreboard_showmoney", "1", FCVAR_ARCHIVE );
+
+	// The cvar was taken from the OpenAG client
+	if( !strcmp( gEngfuncs.pfnGetGameDirectory(), "czeror" ) )
+		m_pCvarColor = CVAR_CREATE( "cz_hud_color", "50 250 50", 0 ); // not archived: old saved hud_color must not override the CZ green
+	else
+		m_pCvarColor = CVAR_CREATE( "hud_color", "255 160 0", FCVAR_ARCHIVE );
+
+	if ( gEngfuncs.pfnGetCvarFloat( "developer" ) > 0.0f )
+	{
+		cl_fog_density = CVAR_CREATE( "cl_fog_density", "0", 0 );
+		cl_fog_scale = CVAR_CREATE( "cl_fog_scale", "1.3", FCVAR_ARCHIVE ); // multiplier for map fog density
+		cl_glow_alpha = CVAR_CREATE( "cl_glow_alpha", "0.4", 0 ); // brightness multiplier of env_glow lamps
+		cl_glow_size = CVAR_CREATE( "cl_glow_size", "0.6", 0 ); // size multiplier of env_glow lamps
+		cl_fog_r = CVAR_CREATE( "cl_fog_r", "0", 0 );
+		cl_fog_g = CVAR_CREATE( "cl_fog_g", "0", 0 );
+		cl_fog_b = CVAR_CREATE( "cl_fog_b", "0", 0 );
+	}
+
+	CVAR_CREATE( "cscl_ver", Q_buildnum(), 1<<14 | FCVAR_USERINFO ); // init and userinfo
 
 	m_iLogo = 0;
 	m_iFOV = 0;
-	m_inScope = false;
-
-	CVAR_CREATE( "zoom_sensitivity_ratio", "1.2", FCVAR_ARCHIVE );
-	CVAR_CREATE( "cl_autowepswitch", "1", FCVAR_ARCHIVE | FCVAR_USERINFO );
-	default_fov = CVAR_CREATE( "default_fov", "90", FCVAR_ARCHIVE );
-	m_pCvarStealMouse = CVAR_CREATE( "hud_capturemouse", "1", FCVAR_ARCHIVE );
-	m_pCvarDraw = CVAR_CREATE( "hud_draw", "1", FCVAR_ARCHIVE );
-#if HD_HUD_DEFAULT
-	m_pAllowHD = CVAR_CREATE ( "hud_allow_hd", "1", FCVAR_ARCHIVE );
-#else
-	m_pAllowHD = CVAR_CREATE ( "hud_allow_hd", "0", FCVAR_ARCHIVE );
-#endif
-	cl_lw = gEngfuncs.pfnGetCvarPointer( "cl_lw" );
-	cl_viewbob = CVAR_CREATE( "cl_viewbob", "1", FCVAR_ARCHIVE );
-
-	m_pCvarMOTDVGUI = CVAR_CREATE("cl_motd_vgui", "1", FCVAR_ARCHIVE);
-	m_pCvarScoreboardVGUI = CVAR_CREATE("cl_scoreboard_vgui", "1", FCVAR_ARCHIVE);
 
 	m_pSpriteList = NULL;
 
 	// Clear any old HUD list
-	if( m_pHudList )
+	for( HUDLIST *pList = m_pHudList; pList; pList = m_pHudList )
 	{
-		HUDLIST *pList;
-		while ( m_pHudList )
-		{
-			pList = m_pHudList;
-			m_pHudList = m_pHudList->pNext;
-			free( pList );
-		}
-		m_pHudList = NULL;
+		m_pHudList = m_pHudList->pNext;
+		delete pList;
 	}
+	m_pHudList = NULL;
 
 	// In case we get messages before the first update -- time will be valid
 	m_flTime = 1.0;
+	m_iNoConsolePrint = 0;
+	m_szServerName[0] = 0;
 
+
+
+	Localize_Init();
+
+	// fullscreen overlays
+	m_SniperScope.Init();
+	m_NVG.Init();
+
+	// Game HUD things
 	m_Ammo.Init();
 	m_Health.Init();
+	m_Radio.Init();
+	m_Timer.Init();
+	m_Money.Init();
+	m_AmmoSecondary.Init();
+	m_Train.Init();
+	m_Battery.Init();
+	m_StatusIcons.Init();
+	m_Radar.Init();
+	m_Scenario.Init();
+
+	// chat, death notice, status bars and other
 	m_SayText.Init();
 	m_Spectator.Init();
 	m_Geiger.Init();
-	m_Train.Init();
-	m_Battery.Init();
 	m_Flash.Init();
 	m_Message.Init();
 	m_StatusBar.Init();
 	m_DeathNotice.Init();
-	m_AmmoSecondary.Init();
 	m_TextMessage.Init();
-	m_StatusIcons.Init();
-	GetClientVoiceMgr()->Init(&g_VoiceStatusHelper, (vgui::Panel**)&gViewPort);
-
 	m_MOTD.Init();
-	m_Scoreboard.Init();
 
+	// all things that have own background and must be drawn last
+	m_ProgressBar.Init();
 	m_Menu.Init();
 
-	MsgFunc_ResetHUD( 0, 0, NULL );
-	ClientCmd( "richpresence_gamemode\n" );
-	ClientCmd( "richpresence_update\n" );
+	// Spectator GUI is not need in singleplayer czeror
+	if( GetGameType() != GAME_CZERODS )
+		m_SpectatorGui.Init();
+
+	m_Scoreboard.Init();
+
+
+
+
+	//ServersInit();
+
+	gEngfuncs.Con_Printf( "%s: ^2CS16Client^7 ver. %s initialized.\n", __FUNCTION__, CVAR_GET_STRING( "cscl_ver" ) );
+
+	MsgFunc_ResetHUD(0, 0, NULL );
 }
 
 // CHud destructor
 // cleans up memory allocated for m_rg* arrays
-CHud::~CHud()
+CHud :: ~CHud()
 {
-	delete[] m_rghSprites;
-	delete[] m_rgrcRects;
-	delete[] m_rgszSpriteNames;
+	delete [] m_rghSprites;
+	delete [] m_rgrcRects;
+	delete [] m_rgszSpriteNames;
 
-	if( m_pHudList )
+	// Clear any old HUD list
+	for( HUDLIST *pList = m_pHudList; pList; pList = m_pHudList )
 	{
-		HUDLIST *pList;
-		while( m_pHudList )
-		{
-			pList = m_pHudList;
-			m_pHudList = m_pHudList->pNext;
-			free( pList );
-		}
-		m_pHudList = NULL;
+		m_pHudList = m_pHudList->pNext;
+		delete pList;
 	}
+	m_pHudList = NULL;
 }
 
-// GetSpriteIndex()
-// searches through the sprite list loaded from hud.txt for a name matching SpriteName
-// returns an index into the gHUD.m_rghSprites[] array
-// returns 0 if sprite not found
-int CHud::GetSpriteIndex( const char *SpriteName )
+void CHud :: VidInit( void )
 {
-	// look through the loaded sprite name list for SpriteName
-	for( int i = 0; i < m_iSpriteCount; i++ )
-	{
-		if( strncmp( SpriteName, m_rgszSpriteNames + ( i * MAX_SPRITE_NAME_LENGTH), MAX_SPRITE_NAME_LENGTH ) == 0 )
-			return i;
-	}
+	CzFiber_VidInit();
 
-	return -1; // invalid sprite
-}
-
-void CHud::VidInit( void )
-{
-	int j;
-	m_scrinfo.iSize = sizeof(m_scrinfo);
+	g_flCzMapDrawn = 0.0f;
+	static bool firstinit = true;
+	m_scrinfo.iSize = sizeof( m_scrinfo );
 	GetScreenInfo( &m_scrinfo );
+
+	m_truescrinfo.iWidth = CVAR_GET_FLOAT("vid_width");
+	m_truescrinfo.iHeight = CVAR_GET_FLOAT("vid_height");
 
 	// ----------
 	// Load Sprites
 	// ---------
-	//m_hsprFont = LoadSprite("sprites/%d_font.spr");
+	//	m_hsprFont = LoadSprite("sprites/%d_font.spr");
+	
+	m_hsprLogo = 0;
 
-	m_hsprLogo = 0;	
-	m_hsprCursor = 0;
+	m_flScale = (float)TrueWidth / (float)ScreenWidth;
 
-	// a1ba: don't break the loading order here and
-	// don't cause memory leak but check
-	// maximum HUD sprite resolution we have
-	m_iMaxRes = 640;
-	client_sprite_t *pSpriteList = m_pSpriteList ? m_pSpriteList :
-		SPR_GetList( "sprites/hud.txt", &m_iSpriteCountAllRes );
-	if( pSpriteList )
-	{
-		for( int i = 0; i < m_iSpriteCountAllRes; i++ )
-		{
-			if( m_iMaxRes < pSpriteList[i].iRes )
-				m_iMaxRes = pSpriteList[i].iRes;
-		}
-	}
-
-	m_iRes = GetSpriteRes( ScreenWidth, ScreenHeight );
+	m_iRes = 640;
 
 	// Only load this once
 	if( !m_pSpriteList )
 	{
 		// we need to load the hud.txt, and all sprites within
-		m_pSpriteList = pSpriteList;
+		m_pSpriteList = SPR_GetList("sprites/hud.txt", &m_iSpriteCountAllRes);
 
 		if( m_pSpriteList )
 		{
 			// count the number of sprites of the appropriate res
 			m_iSpriteCount = 0;
 			client_sprite_t *p = m_pSpriteList;
-			for( j = 0; j < m_iSpriteCountAllRes; j++ )
+			for ( int j = 0; j < m_iSpriteCountAllRes; j++ )
 			{
-				if( p->iRes == m_iRes )
+				if ( p->iRes == m_iRes )
 					m_iSpriteCount++;
 				p++;
 			}
 
 			// allocated memory for sprite handle arrays
- 			m_rghSprites = new HSPRITE[m_iSpriteCount];
-			m_rgrcRects = new wrect_t[m_iSpriteCount];
-			m_rgszSpriteNames = new char[m_iSpriteCount * MAX_SPRITE_NAME_LENGTH];
+			m_rghSprites      = new(std::nothrow) HSPRITE[m_iSpriteCount];
+			m_rgrcRects       = new(std::nothrow) wrect_t[m_iSpriteCount];
+			m_rgszSpriteNames = new(std::nothrow) char[m_iSpriteCount * MAX_SPRITE_NAME_LENGTH];;
+
+			if( !m_rghSprites || !m_rgrcRects || !m_rgszSpriteNames )
+			{
+				gEngfuncs.pfnConsolePrint("CHud::VidInit(): Cannot allocate memory");
+				if( g_iXash )
+					gRenderAPI.Host_Error("CHud::VidInit(): Cannot allocate memory");
+			}
 
 			p = m_pSpriteList;
-			int index = 0;
-			for( j = 0; j < m_iSpriteCountAllRes; j++ )
+			for ( int index = 0, j = 0; j < m_iSpriteCountAllRes; j++ )
 			{
-				if( p->iRes == m_iRes )
+				if ( p->iRes == m_iRes )
 				{
 					char sz[256];
-					sprintf( sz, "sprites/%s.spr", p->szSprite );
-					m_rghSprites[index] = SPR_Load( sz );
+					sprintf(sz, "sprites/%s.spr", p->szSprite);
+					m_rghSprites[index] = SPR_Load(sz);
 					m_rgrcRects[index] = p->rc;
-					strlcpy( &m_rgszSpriteNames[index * MAX_SPRITE_NAME_LENGTH], p->szName, MAX_SPRITE_NAME_LENGTH );
+					strncpy( &m_rgszSpriteNames[index * MAX_SPRITE_NAME_LENGTH], p->szName, MAX_SPRITE_NAME_LENGTH );
+
 					index++;
 				}
 
@@ -511,36 +553,14 @@ void CHud::VidInit( void )
 		// we have already have loaded the sprite reference from hud.txt, but
 		// we need to make sure all the sprites have been loaded (we've gone through a transition, or loaded a save game)
 		client_sprite_t *p = m_pSpriteList;
-
-		// count the number of sprites of the appropriate res
-		m_iSpriteCount = 0;
-		for( j = 0; j < m_iSpriteCountAllRes; j++ )
-		{
-			if( p->iRes == m_iRes )
-				m_iSpriteCount++;
-			p++;
-		}
-
-		delete[] m_rghSprites;
-		delete[] m_rgrcRects;
-		delete[] m_rgszSpriteNames;
-
-		// allocated memory for sprite handle arrays
- 		m_rghSprites = new HSPRITE[m_iSpriteCount];
-		m_rgrcRects = new wrect_t[m_iSpriteCount];
-		m_rgszSpriteNames = new char[m_iSpriteCount * MAX_SPRITE_NAME_LENGTH];
-
-		p = m_pSpriteList;
 		int index = 0;
-		for( j = 0; j < m_iSpriteCountAllRes; j++ )
+		for ( int j = 0; j < m_iSpriteCountAllRes; j++ )
 		{
-			if( p->iRes == m_iRes )
+			if ( p->iRes == m_iRes )
 			{
 				char sz[256];
 				sprintf( sz, "sprites/%s.spr", p->szSprite );
-				m_rghSprites[index] = SPR_Load( sz );
-				m_rgrcRects[index] = p->rc;
-				strlcpy( &m_rgszSpriteNames[index * MAX_SPRITE_NAME_LENGTH], p->szName, MAX_SPRITE_NAME_LENGTH );
+				m_rghSprites[index] = SPR_Load(sz);
 				index++;
 			}
 
@@ -551,110 +571,70 @@ void CHud::VidInit( void )
 	// assumption: number_1, number_2, etc, are all listed and loaded sequentially
 	m_HUD_number_0 = GetSpriteIndex( "number_0" );
 
-	if( m_HUD_number_0 == -1 )
+	if( m_HUD_number_0 == -1 && g_iXash )
 	{
-		const char *msg = "There is something wrong with your game data! Please, reinstall\n";
-
-		if( HUD_MessageBox( msg ) )
-		{
-			gEngfuncs.pfnClientCmd( "quit\n" );
-		}
-
+		gRenderAPI.Host_Error( "Failed to get number_0 sprite index. Check your game data!" );
 		return;
 	}
 
-	m_iFontHeight = m_rgrcRects[m_HUD_number_0].bottom - m_rgrcRects[m_HUD_number_0].top;
+	if( g_iXash )
+	{
+		// get internal texture
+		m_WhiteTex = gRenderAPI.GL_LoadTexture( "*white", NULL, 0, 0 );
+	}
 
-	m_Ammo.VidInit();
-	m_Health.VidInit();
-	m_Spectator.VidInit();
-	m_Geiger.VidInit();
-	m_Train.VidInit();
-	m_Battery.VidInit();
-	m_Flash.VidInit();
-	m_Message.VidInit();
-	m_StatusBar.VidInit();
-	m_DeathNotice.VidInit();
-	m_SayText.VidInit();
-	m_Menu.VidInit();
-	m_AmmoSecondary.VidInit();
-	m_TextMessage.VidInit();
-	m_StatusIcons.VidInit();
-	GetClientVoiceMgr()->VidInit();
-	m_MOTD.VidInit();
-	m_Scoreboard.VidInit();
+	m_iFontWidth  = GetSpriteRect(m_HUD_number_0).Width();
+	m_iFontHeight = GetSpriteRect(m_HUD_number_0).Height();
+
+	m_hGasPuff = SPR_Load("sprites/gas_puff_01.spr");
+
+	for( HUDLIST *pList = m_pHudList; pList; pList = pList->pNext )
+		pList->p->VidInit();
+
+#if 0
+	if( firstinit && gEngfuncs.CheckParm( "-firsttime", NULL ) )
+	{
+		ConsolePrint( "firstrun\n" );
+
+		ClientCmd( "exec touch_presets/phone_ahsim" );
+		gEngfuncs.Cvar_Set( "touch_config_file", "touch_presets/phone_ahsim.cfg" );
+	}
+#endif
+
+	firstinit = false;
 }
 
-int CHud::MsgFunc_Logo( const char *pszName,  int iSize, void *pbuf )
+void CHud::Reset( void )
 {
-	BEGIN_READ( pbuf, iSize );
+	for( HUDLIST *pList = m_pHudList; pList; pList = pList->pNext )
+		pList->p->Reset();
+}
+
+void CHud::Shutdown( void )
+{
+	for( HUDLIST *pList = m_pHudList; pList; pList = pList->pNext )
+	{
+		pList->p->Shutdown();
+	}
+}
+
+int CHud::MsgFunc_Logo(const char *pszName,  int iSize, void *pbuf)
+{
+	BufferReader reader( pszName, pbuf, iSize );
 
 	// update Train data
-	m_iLogo = READ_BYTE();
+	m_iLogo = reader.ReadByte();
 
 	return 1;
 }
 
-float g_lastFOV = 0.0;
-
-/*
-============
-COM_FileBase
-============
-*/
-// Extracts the base name of a file (no path, no extension, assumes '/' as path separator)
-void COM_FileBase ( const char *in, char *out )
+void CHud::SetGameType()
 {
-	int len, start, end;
-
-	len = strlen( in );
-
-	// scan backward for '.'
-	end = len - 1;
-	while( end && in[end] != '.' && in[end] != '/' && in[end] != '\\' )
-		end--;
-
-	if( in[end] != '.' )		// no '.', copy to end
-		end = len - 1;
-	else 
-		end--;					// Found ',', copy to left of '.'
-
-	// Scan backward for '/'
-	start = len - 1;
-	while( start >= 0 && in[start] != '/' && in[start] != '\\' )
-		start--;
-
-	if( in[start] != '/' && in[start] != '\\' )
-		start = 0;
-	else 
-		start++;
-
-	// Length of new string
-	len = end - start + 1;
-
-	// Copy partial string
-	strlcpy( out, &in[start], len + 1 );
-}
-
-/*
-=================
-HUD_IsGame
-
-=================
-*/
-int HUD_IsGame( const char *game )
-{
-	const char *gamedir;
-	char gd[1024];
-
-	gamedir = gEngfuncs.pfnGetGameDirectory();
-	if( gamedir && gamedir[0] )
-	{
-		COM_FileBase( gamedir, gd );
-		if( !stricmp( gd, game ) )
-			return 1;
-	}
-	return 0;
+	if( HUD_IsGame( "czeror" ) )
+		m_iGameType = GAME_CZERODS;
+	else if( HUD_IsGame( "czero" ))
+		m_iGameType = GAME_CZERO;
+	else m_iGameType = GAME_CSTRIKE;
 }
 
 /*
@@ -666,117 +646,74 @@ Returns last FOV
 */
 float HUD_GetFOV( void )
 {
-	if( gEngfuncs.pDemoAPI->IsRecording() )
+	if ( gEngfuncs.pDemoAPI->IsRecording() )
 	{
 		// Write it
-		int i = 0;
-		unsigned char buf[100];
+		unsigned char buf[ sizeof(float) ];
 
 		// Active
-		*(float *)&buf[i] = g_lastFOV;
-		i += sizeof(float);
+		*( float * )&buf = g_lastFOV;
 
-		Demo_WriteBuffer( TYPE_ZOOM, i, buf );
+		Demo_WriteBuffer( TYPE_ZOOM, sizeof(float), buf );
 	}
 
-	if( gEngfuncs.pDemoAPI->IsPlayingback() )
+	if ( gEngfuncs.pDemoAPI->IsPlayingback() )
 	{
 		g_lastFOV = g_demozoom;
 	}
 	return g_lastFOV;
 }
 
-int CHud::MsgFunc_SetFOV( const char *pszName,  int iSize, void *pbuf )
+int CHud::MsgFunc_SetFOV(const char *pszName,  int iSize, void *pbuf)
 {
-	BEGIN_READ( pbuf, iSize );
+	//Weapon prediction already takes care of changing the fog. ( g_lastFOV ).
+#if 0 // VALVEWHY: original client checks for "tfc" here.
+	if ( cl_lw && cl_lw->value )
+		return 1;
+#endif
 
-	int newfov = READ_BYTE();
+	BufferReader reader( pszName, pbuf, iSize );
+
+	int newfov = reader.ReadByte();
 	int def_fov = default_fov->value;
 
 	g_lastFOV = newfov;
-
-	m_inScope = newfov != 0;
-
-	if( newfov == 0 )
-	{
-		m_iFOV = def_fov;
-	}
-	else
-	{
-		m_iFOV = newfov;
-	}
+	m_iFOV = newfov ? newfov : def_fov;
 
 	// the clients fov is actually set in the client data update section of the hud
 
-	// Set a new sensitivity
-	if( m_iFOV == def_fov )
-	{  
-		// reset to saved sensitivity
+	if ( m_iFOV == def_fov ) // reset to saved sensitivity
 		m_flMouseSensitivity = 0;
-	}
-	else
-	{  
-		// set a new sensitivity that is proportional to the change from the FOV default
-		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)def_fov) * CVAR_GET_FLOAT("zoom_sensitivity_ratio");
-	}
+	else // set a new sensitivity that is proportional to the change from the FOV default
+		m_flMouseSensitivity = sensitivity->value * ((float)newfov / (float)def_fov) * zoom_sens_ratio->value;
 
 	return 1;
 }
 
-void CHud::AddHudElem( CHudBase *phudelem )
+void CHud::AddHudElem(CHudBase *phudelem)
 {
+	assert( phudelem );
+
 	HUDLIST *pdl, *ptemp;
 
-	//phudelem->Think();
-
-	if( !phudelem )
-		return;
-
-	pdl = (HUDLIST *)malloc( sizeof(HUDLIST) );
+	pdl = new(std::nothrow) HUDLIST;
 	if( !pdl )
+	{
+		ConsolePrint( "Cannot allocate memory!\n" );
 		return;
+	}
 
-	memset( pdl, 0, sizeof(HUDLIST) );
 	pdl->p = phudelem;
+	pdl->pNext = NULL;
 
-	if( !m_pHudList )
+	if (!m_pHudList)
 	{
 		m_pHudList = pdl;
 		return;
 	}
 
-	ptemp = m_pHudList;
-
-	while( ptemp->pNext )
-		ptemp = ptemp->pNext;
+	// find last
+	for( ptemp = m_pHudList; ptemp->pNext; ptemp = ptemp->pNext );
 
 	ptemp->pNext = pdl;
-}
-
-float CHud::GetSensitivity( void )
-{
-	return m_flMouseSensitivity;
-}
-
-void CHud::GetAllPlayersInfo()
-{
-	for( int i = 1; i < MAX_PLAYERS; i++ )
-	{
-		GetPlayerInfo( i, &g_PlayerInfoList[i] );
-
-		if( g_PlayerInfoList[i].thisplayer )
-		{
-			m_Scoreboard.m_iPlayerNum = i;  // !!!HACK: this should be initialized elsewhere... maybe gotten from the engine
-		}
-	}
-}
-
-bool CHud::UseVguiMOTD()
-{
-	return m_pCvarMOTDVGUI && m_pCvarMOTDVGUI->value;
-}
-
-bool CHud::UseVguiScoreBoard()
-{
-	return m_pCvarScoreboardVGUI && m_pCvarScoreboardVGUI->value;
 }

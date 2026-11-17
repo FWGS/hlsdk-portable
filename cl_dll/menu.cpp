@@ -1,9 +1,9 @@
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   Use, distribution, and modification of this source code and/or resulting
@@ -17,204 +17,130 @@
 //
 // generic menu handler
 //
-
 #include "hud.h"
 #include "cl_util.h"
 #include "parsemsg.h"
+#include "com_weapons.h"
+
 #include <string.h>
 #include <stdio.h>
+#include "draw_util.h"
+#include "strl.h"
 
-#include "vgui_TeamFortressViewport.h"
+//#include "vgui_TeamFortressViewport.h"
 
 #define MAX_MENU_STRING	512
+
 char g_szMenuString[MAX_MENU_STRING];
 char g_szPrelocalisedMenuString[MAX_MENU_STRING];
 
 int KB_ConvertString( char *in, char **ppout );
 
-DECLARE_MESSAGE( m_Menu, ShowMenu )
+void Touch_CloseMenu()
+{
+	gMobileAPI.pfnTouchRemoveButton( "_menu_*" );
+	gMobileAPI.pfnTouchSetClientOnly( 0 );
+}
 
-int CHudMenu::Init( void )
+int CHudMenu :: Init( void )
 {
 	gHUD.AddHudElem( this );
 
-	HOOK_MESSAGE( ShowMenu );
+	HOOK_MESSAGE( gHUD.m_Menu, ShowMenu );
+	HOOK_MESSAGE( gHUD.m_Menu, VGUIMenu );
+	HOOK_MESSAGE( gHUD.m_Menu, BuyClose );
+	HOOK_MESSAGE( gHUD.m_Menu, AllowSpec );
+	HOOK_COMMAND( gHUD.m_Menu, "client_buy_open", OldStyleMenuOpen );
+	HOOK_COMMAND( gHUD.m_Menu, "client_buy_close", OldStyleMenuClose );
+	HOOK_COMMAND( gHUD.m_Menu, "showvguimenu", ShowVGUIMenu );
+
+	_extended_menus = CVAR_CREATE("_extended_menus", "1", FCVAR_ARCHIVE);
 
 	InitHUDData();
+
+	m_bAllowSpec = true; // by default, spectating is allowed
 
 	return 1;
 }
 
-void CHudMenu::InitHUDData( void )
+void CHudMenu :: InitHUDData( void )
 {
 	m_fMenuDisplayed = 0;
 	m_bitsValidSlots = 0;
-	m_iFlags &= ~HUD_ACTIVE;
 	Reset();
 }
 
-void CHudMenu::Reset( void )
+void CHudMenu :: Reset( void )
 {
 	g_szPrelocalisedMenuString[0] = 0;
 	m_fWaitingForMore = FALSE;
 }
 
-int CHudMenu::VidInit( void )
+int CHudMenu :: VidInit( void )
 {
 	return 1;
 }
 
-/*
-=================================
-  ParseEscapeToken
-
-  Interprets the given escape token (backslash followed by a letter). The
-  first character of the token must be a backslash.  The second character
-  specifies the operation to perform:
-
-   \w : White text (this is the default)
-   \d : Dim (gray) text
-   \y : Yellow text
-   \r : Red text
-   \R : Right-align (just for the remainder of the current line)
-=================================
-*/
-
-static int menu_r, menu_g, menu_b, menu_x, menu_ralign;
-
-static inline const char* ParseEscapeToken( const char* token )
+int CHudMenu :: Draw( float flTime )
 {
-	if( *token != '\\' )
-		return token;
-
-	token++;
-
-	switch( *token )
-	{
-	case '\0':
-		return token;
-
-	case 'w':
-		menu_r = 255;
-		menu_g = 255;
-		menu_b = 255;
-		break;
-
-	case 'd':
-		menu_r = 100;
-		menu_g = 100;
-		menu_b = 100;
-		break;
-
-	case 'y':
-		menu_r = 255;
-		menu_g = 210;
-		menu_b = 64;
-		break;
-
-	case 'r':
-		menu_r = 210;
-		menu_g = 24;
-		menu_b = 0;
-		break;
-
-	case 'R':
-		menu_x = ScreenWidth / 2;
-		menu_ralign = TRUE;
-		break;
-	}
-
-	return ++token;
-}
-
-int CHudMenu::Draw( float flTime )
-{
-	int i;
-
 	// check for if menu is set to disappear
-	if( m_flShutoffTime > 0 )
+	if ( m_flShutoffTime > 0 )
 	{
-		if( m_flShutoffTime <= gHUD.m_flTime )
-		{
-			// times up, shutoff
-			m_fMenuDisplayed = 0;
-			m_iFlags &= ~HUD_ACTIVE;
+		if ( m_flShutoffTime <= gHUD.m_flTime )
+		{  // times up, shutoff
+			UserCmd_OldStyleMenuClose();
 			return 1;
 		}
 	}
 
 	// don't draw the menu if the scoreboard is being shown
-	if( gViewPort && gViewPort->IsScoreBoardVisible() )
-		return 1;
-
-	SCREENINFO screenInfo;
-
-	screenInfo.iSize = sizeof( SCREENINFO );
-	gEngfuncs.pfnGetScreenInfo( &screenInfo );
+	//if ( gViewPort && gViewPort->IsScoreBoardVisible() )
+		//return 1;
 
 	// draw the menu, along the left-hand side of the screen
+
 	// count the number of newlines
 	int nlc = 0;
-	for( i = 0; i < MAX_MENU_STRING && g_szMenuString[i] != '\0'; i++ )
-		if( g_szMenuString[i] == '\n' )
+	int i;
+	for ( i = 0; i < MAX_MENU_STRING && g_szMenuString[i] != '\0'; i++ )
+	{
+		if ( g_szMenuString[i] == '\n' )
 			nlc++;
-
-	int nFontHeight = Q_max( 12, screenInfo.iCharHeight );
+	}
 
 	// center it
-	int y = ( ScreenHeight / 2 ) - (( nlc / 2 )* nFontHeight ) - ( 3 * nFontHeight + nFontHeight / 3 ); // make sure it is above the say text
+	int y = (ScreenHeight/2) - ((nlc/2)*12) - 40; // make sure it is above the say text
+	int x = 20;
 
-	menu_r		= 255;
-	menu_g		= 255;
-	menu_b		= 255;
-	menu_x		= 20;
-	menu_ralign	= FALSE;
-
-	const char* sptr = g_szMenuString;
-
-	while( *sptr != '\0' )
+	i = 0;
+	while ( i < MAX_MENU_STRING && g_szMenuString[i] != '\0' )
 	{
-		if( *sptr == '\\' )
-			sptr = ParseEscapeToken( sptr );
-		else if( *sptr == '\n' )
-		{
-			menu_ralign	= FALSE;
-			menu_x 		= 20;
-			y += nFontHeight;
-			sptr++;
-		}
-		else
-		{
-			char menubuf[80] = "";
-			const char *ptr = sptr;
-			while( *sptr != '\0' && *sptr != '\n' && *sptr != '\\' )
-				sptr++;
-			strlcpy( menubuf, ptr, Q_min(( sptr - ptr + 1 ), (int)sizeof( menubuf )));
-			if( menu_ralign )
-				// IMPORTANT: Right-to-left rendered text does not parse escape tokens!
-				menu_x = gHUD.DrawHudStringReverse( menu_x, y, 0, menubuf, menu_r, menu_g, menu_b );
-			else menu_x = gHUD.DrawHudString( menu_x, y, 320, menubuf, menu_r, menu_g, menu_b );
-		}
+		DrawUtils::DrawHudString( x, y, 320, g_szMenuString + i, 255, 255, 255 );
+		y += 24;
+
+		while ( i < MAX_MENU_STRING && g_szMenuString[i] != '\0' && g_szMenuString[i] != '\n' )
+			i++;
+		if ( g_szMenuString[i] == '\n' )
+			i++;
 	}
 
 	return 1;
 }
 
 // selects an item from the menu
-void CHudMenu::SelectMenuItem( int menu_item )
+void CHudMenu :: SelectMenuItem( int menu_item )
 {
 	// if menu_item is in a valid slot,  send a menuselect command to the server
-	if( ( menu_item > 0 ) && ( m_bitsValidSlots & ( 1 << ( menu_item - 1 ) ) ) )
+	if ( (menu_item > 0) && (m_bitsValidSlots & (1 << (menu_item-1))) )
 	{
 		char szbuf[32];
 		sprintf( szbuf, "menuselect %d\n", menu_item );
 		ClientCmd( szbuf );
 
-		// remove the menu
-		m_fMenuDisplayed = 0;
-		m_iFlags &= ~HUD_ACTIVE;
+		UserCmd_OldStyleMenuClose();
 	}
 }
+
 
 // Message handler for ShowMenu message
 // takes four values:
@@ -223,56 +149,260 @@ void CHudMenu::SelectMenuItem( int menu_item )
 //		byte : a boolean, TRUE if there is more string yet to be received before displaying the menu, FALSE if it's the last string
 //		string: menu string to display
 // if this message is never received, then scores will simply be the combined totals of the players.
-int CHudMenu::MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
+int CHudMenu :: MsgFunc_ShowMenu( const char *pszName, int iSize, void *pbuf )
 {
-	char *temp = NULL;
+	char *temp = NULL, *menustring;
 
-	BEGIN_READ( pbuf, iSize );
+	BufferReader reader( pszName, pbuf, iSize );
 
-	m_bitsValidSlots = READ_SHORT();
-	int DisplayTime = READ_CHAR();
-	int NeedMore = READ_BYTE();
+	m_bitsValidSlots = reader.ReadShort();
+	int DisplayTime = reader.ReadChar();
+	int NeedMore = reader.ReadByte();
 
-	if( DisplayTime > 0 )
+	if ( DisplayTime > 0 )
 		m_flShutoffTime = DisplayTime + gHUD.m_flTime;
 	else
 		m_flShutoffTime = -1;
 
-	if( m_bitsValidSlots )
+	if ( !m_bitsValidSlots )
 	{
-		if( !m_fWaitingForMore ) // this is the start of a new menu
-		{
-			strlcpy( g_szPrelocalisedMenuString, READ_STRING(), MAX_MENU_STRING );
-		}
-		else
-		{
-			// append to the current menu string
-			strlcat( g_szPrelocalisedMenuString, READ_STRING(), MAX_MENU_STRING );
-		}
+		UserCmd_OldStyleMenuClose(); // no valid slots means that the menu should be turned off
+		return 1;
+	}
 
-		if( !NeedMore )
-		{
-			// we have the whole string, so we can localise it now
-			strlcpy( g_szMenuString, gHUD.m_TextMessage.BufferedLocaliseTextString( g_szPrelocalisedMenuString ), MAX_MENU_STRING );
+	menustring = reader.ReadString();
 
-			// Swap in characters
-			if( KB_ConvertString( g_szMenuString, &temp ) )
+	// menu will be replaced by scripted touch config
+	// so execute it and exit
+	if( _extended_menus->value != 0.0f )
+	{
+		if( !strncmp(menustring, "#Radio", 6 ) )
+		{
+			if( menustring[6] == 'A' )
 			{
-				strlcpy( g_szMenuString, temp, MAX_MENU_STRING );
-				free( temp );
+				ShowVGUIMenu(MENU_RADIOA); return 1;
 			}
+			else if( menustring[6] == 'B' )
+			{
+				ShowVGUIMenu(MENU_RADIOB); return 1;
+			}
+			else if( menustring[6] == 'C' )
+			{
+				ShowVGUIMenu(MENU_RADIOC); return 1;
+			}
+			else ShowVGUIMenu( MENU_NUMERICAL_MENU ); // we just show touch screen numbers
 		}
+		else ShowVGUIMenu(MENU_NUMERICAL_MENU);
+	}
+	else ShowVGUIMenu(MENU_NUMERICAL_MENU);
 
-		m_fMenuDisplayed = 1;
-		m_iFlags |= HUD_ACTIVE;
+	if ( !m_fWaitingForMore ) // this is the start of a new menu
+	{
+		strlcpy( g_szPrelocalisedMenuString, menustring, sizeof( g_szPrelocalisedMenuString ) );
 	}
 	else
-	{
-		m_fMenuDisplayed = 0; // no valid slots means that the menu should be turned off
-		m_iFlags &= ~HUD_ACTIVE;
+	{  // append to the current menu string
+		strlcat( g_szPrelocalisedMenuString, menustring, sizeof( g_szPrelocalisedMenuString ) );
 	}
+
+	if ( !NeedMore )
+	{  // we have the whole string, so we can localise it now
+		strlcpy( g_szMenuString, gHUD.m_TextMessage.BufferedLocaliseTextString( g_szPrelocalisedMenuString ), sizeof( g_szMenuString ) );
+		// Swap in characters
+		if ( KB_ConvertString( g_szMenuString, &temp ) )
+		{
+			strlcpy( g_szMenuString, temp, sizeof( g_szMenuString ) );
+			free( temp );
+		}
+	}
+
+	m_fMenuDisplayed = 1;
+	m_iFlags |= HUD_DRAW;
 
 	m_fWaitingForMore = NeedMore;
 
 	return 1;
+}
+
+int CHudMenu::MsgFunc_VGUIMenu( const char *pszName, int iSize, void *pbuf )
+{
+	BufferReader reader( pszName, pbuf, iSize );
+
+	int menuType = reader.ReadByte();
+	m_bitsValidSlots = reader.ReadShort(); // is ignored
+
+	ShowVGUIMenu(menuType);
+	return 1;
+}
+
+int CHudMenu::MsgFunc_BuyClose(const char *pszName, int iSize, void *pbuf)
+{
+	Touch_CloseMenu();
+
+	if (g_pMenu)
+		g_pMenu->HideVGUIMenu();
+
+	return 1;
+}
+
+int CHudMenu::MsgFunc_AllowSpec(const char *pszName, int iSize, void *pbuf)
+{
+	BufferReader reader( pszName, pbuf, iSize );
+
+	m_bAllowSpec = (bool)reader.ReadByte();
+
+	return 1;
+}
+
+void CHudMenu::UserCmd_OldStyleMenuOpen()
+{
+	m_flShutoffTime = -1; // stay open until user will not close it
+	strlcpy( g_szMenuString, gHUD.m_TextMessage.BufferedLocaliseTextString("Buy"), sizeof( g_szMenuString ) );
+}
+
+void CHudMenu::UserCmd_OldStyleMenuClose()
+{
+	m_fMenuDisplayed = 0; // no valid slots means that the menu should be turned off
+	m_iFlags &= ~HUD_DRAW;
+
+	Touch_CloseMenu();
+}
+
+// lol, no real VGUI here
+// it's really good only for touchscreen
+
+void CHudMenu::ShowVGUIMenu( int menuType )
+{
+	int team = g_PlayerExtraInfo[gHUD.m_Scoreboard.m_iPlayerNum].teamnumber;
+	int haveCancel = team != TEAM_UNASSIGNED ? 1 : 0;
+
+	if( g_pMenu && !UseOldTouchMenusEnabled() )
+	{
+		switch( menuType )
+		{
+		case MENU_TEAM:
+		{
+			int param = 0;
+			if( m_bAllowSpec )
+			{
+				if( g_iTeamNumber == TEAM_UNASSIGNED ||
+					g_PlayerExtraInfo[gHUD.m_Scoreboard.m_iPlayerNum].dead ||
+					!g_iFreezeTimeOver )
+				{
+					param |= 1 << 0;
+				}
+			}
+
+			if( IsASMapType() && g_iTeamNumber == TEAM_CT )
+				param |= 1 << 1;
+
+			if( haveCancel )
+				param |= 1 << 2;
+
+			g_pMenu->ShowVGUIMenu( menuType, param, 0 );
+			return;
+		}
+		case MENU_CLASS_T:
+		case MENU_CLASS_CT:
+			g_pMenu->ShowVGUIMenu( menuType, gHUD.GetGameType() == GAME_CZERO, haveCancel );
+			return;
+		case MENU_BUY:
+		case MENU_BUY_PISTOL:
+		case MENU_BUY_SHOTGUN:
+		case MENU_BUY_RIFLE:
+		case MENU_BUY_SUBMACHINEGUN:
+		case MENU_BUY_MACHINEGUN:
+		case MENU_BUY_ITEM:
+			g_pMenu->ShowVGUIMenu( menuType, gHUD.GetGameType() == GAME_CZERO, team );
+			return;
+		}
+	}
+
+	const char *szCmd;
+
+	switch(menuType)
+	{
+	case MENU_TEAM:
+		szCmd = "exec touch/chooseteam.cfg";
+		break;
+	case MENU_CLASS_T:
+		szCmd = "exec touch/chooseteam_tr.cfg";
+		break;
+	case MENU_CLASS_CT:
+		szCmd = "exec touch/chooseteam_ct.cfg";
+		break;
+	case MENU_BUY:
+		szCmd = "exec touch/buy.cfg";
+		break;
+	case MENU_BUY_PISTOL:
+		if( g_PlayerExtraInfo[gHUD.m_Scoreboard.m_iPlayerNum].teamnumber == TEAM_TERRORIST )
+			szCmd = "exec touch/buy_pistol_t.cfg";
+		else szCmd = "exec touch/buy_pistol_ct.cfg";
+		break;
+	case MENU_BUY_SHOTGUN:
+		if( g_PlayerExtraInfo[gHUD.m_Scoreboard.m_iPlayerNum].teamnumber == TEAM_TERRORIST )
+			szCmd = "exec touch/buy_shotgun_t.cfg";
+		else szCmd = "exec touch/buy_shotgun_ct.cfg";
+		break;
+	case MENU_BUY_RIFLE:
+		if( g_PlayerExtraInfo[gHUD.m_Scoreboard.m_iPlayerNum].teamnumber == TEAM_TERRORIST )
+			szCmd = "exec touch/buy_rifle_t.cfg";
+		else szCmd ="exec touch/buy_rifle_ct.cfg";
+		break;
+	case MENU_BUY_SUBMACHINEGUN:
+		if( g_PlayerExtraInfo[gHUD.m_Scoreboard.m_iPlayerNum].teamnumber == TEAM_TERRORIST )
+			szCmd = "exec touch/buy_submachinegun_t.cfg";
+		else szCmd = "exec touch/buy_submachinegun_ct.cfg";
+		break;
+	case MENU_BUY_MACHINEGUN:
+		if( g_PlayerExtraInfo[gHUD.m_Scoreboard.m_iPlayerNum].teamnumber == TEAM_TERRORIST )
+			szCmd = "exec touch/buy_machinegun_t.cfg";
+		else szCmd = "exec touch/buy_machinegun_ct.cfg";
+		break;
+	case MENU_BUY_ITEM:
+		if( g_PlayerExtraInfo[gHUD.m_Scoreboard.m_iPlayerNum].teamnumber == TEAM_TERRORIST )
+			szCmd = "exec touch/buy_item_t.cfg";
+		else szCmd = "exec touch/buy_item_ct.cfg";
+		break;
+	case MENU_RADIOA:
+		szCmd = "exec touch/radioa.cfg";
+		break;
+	case MENU_RADIOB:
+		szCmd = "exec touch/radiob.cfg";
+		break;
+	case MENU_RADIOC:
+		szCmd = "exec touch/radioc.cfg";
+		break;
+	case MENU_RADIOSELECTOR:
+		szCmd = "exec touch/radioselector.cfg";
+		break;
+	case MENU_BUY_CSDM:
+		szCmd = "exec touch/custom/dm_menu.cfg";
+		break;
+	case MENU_NUMERICAL_MENU:
+#ifdef __ANDROID__
+		szCmd = "exec touch/numerical_menu.cfg";
+		break;
+#else
+		return;
+#endif
+	default:
+		UserCmd_OldStyleMenuClose();
+		return;
+	}
+
+	m_fMenuDisplayed = 1;
+	ClientCmd(szCmd);
+}
+
+void CHudMenu::UserCmd_ShowVGUIMenu()
+{
+	if( gEngfuncs.Cmd_Argc() < 2 )
+	{
+		ConsolePrint("usage: showvguimenu <menuType>\n");
+		return;
+	}
+
+	int menuType = atoi(gEngfuncs.Cmd_Argv(1));
+	ShowVGUIMenu(menuType);
 }

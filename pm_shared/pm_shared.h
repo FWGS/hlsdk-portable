@@ -18,6 +18,7 @@
 
 char *PM_memfgets( byte *pMemFile, int fileSize, int *pFilePos, char *pBuffer, int bufferSize );
 void PM_Init( struct playermove_s *ppmove );
+int PM_GetPhysEntInfo( int ent );
 void PM_Move( struct playermove_s *ppmove, int server );
 char PM_FindTextureType( const char *name );
 

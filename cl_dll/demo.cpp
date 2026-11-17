@@ -12,24 +12,15 @@
 *   without written permission from Valve LLC.
 *
 ****/
-
 #include "hud.h"
 #include "cl_util.h"
 #include "demo.h"
 #include "demo_api.h"
+#include <memory.h>
 
-int g_demosniper = 0;
-int g_demosniperdamage = 0;
-float g_demosniperorg[3];
-float g_demosniperangles[3];
 float g_demozoom;
 
 // FIXME:  There should be buffer helper functions to avoid all of the *(int *)& crap.
-
-extern "C" 
-{
-	void DLLEXPORT Demo_ReadBuffer( int size, unsigned char *buffer );
-}
 
 /*
 =====================
@@ -41,14 +32,21 @@ Write some data to the demo stream
 void Demo_WriteBuffer( int type, int size, unsigned char *buffer )
 {
 	int pos = 0;
-	unsigned char buf[32 * 1024];
-	*(int *)&buf[pos] = type;
-	pos += sizeof(int);
+	unsigned char buf[8];
+
+	if( type != TYPE_ZOOM && size != 4 )
+	{
+		gEngfuncs.Con_DPrintf( "%s: unexpected demo buffer type %i, skipping.\n", __func__, type );
+		return;
+	}
+
+	memcpy( buf, &type, sizeof( type ));
+	pos += sizeof( type );
 
 	memcpy( &buf[pos], buffer, size );
 
 	// Write full buffer out
-	gEngfuncs.pDemoAPI->WriteBuffer( size + sizeof(int), buf );
+	gEngfuncs.pDemoAPI->WriteBuffer( size + sizeof( int ), buf );
 }
 
 /*
@@ -63,39 +61,22 @@ void DLLEXPORT Demo_ReadBuffer( int size, unsigned char *buffer )
 	int type;
 	int i = 0;
 
-	type = *(int *)buffer;
-	i += sizeof(int);
+	if( size != 8 )
+	{
+		gEngfuncs.Con_DPrintf( "%s: unexpected size %d\n", __func__, size );
+		return;
+	}
+
+	memcpy( &type, buffer, sizeof( type ));
+	i += sizeof( type );
 	switch( type )
 	{
-	case TYPE_SNIPERDOT:
-		g_demosniper = *(int *)&buffer[i];
-		i += sizeof(int);
-		
-		if( g_demosniper )
-		{
-			g_demosniperdamage = *(int *)&buffer[i];
-			i += sizeof(int);
-
-			g_demosniperangles[0] = *(float *)&buffer[i];
-			i += sizeof(float);
-			g_demosniperangles[1] = *(float *)&buffer[i];
-			i += sizeof(float);
-			g_demosniperangles[2] = *(float *)&buffer[i];
-			i += sizeof(float);
-			g_demosniperorg[0] = *(float *)&buffer[i];
-			i += sizeof(float);
-			g_demosniperorg[1] = *(float *)&buffer[i];
-			i += sizeof(float);
-			g_demosniperorg[2] = *(float *)&buffer[i];
-			// i += sizeof(float);
-		}
-		break;
 	case TYPE_ZOOM:
-		g_demozoom = *(float *)&buffer[i];
-		// i += sizeof(float);
+		memcpy( &g_demozoom, &buffer[i], sizeof( g_demozoom ));
+		i += sizeof( g_demozoom );
 		break;
 	default:
-		gEngfuncs.Con_DPrintf( "Unknown demo buffer type, skipping.\n" );
+		gEngfuncs.Con_DPrintf( "%s: unexpected demo buffer type %i, skipping.\n", __func__, type );
 		break;
 	}
 }

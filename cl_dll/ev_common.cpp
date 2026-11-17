@@ -13,7 +13,6 @@
 *
 ****/
 // shared event functions
-
 #include "hud.h"
 #include "cl_util.h"
 #include "const.h"
@@ -25,73 +24,74 @@
 #include "eventscripts.h"
 #include "event_api.h"
 #include "pm_shared.h"
+#include "events.h"
 
-#define IS_FIRSTPERSON_SPEC ( g_iUser1 == OBS_IN_EYE || ( g_iUser1 && ( gHUD.m_Spectator.m_pip->value == INSET_IN_EYE ) ) )
-/*
-=================
-GetEntity
-
-Return's the requested cl_entity_t
-=================
-*/
-struct cl_entity_s *GetEntity( int idx )
-{
-	return gEngfuncs.GetEntityByIndex( idx );
-}
+int g_iRShell, g_iPShell, g_iShotgunShell;
 
 /*
-=================
-GetViewEntity
+======================
+Game_HookEvents
 
-Return's the current weapon/view model
-=================
+Associate script file name with callback functions.  Callback's must be extern "C" so
+ the engine doesn't get confused about name mangling stuff.  Note that the format is
+ always the same.  Of course, a clever mod team could actually embed parameters, behavior
+ into the actual .sc files and create a .sc file parser and hook their functionality through
+ that.. i.e., a scripting system.
+
+That was what we were going to do, but we ran out of time...oh well.
+======================
 */
-struct cl_entity_s *GetViewEntity( void )
+void Game_HookEvents( void )
 {
-	return gEngfuncs.GetViewModel();
-}
+	HOOK_EVENT( ak47, FireAK47 );
+	HOOK_EVENT( aug, FireAUG );
+	HOOK_EVENT( awp, FireAWP );
+	HOOK_EVENT( createexplo, CreateExplo );
+	HOOK_EVENT( createsmoke, CreateSmoke );
+	HOOK_EVENT( deagle, FireDEAGLE );
+	HOOK_EVENT( decal_reset, DecalReset );
+	HOOK_EVENT( elite_left, FireEliteLeft );
+	HOOK_EVENT( elite_right, FireEliteRight );
+	HOOK_EVENT( famas, FireFAMAS );
+	HOOK_EVENT( fiveseven, Fire57 );
+	HOOK_EVENT( g3sg1, FireG3SG1 );
+	HOOK_EVENT( galil, FireGALIL );
+	HOOK_EVENT( glock18, Fireglock18 );
+	HOOK_EVENT( knife, Knife );
+	HOOK_EVENT( m249, FireM249 );
+	HOOK_EVENT( m3, FireM3 );
+	HOOK_EVENT( m4a1, FireM4A1 );
+	HOOK_EVENT( mac10, FireMAC10 );
+	HOOK_EVENT( mp5n, FireMP5 );
+	HOOK_EVENT( p228, FireP228 );
+	HOOK_EVENT( p90, FireP90 );
+	HOOK_EVENT( scout, FireScout );
+	HOOK_EVENT( sg550, FireSG550 );
+	HOOK_EVENT( sg552, FireSG552 );
+	HOOK_EVENT( tmp, FireTMP );
+	HOOK_EVENT( ump45, FireUMP45 );
+	HOOK_EVENT( usp, FireUSP );
+	HOOK_EVENT( vehicle, Vehicle );
+	HOOK_EVENT( xm1014, FireXM1014 );
 
-/*
-=================
-EV_CreateTracer
-
-Creates a tracer effect
-=================
-*/
-void EV_CreateTracer( float *start, float *end )
-{
-	gEngfuncs.pEfxAPI->R_TracerEffect( start, end );
-}
-
-/*
-=================
-EV_IsPlayer
-
-Is the entity's index in the player range?
-=================
-*/
-qboolean EV_IsPlayer( int idx )
-{
-	if( idx >= 1 && idx <= gEngfuncs.GetMaxClients() )
-		return true;
-
-	return false;
-}
-
-/*
-=================
-EV_IsLocal
-
-Is the entity == the local player
-=================
-*/
-qboolean EV_IsLocal( int idx )
-{
-	// check if we are in some way in first person spec mode
-	if( IS_FIRSTPERSON_SPEC )
-		return ( g_iUser2 == idx );
-	else
-		return gEngfuncs.pEventAPI->EV_IsLocal( idx - 1 ) ? true : false;
+	if( !stricmp( gEngfuncs.pfnGetGameDirectory(), "czeror" ) )
+	{
+		HOOK_EVENT( m60, FireM60 );
+		HOOK_EVENT( camera, FireCamera );
+		HOOK_EVENT( fiberopticcamera, FireFiberOpticCamera );
+		HOOK_EVENT( shieldgun, FireShieldGun );
+		HOOK_EVENT( blowtorchholster, HolsterBlowtorch );
+		HOOK_EVENT( blowtorchidle, IdleBlowtorch );
+		HOOK_EVENT( blowtorch, FireBlowtorch );
+		HOOK_EVENT( laws, FireLaws );
+		HOOK_EVENT( briefcase, FireBriefcase );
+		HOOK_EVENT( medkit, FireMedkit );
+		HOOK_EVENT( syringe, FireSyringe );
+		HOOK_EVENT( radio, FireRadio );
+		HOOK_EVENT( zipline, FireZipline );
+		HOOK_EVENT( create_glass, CreateGlass );
+		HOOK_EVENT( explosion, GrenadeExplosion );
+	}
 }
 
 /*
@@ -101,46 +101,28 @@ EV_GetGunPosition
 Figure out the height of the gun
 =================
 */
-void EV_GetGunPosition( event_args_t *args, float *pos, float *origin )
+void EV_GetGunPosition( event_args_t *args, Vector &pos, const Vector &origin )
 {
 	int idx;
-	vec3_t view_ofs;
+	Vector view_ofs( 0, 0, DEFAULT_VIEWHEIGHT );
 
 	idx = args->entindex;
 
-	VectorClear( view_ofs );
-	view_ofs[2] = DEFAULT_VIEWHEIGHT;
-
-	if( EV_IsPlayer( idx ) )
+	if ( EV_IsPlayer( idx ) )
 	{
 		// in spec mode use entity viewheigh, not own
-		if( EV_IsLocal( idx ) && !IS_FIRSTPERSON_SPEC )
+		if ( EV_IsLocal( idx ) && !IS_FIRSTPERSON_SPEC )
 		{
 			// Grab predicted result for local player
 			gEngfuncs.pEventAPI->EV_LocalPlayerViewheight( view_ofs );
 		}
-		else if( args->ducking == 1 )
+		else if ( args->ducking == 1 )
 		{
 			view_ofs[2] = VEC_DUCK_VIEW;
 		}
 	}
 
-	VectorAdd( origin, view_ofs, pos );
-}
-
-/*
-=================
-EV_EjectBrass
-
-Bullet shell casings
-=================
-*/
-void EV_EjectBrass( float *origin, float *velocity, float rotation, int model, int soundtype )
-{
-	vec3_t endpos;
-	VectorClear( endpos );
-	endpos[1] = rotation;
-	gEngfuncs.pEfxAPI->R_TempModel( origin, velocity, endpos, 2.5, model, soundtype );
+	pos = origin + view_ofs;
 }
 
 /*
@@ -150,57 +132,39 @@ EV_GetDefaultShellInfo
 Determine where to eject shells from
 =================
 */
-void EV_GetDefaultShellInfo( event_args_t *args, float *origin, float *velocity, float *ShellVelocity, float *ShellOrigin, float *forward, float *right, float *up, float forwardScale, float upScale, float rightScale )
+void EV_GetDefaultShellInfo( event_args_t *args, float *origin, float *velocity, float *ShellVelocity, float *ShellOrigin, float *forward, float *right, float *up, float forwardScale, float upScale, float rightScale, bool bReverseDirection )
 {
-	int i;
-	vec3_t view_ofs;
-	float fR, fU;
+	int idx = args->entindex;
 
-	int idx;
-
-	idx = args->entindex;
-
-	VectorClear( view_ofs );
-	view_ofs[2] = DEFAULT_VIEWHEIGHT;
-
-	if( EV_IsPlayer( idx ) )
+	vec3_t view_ofs = { 0, 0, DEFAULT_VIEWHEIGHT };
+	if ( EV_IsPlayer( idx ) )
 	{
-		if( EV_IsLocal( idx ) )
+		if ( EV_IsLocal( idx ) )
 		{
 			gEngfuncs.pEventAPI->EV_LocalPlayerViewheight( view_ofs );
 		}
-		else if( args->ducking == 1 )
+		else if ( args->ducking == 1 )
 		{
 			view_ofs[2] = VEC_DUCK_VIEW;
 		}
 	}
 
-	fR = gEngfuncs.pfnRandomFloat( 50, 70 );
-	fU = gEngfuncs.pfnRandomFloat( 100, 150 );
+	float fR = gEngfuncs.pfnRandomFloat( 50, 70 );
+	float fU = gEngfuncs.pfnRandomFloat( 75, 175 );
+	float fF = gEngfuncs.pfnRandomFloat( 25, 250 );
+	float fDirection = rightScale > 0.0f ? -1.0f : 1.0f;
 
-	for( i = 0; i < 3; i++ )
+	for ( int i = 0; i < 3; i++ )
 	{
-		ShellVelocity[i] = velocity[i] + right[i] * fR + up[i] * fU + forward[i] * 25;
-		ShellOrigin[i] = origin[i] + view_ofs[i] + up[i] * upScale + forward[i] * forwardScale + right[i] * rightScale;
+		if( bReverseDirection )
+		{
+			ShellVelocity[i] = velocity[i] * 0.5f - right[i] * fR * fDirection + up[i] * fU + forward[i] * fF;
+		}
+		else
+		{
+			ShellVelocity[i] = velocity[i] * 0.5f + right[i] * fR * fDirection + up[i] * fU + forward[i] * fF;
+		}
+		ShellOrigin[i]   = velocity[i] * 0.1f + origin[i] + view_ofs[i] +
+				upScale * up[i] + forwardScale * forward[i] + rightScale * right[i];
 	}
-}
-
-/*
-=================
-EV_MuzzleFlash
-
-Flag weapon/view model for muzzle flash
-=================
-*/
-void EV_MuzzleFlash( void )
-{
-	// Add muzzle flash to current weapon model
-	cl_entity_t *ent = GetViewEntity();
-	if( !ent )
-	{
-		return;
-	}
-
-	// Or in the muzzle flash
-	ent->curstate.effects |= EF_MUZZLEFLASH;
 }

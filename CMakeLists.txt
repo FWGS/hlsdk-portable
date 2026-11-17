@@ -45,6 +45,7 @@ project (HLSDK-PORTABLE)
 ################\
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
+option(BUILD_MENU "Build the menu of the game (the world map and the layout)" OFF)
 option(LTO "Enable interprocedural optimization" OFF)
 option(POLLY "Enable pollyhedral optimization" OFF)
 option(ANDROID_APK "Enable APK styled deploy" OFF)
@@ -211,8 +212,13 @@ add_subdirectory(game_shared)
 if(BUILD_CLIENT)
 	message(STATUS "Building client enabled")
 
-	add_subdirectory(freevgui)
 	add_subdirectory(cl_dll)
+endif()
+
+if(BUILD_MENU)
+	message(STATUS "Building menu enabled")
+
+	add_subdirectory(external/mainui_cpp)
 endif()
 
 if(BUILD_SERVER)
@@ -220,7 +226,7 @@ if(BUILD_SERVER)
 	add_subdirectory(dlls)
 endif()
 
-if(NOT BUILD_SERVER AND NOT BUILD_CLIENT)
+if(NOT BUILD_SERVER AND NOT BUILD_CLIENT AND NOT BUILD_MENU)
 	message(FATAL_ERROR "Nothing to build")
 endif()
 
