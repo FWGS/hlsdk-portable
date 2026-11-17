@@ -114,10 +114,10 @@ index 6acc37a..a0b658b 100644
  	else EngFuncs::ClientCmd( false, "newgame\n" );
 diff --git a/menus/WorldMap.cpp b/menus/WorldMap.cpp
 new file mode 100644
-index 0000000..7c74d8f
+index 0000000..1010399
 --- /dev/null
 +++ b/menus/WorldMap.cpp
-@@ -0,0 +1,442 @@
+@@ -0,0 +1,452 @@
 +/*
 +WorldMap.cpp - Condition Zero world map and mission select (CZ:DS)
 +Own drawing in the menu library: the original window is VGUI2 and its controls are not available.
@@ -129,7 +129,6 @@ index 0000000..7c74d8f
 +(at your option) any later version.
 +*/
 +
-+#include <string>
 +#include "BaseMenu.h"
 +#include "BaseWindow.h"
 +#include "Image.h"
@@ -149,6 +148,7 @@ index 0000000..7c74d8f
 +	WORLDMAP_TILES_Y = 2,
 +	WORLDMAP_FONT_COUNT = 3,
 +	WORLDMAP_SKILL_COUNT = 3,
++	WORLDMAP_STRING_SIZE = 128,
 +	WORLDMAP_CAMPAIGN_COUNT = 13 // missions before the bonus ones
 +};
 +
@@ -224,7 +224,7 @@ index 0000000..7c74d8f
 +	HFont GetFont( int heightAt480 );
 +	void Layout();
 +	void Image( CImage &img, int x, int y, int w, int h, bool alpha = false );
-+	void Text( const std::string &str, int x, int y, int w, int h, unsigned int col, int charH, uint justify );
++	void Text( const char *str, int x, int y, int w, int h, unsigned int col, int charH, uint justify );
 +	bool In( int mx, int my, int x, int y, int w, int h ) const;
 +	int  CurrentMission() const;
 +	bool IsOpen( int idx ) const;
@@ -251,9 +251,10 @@ index 0000000..7c74d8f
 +
 +static CMenuWorldMap *g_pWorldMap = NULL;
 +
-+static std::string MissionPicture( const char *image )
++static const char *MissionKey( char *key, const char *prefix, const char *suffix )
 +{
-+	return std::string( "gfx/vgui/" ) + image + "_large.tga";
++	V_snprintf( key, WORLDMAP_STRING_SIZE, "%s%s", prefix, suffix );
++	return key;
 +}
 +
 +HFont CMenuWorldMap::GetFont( int heightAt480 )
@@ -281,9 +282,11 @@ index 0000000..7c74d8f
 +	for( int i = 0; i < WORLDMAP_TILES_X; i++ )
 +		for( int j = 0; j < WORLDMAP_TILES_Y; j++ )
 +		{
-+			const std::string index = std::to_string( i ) + "_" + std::to_string( j ) + ".tga";
-+			m_Tiles1[i][j].Load(( "gfx/vgui/worldmap_" + index ).c_str( ));
-+			m_Tiles2[i][j].Load(( "gfx/vgui/worldmap2_" + index ).c_str( ));
++			char path[WORLDMAP_STRING_SIZE];
++			V_snprintf( path, sizeof( path ), "gfx/vgui/worldmap_%d_%d.tga", i, j );
++			m_Tiles1[i][j].Load( path );
++			V_snprintf( path, sizeof( path ), "gfx/vgui/worldmap2_%d_%d.tga", i, j );
++			m_Tiles2[i][j].Load( path );
 +		}
 +	m_Marker[0].Load( "gfx/vgui/missioncurrent.tga" );
 +	m_Marker[1].Load( "gfx/vgui/missionunlocked.tga" );
@@ -307,14 +310,14 @@ index 0000000..7c74d8f
 +		alpha ? QM_DRAWTRANS : QM_DRAWNORMAL );
 +}
 +
-+void CMenuWorldMap::Text( const std::string &str, int x, int y, int w, int h, unsigned int col, int charH, uint justify )
++void CMenuWorldMap::Text( const char *str, int x, int y, int w, int h, unsigned int col, int charH, uint justify )
 +{
 +	int fontH = WORLDMAP_FONT_MEDIUM;
 +	if( charH >= 18 ) fontH = WORLDMAP_FONT_LARGE;
 +	else if( charH == 15 ) fontH = WORLDMAP_FONT_SMALL;
 +	HFont font = GetFont( fontH );
 +	UI_DrawString( font, m_iOffX + (int)( x * m_flScale ), m_iOffY + (int)( y * m_flScale ),
-+		(int)( w * m_flScale ), (int)( h * m_flScale ), str.c_str(), col, (int)( fontH * uiStatic.scaleY ), justify, ETF_FORCECOL );
++		(int)( w * m_flScale ), (int)( h * m_flScale ), str, col, (int)( fontH * uiStatic.scaleY ), justify, ETF_FORCECOL );
 +}
 +
 +bool CMenuWorldMap::In( int mx, int my, int x, int y, int w, int h ) const
@@ -397,17 +400,20 @@ index 0000000..7c74d8f
 +{
 +	const unsigned int green = PackRGBA( 40, 210, 60, 255 );
 +	const unsigned int gray = PackRGBA( 190, 190, 190, 255 );
-+	std::string p = g_Missions[idx].prefix;
++	const char *p = g_Missions[idx].prefix;
++	char key[WORLDMAP_STRING_SIZE];
 +
 +	if( !m_MissionImgLoaded[idx] )
 +	{
-+		m_MissionImg[idx].Load( MissionPicture( g_Missions[idx].image ).c_str( ));
++		char path[WORLDMAP_STRING_SIZE];
++		V_snprintf( path, sizeof( path ), "gfx/vgui/%s_large.tga", g_Missions[idx].image );
++		m_MissionImg[idx].Load( path );
 +		m_MissionImgLoaded[idx] = true;
 +	}
 +	Image( m_MissionImg[idx], 20, 374, 87, 87, true );
 +	Text( L( "CZERO_Mission" ), 139, 361, 90, 39, PackRGBA( 215, 215, 215, 255 ), 22, QM_LEFT );
-+	Text( L(( p + "_TITLE" ).c_str( )), 225, 361, 400, 39, green, 22, QM_LEFT );
-+	Text( L(( p + "_BRIEF" ).c_str( )), 140, 392, 300, 70, gray, 14, QM_TOPLEFT );
++	Text( L( MissionKey( key, p, "_TITLE" )), 225, 361, 400, 39, green, 22, QM_LEFT );
++	Text( L( MissionKey( key, p, "_BRIEF" )), 140, 392, 300, 70, gray, 14, QM_TOPLEFT );
 +}
 +
 +void CMenuWorldMap::Draw()
@@ -438,7 +444,8 @@ index 0000000..7c74d8f
 +			const bool open = IsOpen( i );
 +			CImage &mark = m_Marker[ !open ? 2 : ( i == latest ? 0 : 1 ) ];
 +			Image( mark, m.x, m.y + 5, 6, 6 );
-+			Text( L(( std::string( m.prefix ) + "_TITLE" ).c_str( )), m.x + 10, m.y, m.w, m.h,
++			char key[WORLDMAP_STRING_SIZE];
++			Text( L( MissionKey( key, m.prefix, "_TITLE" )), m.x + 10, m.y, m.w, m.h,
 +				i == hover ? PackRGBA( 255, 255, 0, 255 ) : white, 15, QM_LEFT );
 +		}
 +
@@ -458,27 +465,30 @@ index 0000000..7c74d8f
 +				Image( m_Tiles2[i][j], xs[i], ys[j], ws[i], hs[j] );
 +
 +		const WorldMapMission_t &m = g_Missions[m_iSelected];
-+		std::string p = m.prefix;
++		const char *p = m.prefix;
++		char key[WORLDMAP_STRING_SIZE];
 +		const unsigned int label = PackRGBA( 215, 215, 215, 255 );
 +		const unsigned int value = PackRGBA( 190, 190, 190, 255 );
 +
 +		Text( L( "CZERO_Mission" ), 20, 60, 90, 20, label, 20, QM_LEFT );
-+		Text( L(( p + "_TITLE" ).c_str( )), 110, 60, 250, 20, PackRGBA( 40, 210, 60, 255 ), 20, QM_LEFT );
++		Text( L( MissionKey( key, p, "_TITLE" )), 110, 60, 250, 20, PackRGBA( 40, 210, 60, 255 ), 20, QM_LEFT );
 +
 +		Text( L( "CZERO_Time" ), 10, 90, 110, 20, label, 14, QM_TOPRIGHT );
-+		Text( L(( p + "_TIME" ).c_str( )), 130, 90, 230, 20, value, 14, QM_TOPLEFT );
++		Text( L( MissionKey( key, p, "_TIME" )), 130, 90, 230, 20, value, 14, QM_TOPLEFT );
 +		Text( L( "CZERO_Locale" ), 10, 110, 110, 40, label, 14, QM_TOPRIGHT );
-+		Text( L(( p + "_LOCATION" ).c_str( )), 130, 110, 230, 40, value, 14, QM_TOPLEFT );
++		Text( L( MissionKey( key, p, "_LOCATION" )), 130, 110, 230, 40, value, 14, QM_TOPLEFT );
 +		Text( L( "CZERO_Organization" ), 10, 150, 110, 20, label, 14, QM_TOPRIGHT );
-+		Text( L(( p + "_ORGANIZATION" ).c_str( )), 130, 150, 230, 20, value, 14, QM_TOPLEFT );
++		Text( L( MissionKey( key, p, "_ORGANIZATION" )), 130, 150, 230, 20, value, 14, QM_TOPLEFT );
 +		Text( L( "CZERO_Overview" ), 10, 170, 110, 20, label, 14, QM_TOPRIGHT );
-+		Text( L(( p + "_OVERVIEW" ).c_str( )), 130, 170, 230, 150, value, 14, QM_TOPLEFT );
++		Text( L( MissionKey( key, p, "_OVERVIEW" )), 130, 170, 230, 150, value, 14, QM_TOPLEFT );
 +		Text( L( "CZERO_Objective" ), 10, 320, 110, 20, label, 14, QM_TOPRIGHT );
-+		Text( L(( p + "_OBJECTIVE" ).c_str( )), 130, 320, 230, 100, value, 14, QM_TOPLEFT );
++		Text( L( MissionKey( key, p, "_OBJECTIVE" )), 130, 320, 230, 100, value, 14, QM_TOPLEFT );
 +
 +		if( !m_MissionImgLoaded[m_iSelected] )
 +		{
-+			m_MissionImg[m_iSelected].Load( MissionPicture( m.image ).c_str( ));
++			char path[WORLDMAP_STRING_SIZE];
++			V_snprintf( path, sizeof( path ), "gfx/vgui/%s_large.tga", m.image );
++			m_MissionImg[m_iSelected].Load( path );
 +			m_MissionImgLoaded[m_iSelected] = true;
 +		}
 +		Image( m_MissionImg[m_iSelected], 381, 60, 243, 243, true );
