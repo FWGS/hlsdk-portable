@@ -12,13 +12,9 @@ on:
       - 'README.md'
       - '.github/workflows/manual.yml'
   workflow_dispatch:
-    inputs:
-      client_ref:
-        description: Branch of sergiopoverony/cs16-client to take the client and the menu from
-        default: main
 
 # czeror: the same build as the other mods, plus the client and the menu of the game
-# (built from sergiopoverony/cs16-client) in the Windows x86 package.
+# in the Windows x86 package (both are built from this repository).
 
 jobs:
   build:
@@ -83,47 +79,11 @@ jobs:
     - name: Build on Windows
       if: startsWith(matrix.os, 'windows')
       run: |
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLIENT=OFF -B build -S . -DCMAKE_INSTALL_PREFIX="dist"
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_CLIENT=ON -DBUILD_MENU=ON -B build -S . -DCMAKE_INSTALL_PREFIX="dist"
         cmake --build build --target all
         cmake --build build --target install
 
-    - name: Checkout client
-      if: startsWith(matrix.os, 'windows')
-      uses: actions/checkout@v4
-      with:
-        repository: sergiopoverony/cs16-client
-        ref: ${{ github.event.inputs.client_ref || 'main' }}
-        path: client-src
-        submodules: recursive
-
-    # the client and the menu stay as they are upstream, our part is in cl_czeror
-    - name: Add the mod to the client and the menu
-      if: startsWith(matrix.os, 'windows')
-      shell: bash
-      working-directory: client-src
-      run: |
-        cp ../cl_czeror/src/* cl_dll/
-        patch -l -p1 -F3 -i ../cl_czeror/cs16-client.patch
-        cd 3rdparty/mainui_cpp
-        for p in czds_mainui czds_mainui_cs16; do
-          patch -l -p1 -F3 -i ../../../cl_czeror/mainui/$p.patch
-        done
-        git apply --ignore-whitespace ../../../cl_czeror/mainui/mainui_background.patch
-
-    - name: Build client on Windows
-      if: startsWith(matrix.os, 'windows')
-      shell: bash
-      working-directory: client-src
-      run: |
-        gd=$(grep ../build/CMakeCache.txt -Ee 'GAMEDIR:STRING=[a-z]+' | cut -d '=' -f 2)
-        cmake -G Ninja -B build -S . -DCMAKE_BUILD_TYPE=Release \
-          -DBUILD_SERVER=OFF -DENABLE_YY_THUNKS=OFF -DGAME_DIR="$gd" \
-          -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/dist"
-        cmake --build build
-        cmake --install build
-        echo "client: $(git rev-parse --short HEAD)"
-
-    # the package holds only the libraries: no debug and link files, no extras.pk3 of the client
+    # the package holds only the libraries: no debug and link files, no extras
     - name: Strip the package
       if: startsWith(matrix.os, 'windows')
       shell: bash
