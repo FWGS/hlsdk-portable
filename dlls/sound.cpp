@@ -28,6 +28,7 @@
 #include "pm_materials.h"
 
 #include <ctype.h>
+#include <stdint.h>
 
 // ==================== SENTENCE GROUPS, UTILITY FUNCTIONS  ======================================
 
