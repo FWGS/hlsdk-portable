@@ -840,7 +840,7 @@ CBasePlayer *UTIL_PlayerByIndex(int playerIndex)
 #endif
 }
 
-void Broadcast( const char *msg, int pitch ); // hud/radio
+void Broadcast( const char *msg, int pitch ) {} // the radio of the multiplayer game is not in this client
 void CBasePlayer::Radio(const char *msg_id, const char *msg_verbose, int pitch, bool showIcon)
 {
 	Broadcast( msg_id, pitch );

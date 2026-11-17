@@ -166,7 +166,7 @@ inline void VectorClear(float *a) { a[0]=0.0;a[1]=0.0;a[2]=0.0;}
 #define VectorLength(a) ( sqrt( DotProduct( a, a )))
 #define VectorMA(a, scale, b, c) ((c)[0] = (a)[0] + (scale) * (b)[0],(c)[1] = (a)[1] + (scale) * (b)[1],(c)[2] = (a)[2] + (scale) * (b)[2])
 #define VectorScale(in, scale, out) ((out)[0] = (in)[0] * (scale),(out)[1] = (in)[1] * (scale),(out)[2] = (in)[2] * (scale))
-float VectorNormalize (float *v);
+extern "C" float VectorNormalize (float *v);
 #define VectorInverse(x) ((x)[0] = -(x)[0], (x)[1] = -(x)[1], (x)[2] = -(x)[2])
 
 extern float vec3_origin[3];

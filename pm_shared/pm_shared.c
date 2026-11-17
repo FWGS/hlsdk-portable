@@ -17,6 +17,9 @@
 #include <assert.h>
 
 #if defined( _WIN32 )
+#ifdef __cplusplus
+extern "C"
+#endif
 _ACRTIMP void __cdecl _wassert( const wchar_t* message, const wchar_t* file, unsigned line );
 #define ASSERT_FILE	L"c:\\buildslave\\goldsrc_win32\\build\\GoldSrc\\czero\\pm_shared\\pm_shared.c"
 #define ASSERT_AT( expression, line ) \

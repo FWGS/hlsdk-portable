@@ -32,12 +32,6 @@ set(CZ_SOURCES
 	../pm_shared/pm_math.c
 	../pm_shared/pm_debug.c)
 
-# the shared movement code is C, the client includes its headers as C++
-set_source_files_properties(
-	../pm_shared/pm_shared.c
-	../pm_shared/pm_math.c
-	../pm_shared/pm_debug.c
-	PROPERTIES LANGUAGE CXX)
 
 if(HAVE_STRLCPY)
 	add_definitions(-DHAVE_STRLCPY)

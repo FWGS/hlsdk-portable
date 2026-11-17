@@ -1,3 +1,8 @@
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /***
 *
 *	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
@@ -30,4 +35,9 @@ char PM_FindTextureType( const char *name );
 #define OBS_IN_EYE			4
 #define OBS_MAP_FREE			5
 #define OBS_MAP_CHASE			6
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif//PM_SHARED_H
