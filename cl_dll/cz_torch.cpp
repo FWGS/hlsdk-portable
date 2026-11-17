@@ -97,7 +97,7 @@ public:
 static void CzTorchLoadSprites()
 {
 	if( !cz_torch_spr )
-		cz_torch_spr = gEngfuncs.pfnRegisterVariable( "cz_torch_spr", "sprites/flare3.spr", 0 );
+		cz_torch_spr = gEngfuncs.pfnRegisterVariable( "cz_torch_spr", "sprites/flare1.spr", 0 );
 
 	if( strcmp( g_torchSprName, cz_torch_spr->string ) || !g_torchFlameModel )
 	{
