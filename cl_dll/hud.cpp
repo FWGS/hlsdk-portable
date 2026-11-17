@@ -468,9 +468,11 @@ CHud :: ~CHud()
 	m_pHudList = NULL;
 }
 
+void CZ_TorchVidInit( void );
 void CHud :: VidInit( void )
 {
 	CzFiber_VidInit();
+	CZ_TorchVidInit();
 
 	g_flCzMapDrawn = 0.0f;
 	static bool firstinit = true;

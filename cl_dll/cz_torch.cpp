@@ -94,12 +94,20 @@ public:
 	float m_prevTime;
 };
 
+// sprites are freed on every map change: the pointer of the previous map points to another sprite
+// (the grass one, for example), so CHud::VidInit drops it and the sprite is loaded again
+void CZ_TorchVidInit()
+{
+	g_torchFlameModel = nullptr;
+	g_torchGlowModel = nullptr;
+}
+
 static void CzTorchLoadSprites()
 {
 	if( !cz_torch_spr )
 		cz_torch_spr = gEngfuncs.pfnRegisterVariable( "cz_torch_spr", "sprites/flare1.spr", 0 );
 
-	if( strcmp( g_torchSprName, cz_torch_spr->string ) || !g_torchFlameModel )
+		if( strcmp( g_torchSprName, cz_torch_spr->string ) || !g_torchFlameModel )
 	{
 		snprintf( g_torchSprName, sizeof g_torchSprName, "%s", cz_torch_spr->string );
 		HSPRITE h = SPR_Load( g_torchSprName );
