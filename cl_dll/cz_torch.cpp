@@ -97,12 +97,14 @@ public:
 static void CzTorchLoadSprites()
 {
 	if( !cz_torch_spr )
-		cz_torch_spr = gEngfuncs.pfnRegisterVariable( "cz_torch_spr", "sprites/flare3.spr", 0 );
+		cz_torch_spr = gEngfuncs.pfnRegisterVariable( "cz_torch_spr", "sprites/flare1.spr", 0 );
 
 	if( strcmp( g_torchSprName, cz_torch_spr->string ) || !g_torchFlameModel )
 	{
 		snprintf( g_torchSprName, sizeof g_torchSprName, "%s", cz_torch_spr->string );
 		HSPRITE h = SPR_Load( g_torchSprName );
+		if( !h ) // the original game uses flare1, other games may only have flare3
+			h = SPR_Load( "sprites/flare3.spr" );
 		g_torchFlameModel = h ? (model_s *)gEngfuncs.GetSpritePointer( h ) : nullptr;
 		g_torchGlowModel = g_torchFlameModel;
 	}
