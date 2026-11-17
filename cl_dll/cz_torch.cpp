@@ -9,7 +9,7 @@
 #include "r_efx.h"
 #include "particleman.h"
 
-extern int g_czTool, g_czFiber;
+extern int g_iBlowTorchFiring; // 0 holstered, 1 idle, 2 firing: set by the blowtorch events, as in the original client
 extern vec3_t v_angles, v_origin;
 
 // 0 = off, 1 = pilot (idle), 2 = burning (attack held)
@@ -144,13 +144,13 @@ void CZ_TorchUpdate()
 {
 	static float flOldTime = 0.0f;
 
-	const bool have = g_czTool == 3 && !g_czFiber && gEngfuncs.GetLocalPlayer() && !gEngfuncs.IsSpectateOnly();
+	const bool have = g_iBlowTorchFiring != 0 && gEngfuncs.GetLocalPlayer() && !gEngfuncs.IsSpectateOnly();
 	if( !have )
 	{
 		g_torchState = 0;
 		return;
 	}
-	g_torchState = ( gHUD.m_iKeyBits & IN_ATTACK ) ? 2 : 1;
+	g_torchState = g_iBlowTorchFiring;
 
 	const float now = gEngfuncs.GetClientTime();
 	if( fabsf( now - flOldTime ) <= 0.02f )
