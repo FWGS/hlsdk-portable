@@ -2995,26 +2995,77 @@ void CZ_SpawnSandstormCTs( void )
 }
 
 // CZ:DS: some maps have no weapons of their own: the player brings them through the level change. When such a map is started
-// by itself the player has nothing, so give him what the previous map gave (game_player_equip of cz_fastline2).
-// The things must be precached while the map is loading, the player is made later.
+// by itself (the map command, restart) the player has nothing, so give him what the earlier maps of the mission gave
+// (their game_player_equip, put together). The things must be precached while the map is loading, the player is made later.
+struct CZStartKit_t
+{
+	const char *map;
+	struct { const char *name; int count; } items[16];
+};
+
+static const CZStartKit_t g_StartKits[] =
+{
+	{ "cz_silo03", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "ammo_9mm", 2 }, { "weapon_mp5navy", 1 }, { NULL, 0 } } },
+	{ "cz_silo04", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "ammo_9mm", 2 }, { "weapon_mp5navy", 1 }, { NULL, 0 } } },
+	{ "cz_downed3", { { "item_armor", 1 }, { "weapon_p228", 1 }, { "weapon_knife", 1 }, { "weapon_hegrenade", 1 }, { "weapon_smokegrenade", 1 }, { "weapon_flashbang", 1 }, { "ammo_556nato", 3 }, { "ammo_357sig", 4 }, { "weapon_famas", 1 }, { NULL, 0 } } },
+	{ "cz_druglab3", { { "item_armor", 1 }, { "ammo_57mm", 2 }, { "ammo_buckshot", 4 }, { "weapon_smokegrenade", 1 }, { "weapon_hegrenade", 1 }, { "weapon_flashbang", 1 }, { "weapon_fiveseven", 1 }, { "weapon_knife", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "weapon_blowtorch", 1 }, { "weapon_m3", 1 }, { NULL, 0 } } },
+	{ "cz_druglab4", { { "item_armor", 1 }, { "ammo_57mm", 2 }, { "ammo_buckshot", 4 }, { "weapon_smokegrenade", 1 }, { "weapon_hegrenade", 1 }, { "weapon_flashbang", 1 }, { "weapon_fiveseven", 1 }, { "weapon_knife", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "weapon_blowtorch", 1 }, { "weapon_m3", 1 }, { NULL, 0 } } },
+	{ "cz_fastline3", { { "ammo_45acp", 7 }, { "ammo_57mm", 2 }, { "weapon_knife", 1 }, { "weapon_shieldgun", 1 }, { NULL, 0 } } },
+	{ "cz_fastline4", { { "ammo_45acp", 7 }, { "ammo_57mm", 2 }, { "weapon_knife", 1 }, { "weapon_shieldgun", 1 }, { NULL, 0 } } },
+	{ "cz_hankagai3", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "weapon_usp", 1 }, { "weapon_smokegrenade", 1 }, { "ammo_generic", 1 }, { "weapon_aug", 1 }, { NULL, 0 } } },
+	{ "cz_hankagai4", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "weapon_usp", 1 }, { "weapon_smokegrenade", 1 }, { "ammo_generic", 1 }, { "weapon_aug", 1 }, { NULL, 0 } } },
+	{ "cz_hr07", { { "ammo_50ae", 4 }, { "ammo_556nato", 2 }, { "item_armor", 1 }, { "weapon_knife", 1 }, { "weapon_deagle", 1 }, { "weapon_hegrenade", 1 }, { "weapon_radio", 1 }, { "weapon_m4a1", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "ammo_generic", 1 }, { "weapon_blowtorch", 1 }, { "weapon_scout", 1 }, { NULL, 0 } } },
+	{ "cz_lostcause2", { { "weapon_radio", 1 }, { "ammo_45acp", 7 }, { "ammo_57mm", 2 }, { "weapon_fiveseven", 1 }, { "weapon_ump45", 1 }, { "weapon_knife", 1 }, { "weapon_hegrenade", 1 }, { "weapon_fiberopticcamera", 1 }, { NULL, 0 } } },
+	{ "cz_motor2", { { "item_armor", 1 }, { "weapon_flashbang", 2 }, { "weapon_knife", 1 }, { "weapon_fiveseven", 1 }, { "ammo_generic", 1 }, { "weapon_aug", 1 }, { "weapon_laws", 1 }, { NULL, 0 } } },
+	{ "cz_pipedream2", { { "weapon_radio", 1 }, { "weapon_knife", 1 }, { "weapon_glock18", 1 }, { "ammo_generic", 3 }, { "item_armor", 1 }, { "weapon_radiocontrolledbomb", 2 }, { "weapon_ak47", 1 }, { NULL, 0 } } },
+	{ "cz_pipedream3", { { "weapon_radio", 1 }, { "weapon_knife", 1 }, { "weapon_glock18", 1 }, { "ammo_generic", 3 }, { "item_armor", 1 }, { "weapon_radiocontrolledbomb", 2 }, { "weapon_ak47", 1 }, { NULL, 0 } } },
+	{ "cz_recoil2", { { "item_armor", 1 }, { "weapon_usp", 1 }, { "weapon_knife", 1 }, { "ammo_45acp", 6 }, { "ammo_556nato", 3 }, { "weapon_m4a1", 1 }, { NULL, 0 } } },
+	{ "cz_run2", { { "item_armor", 1 }, { "ammo_generic", 1 }, { "weapon_usp", 1 }, { "weapon_knife", 1 }, { "weapon_scout", 1 }, { NULL, 0 } } },
+	{ "cz_run3", { { "item_armor", 1 }, { "ammo_generic", 1 }, { "weapon_usp", 1 }, { "weapon_knife", 1 }, { "weapon_scout", 1 }, { NULL, 0 } } },
+	{ "cz_sandstorm3", { { "ammo_556nato", 3 }, { "weapon_deagle", 1 }, { "weapon_knife", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "item_armor", 1 }, { "weapon_m4a1", 1 }, { NULL, 0 } } },
+	{ "cz_thinice02", { { "item_armor", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "weapon_blowtorch", 1 }, { "weapon_knife", 1 }, { "ammo_357sig", 2 }, { "weapon_p228", 1 }, { NULL, 0 } } },
+	{ "cz_thinice03", { { "item_armor", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "weapon_blowtorch", 1 }, { "weapon_knife", 1 }, { "ammo_357sig", 2 }, { "weapon_p228", 1 }, { NULL, 0 } } },
+	{ "cz_truth3", { { "weapon_radio", 1 }, { "weapon_knife", 1 }, { "ammo_generic", 1 }, { "weapon_smokegrenade", 1 }, { "weapon_usp", 1 }, { "weapon_flashbang", 1 }, { "item_armor", 1 }, { "weapon_m4a1", 1 }, { NULL, 0 } } },
+	{ "cz_truth4", { { "weapon_radio", 1 }, { "weapon_knife", 1 }, { "ammo_generic", 1 }, { "weapon_smokegrenade", 1 }, { "weapon_usp", 1 }, { "weapon_flashbang", 1 }, { "item_armor", 1 }, { "weapon_m4a1", 1 }, { NULL, 0 } } },
+	{ "cz_turncrank3", { { "weapon_briefcase", 1 }, { "item_armor", 1 }, { "ammo_generic", 1 }, { "weapon_p228", 1 }, { NULL, 0 } } },
+};
+
+static const CZStartKit_t *CZ_FindStartKit( void )
+{
+	for( size_t i = 0; i < sizeof( g_StartKits ) / sizeof( g_StartKits[0] ); i++ )
+		if( FStrEq( STRING( gpGlobals->mapname ), g_StartKits[i].map ))
+			return &g_StartKits[i];
+	return NULL;
+}
+
 void CZ_PrecacheDirectStart( void )
 {
-	if( FStrEq( STRING( gpGlobals->mapname ), "cz_fastline3" ))
-	{
-		UTIL_PrecacheOther( "weapon_knife" );
-		UTIL_PrecacheOther( "weapon_shieldgun" );
-		UTIL_PrecacheOther( "ammo_45acp" );
-		UTIL_PrecacheOther( "ammo_57mm" );
-	}
-	else if( FStrEq( STRING( gpGlobals->mapname ), "cz_sandstorm2" ))
-	{
+	const CZStartKit_t *kit = CZ_FindStartKit();
+	if( kit )
+		for( size_t i = 0; kit->items[i].name; i++ )
+			UTIL_PrecacheOther( kit->items[i].name );
+
+	if( FStrEq( STRING( gpGlobals->mapname ), "cz_sandstorm2" ))
 		UTIL_PrecacheOther( "monster_counter_terrorist_sas" );
+}
+
+// the things the level change would have started on the map
+static void CZ_DirectStartEvents( CBasePlayer *pPlayer )
+{
+	// cz_silo04: the trigger at the arrival place starts the run-out and lowers the wall in front of the player
+	if( FStrEq( STRING( gpGlobals->mapname ), "cz_silo04" ))
+	{
+		CBaseEntity *pTrigger = NULL;
+		while(( pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_once" )) != NULL )
+			if( pTrigger->pev->target && FStrEq( STRING( pTrigger->pev->target ), "Start_runout" ))
+				pTrigger->Touch( pPlayer );
 	}
 }
 
 void CZ_EquipDirectStart( CBasePlayer *pPlayer )
 {
-	if( !FStrEq( STRING( gpGlobals->mapname ), "cz_fastline3" ))
+	const CZStartKit_t *kit = CZ_FindStartKit();
+	if( !kit )
 		return;
 
 	// he came with the level change and has his things
@@ -3022,19 +3073,20 @@ void CZ_EquipDirectStart( CBasePlayer *pPlayer )
 		if( pPlayer->m_rgpPlayerItems[i] )
 			return;
 
-	ALERT( at_console, "CZ:DS: cz_fastline3 started without the level change, equipping the player\n" );
+	ALERT( at_console, "CZ:DS: %s started without the level change, equipping the player\n", STRING( gpGlobals->mapname ));
 
 	edict_t *pent = CREATE_NAMED_ENTITY( MAKE_STRING( "game_player_equip" ));
 	if( FNullEnt( pent ))
 		return;
 
-	static const char *keys[][2] = { { "ammo_45acp", "7" }, { "ammo_57mm", "2" }, { "weapon_knife", "1" }, { "weapon_shieldgun", "1" } };
-	for( size_t i = 0; i < sizeof( keys ) / sizeof( keys[0] ); i++ )
+	for( size_t i = 0; kit->items[i].name; i++ )
 	{
+		char value[16];
+		sprintf( value, "%d", kit->items[i].count );
 		KeyValueData kvd;
 		kvd.szClassName = "game_player_equip";
-		kvd.szKeyName = (char *)keys[i][0];
-		kvd.szValue = (char *)keys[i][1];
+		kvd.szKeyName = (char *)kit->items[i].name;
+		kvd.szValue = value;
 		kvd.fHandled = FALSE;
 		DispatchKeyValue( pent, &kvd );
 	}
@@ -3046,4 +3098,6 @@ void CZ_EquipDirectStart( CBasePlayer *pPlayer )
 		pEquip->Use( pPlayer, pPlayer, USE_TOGGLE, 0 );
 		UTIL_Remove( pEquip );
 	}
+
+	CZ_DirectStartEvents( pPlayer );
 }
