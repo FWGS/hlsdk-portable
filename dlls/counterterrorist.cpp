@@ -2994,9 +2994,9 @@ void CZ_SpawnSandstormCTs( void )
 	CZ_CreateSandstormCT( "train_ct1", Vector( 1312, 2478, 38 ), 45, "idle4" );
 }
 
-// CZ:DS: some maps have no weapons of their own: the player brings them through the level change. When such a map is started
-// by itself (the map command, restart) the player has nothing, so give him what the earlier maps of the mission gave
-// (their game_player_equip put together) and the tool the map itself needs (trigger_usetool). The things must be precached while the map is loading, the player is made later.
+// CZ:DS: cz_fastline3 has no weapons of its own: the player brings them through the level change. When it is started by itself
+// the player has nothing, so give him what cz_fastline2 gave (its game_player_equip). The things must be precached while the
+// map is loading, the player is made later. The other maps are left as in the original: nothing is given.
 struct CZStartKit_t
 {
 	const char *map;
@@ -3005,35 +3005,7 @@ struct CZStartKit_t
 
 static const CZStartKit_t g_StartKits[] =
 {
-	{ "cz_silo03", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "ammo_9mm", 2 }, { "weapon_mp5navy", 1 }, { NULL, 0 } } },
-	{ "cz_silo04", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "ammo_9mm", 2 }, { "weapon_mp5navy", 1 }, { "weapon_radiocontrolledbomb", 1 }, { NULL, 0 } } },
-	{ "cz_silo05", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "ammo_9mm", 2 }, { "weapon_mp5navy", 1 }, { NULL, 0 } } },
-	{ "cz_brecon02", { { "weapon_fiberopticcamera", 1 }, { "weapon_blowtorch", 1 }, { NULL, 0 } } },
-	{ "cz_brecon03", { { "weapon_camera", 1 }, { "weapon_blowtorch", 1 }, { "item_armor", 1 }, { "weapon_fiberopticcamera", 1 }, { NULL, 0 } } },
-	{ "cz_downed3", { { "item_armor", 1 }, { "weapon_p228", 1 }, { "weapon_knife", 1 }, { "weapon_hegrenade", 1 }, { "weapon_smokegrenade", 1 }, { "weapon_flashbang", 1 }, { "ammo_556nato", 3 }, { "ammo_357sig", 4 }, { "weapon_famas", 1 }, { "weapon_blowtorch", 1 }, { NULL, 0 } } },
-	{ "cz_downed4", { { "item_armor", 1 }, { "weapon_p228", 1 }, { "weapon_knife", 1 }, { "weapon_hegrenade", 1 }, { "weapon_smokegrenade", 1 }, { "weapon_flashbang", 1 }, { "ammo_556nato", 3 }, { "ammo_357sig", 4 }, { "weapon_famas", 1 }, { NULL, 0 } } },
-	{ "cz_druglab3", { { "item_armor", 1 }, { "ammo_57mm", 2 }, { "ammo_buckshot", 4 }, { "weapon_smokegrenade", 1 }, { "weapon_hegrenade", 1 }, { "weapon_flashbang", 1 }, { "weapon_fiveseven", 1 }, { "weapon_knife", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "weapon_blowtorch", 1 }, { "weapon_m3", 1 }, { NULL, 0 } } },
-	{ "cz_druglab4", { { "item_armor", 1 }, { "ammo_57mm", 2 }, { "ammo_buckshot", 4 }, { "weapon_smokegrenade", 1 }, { "weapon_hegrenade", 1 }, { "weapon_flashbang", 1 }, { "weapon_fiveseven", 1 }, { "weapon_knife", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "weapon_blowtorch", 1 }, { "weapon_m3", 1 }, { NULL, 0 } } },
 	{ "cz_fastline3", { { "ammo_45acp", 7 }, { "ammo_57mm", 2 }, { "weapon_knife", 1 }, { "weapon_shieldgun", 1 }, { NULL, 0 } } },
-	{ "cz_fastline4", { { "ammo_45acp", 7 }, { "ammo_57mm", 2 }, { "weapon_knife", 1 }, { "weapon_shieldgun", 1 }, { NULL, 0 } } },
-	{ "cz_hankagai2", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "weapon_usp", 1 }, { "weapon_smokegrenade", 1 }, { "ammo_generic", 1 }, { "weapon_aug", 1 }, { NULL, 0 } } },
-	{ "cz_hankagai3", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "weapon_usp", 1 }, { "weapon_smokegrenade", 1 }, { "ammo_generic", 1 }, { "weapon_aug", 1 }, { NULL, 0 } } },
-	{ "cz_hankagai4", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "weapon_usp", 1 }, { "weapon_smokegrenade", 1 }, { "ammo_generic", 1 }, { "weapon_aug", 1 }, { NULL, 0 } } },
-	{ "cz_hankagai5", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "weapon_usp", 1 }, { "weapon_smokegrenade", 1 }, { "ammo_generic", 1 }, { "weapon_aug", 1 }, { NULL, 0 } } },
-	{ "cz_hr07", { { "ammo_50ae", 4 }, { "ammo_556nato", 2 }, { "item_armor", 1 }, { "weapon_knife", 1 }, { "weapon_deagle", 1 }, { "weapon_hegrenade", 1 }, { "weapon_radio", 1 }, { "weapon_m4a1", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "ammo_generic", 1 }, { "weapon_blowtorch", 1 }, { "weapon_scout", 1 }, { NULL, 0 } } },
-	{ "cz_lostcause2", { { "weapon_radio", 1 }, { "ammo_45acp", 7 }, { "ammo_57mm", 2 }, { "weapon_fiveseven", 1 }, { "weapon_ump45", 1 }, { "weapon_knife", 1 }, { "weapon_hegrenade", 1 }, { "weapon_fiberopticcamera", 1 }, { NULL, 0 } } },
-	{ "cz_motor2", { { "item_armor", 1 }, { "weapon_flashbang", 2 }, { "weapon_knife", 1 }, { "weapon_fiveseven", 1 }, { "ammo_generic", 1 }, { "weapon_aug", 1 }, { "weapon_laws", 1 }, { NULL, 0 } } },
-	{ "cz_pipedream2", { { "weapon_radio", 1 }, { "weapon_knife", 1 }, { "weapon_glock18", 1 }, { "ammo_generic", 3 }, { "item_armor", 1 }, { "weapon_radiocontrolledbomb", 2 }, { "weapon_ak47", 1 }, { NULL, 0 } } },
-	{ "cz_pipedream3", { { "weapon_radio", 1 }, { "weapon_knife", 1 }, { "weapon_glock18", 1 }, { "ammo_generic", 3 }, { "item_armor", 1 }, { "weapon_radiocontrolledbomb", 2 }, { "weapon_ak47", 1 }, { "weapon_blowtorch", 1 }, { NULL, 0 } } },
-	{ "cz_recoil2", { { "item_armor", 1 }, { "weapon_usp", 1 }, { "weapon_knife", 1 }, { "ammo_45acp", 6 }, { "ammo_556nato", 3 }, { "weapon_m4a1", 1 }, { NULL, 0 } } },
-	{ "cz_run2", { { "item_armor", 1 }, { "ammo_generic", 1 }, { "weapon_usp", 1 }, { "weapon_knife", 1 }, { "weapon_scout", 1 }, { NULL, 0 } } },
-	{ "cz_run3", { { "item_armor", 1 }, { "ammo_generic", 1 }, { "weapon_usp", 1 }, { "weapon_knife", 1 }, { "weapon_scout", 1 }, { NULL, 0 } } },
-	{ "cz_sandstorm3", { { "ammo_556nato", 3 }, { "weapon_deagle", 1 }, { "weapon_knife", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "item_armor", 1 }, { "weapon_m4a1", 1 }, { NULL, 0 } } },
-	{ "cz_thinice02", { { "item_armor", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "weapon_blowtorch", 1 }, { "weapon_knife", 1 }, { "ammo_357sig", 2 }, { "weapon_p228", 1 }, { NULL, 0 } } },
-	{ "cz_thinice03", { { "item_armor", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "weapon_blowtorch", 1 }, { "weapon_knife", 1 }, { "ammo_357sig", 2 }, { "weapon_p228", 1 }, { NULL, 0 } } },
-	{ "cz_truth3", { { "weapon_radio", 1 }, { "weapon_knife", 1 }, { "ammo_generic", 1 }, { "weapon_smokegrenade", 1 }, { "weapon_usp", 1 }, { "weapon_flashbang", 1 }, { "item_armor", 1 }, { "weapon_m4a1", 1 }, { NULL, 0 } } },
-	{ "cz_truth4", { { "weapon_radio", 1 }, { "weapon_knife", 1 }, { "ammo_generic", 1 }, { "weapon_smokegrenade", 1 }, { "weapon_usp", 1 }, { "weapon_flashbang", 1 }, { "item_armor", 1 }, { "weapon_m4a1", 1 }, { NULL, 0 } } },
-	{ "cz_turncrank3", { { "weapon_briefcase", 1 }, { "item_armor", 1 }, { "ammo_generic", 1 }, { "weapon_p228", 1 }, { NULL, 0 } } },
 };
 
 static const CZStartKit_t *CZ_FindStartKit( void )
