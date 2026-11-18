@@ -3049,10 +3049,23 @@ void CZ_PrecacheDirectStart( void )
 		UTIL_PrecacheOther( "monster_counter_terrorist_sas" );
 }
 
-// the things the level change would have started on the map
-static void CZ_DirectStartEvents( CBasePlayer *pPlayer )
+// the things the level change starts on the map: the player arrives inside a trigger and it fires at once. When the map is
+// started otherwise (the map command, restart, loading after death) he stands outside of it and nothing starts.
+static bool g_bMapStartEventsDone = false;
+
+void CZ_MapStartReset( void )
 {
-	// cz_silo04: the trigger at the arrival place starts the run-out and lowers the wall in front of the player
+	g_bMapStartEventsDone = false;
+}
+
+void CZ_MapStartEvents( CBasePlayer *pPlayer )
+{
+	if( g_bMapStartEventsDone )
+		return;
+	g_bMapStartEventsDone = true;
+
+	// cz_silo04: the trigger at the arrival place starts the run-out and lowers the wall in front of the player.
+	// A trigger that already fired is gone, so this does nothing after the level change.
 	if( FStrEq( STRING( gpGlobals->mapname ), "cz_silo04" ))
 	{
 		CBaseEntity *pTrigger = NULL;
@@ -3099,5 +3112,4 @@ void CZ_EquipDirectStart( CBasePlayer *pPlayer )
 		UTIL_Remove( pEquip );
 	}
 
-	CZ_DirectStartEvents( pPlayer );
 }

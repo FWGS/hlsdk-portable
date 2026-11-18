@@ -278,6 +278,9 @@ void ClientUserInfoChanged( edict_t* entity, char* infoBuffer )
 	g_pGameRules->ClientUserInfoChanged( GetClassPtr( (CBasePlayer*)&entity->v ), infoBuffer );
 }
 
+extern void CZ_MapStartReset( void );
+extern void CZ_MapStartEvents( CBasePlayer *pPlayer );
+
 void ServerDeactivate()
 {
 	// the entities that pointed to the built sequence entries go away with the map
@@ -292,6 +295,7 @@ void ServerActivate( edict_t* edictList, int edictCount, int clientMax )
 	g_serveractive = 1;
 	CLocalNav::Reset();
 	CZ_MusicReset();
+	CZ_MapStartReset();
 	for ( int index = 0; index < edictCount; ++index )
 	{
 		edict_t* entity = &edictList[index];
@@ -312,7 +316,10 @@ void ServerActivate( edict_t* edictList, int edictCount, int clientMax )
 void PlayerPreThink( edict_t* entity )
 {
 	if ( entity && entity->pvPrivateData )
+	{
+		CZ_MapStartEvents( (CBasePlayer*)entity->pvPrivateData );
 		((CBasePlayer*)entity->pvPrivateData)->PreThink();
+	}
 }
 
 void PlayerPostThink( edict_t* entity )
