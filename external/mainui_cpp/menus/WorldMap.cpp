@@ -70,7 +70,8 @@ static const int g_iMissionBits[] =
 
 struct WorldMapMission_t
 {
-	const char *prefix;  // #<prefix>_TITLE, _LOCATION, _TIME, ...
+	const char *prefix;  // #<prefix>_TITLE
+	const char *info;    // #<info>_BRIEF, _LOCATION, _TIME, ... (differs from prefix only for Silo)
 	const char *image;   // gfx/vgui/<image>_large.tga
 	const char *map;
 	int x, y, w, h;
@@ -78,25 +79,25 @@ struct WorldMapMission_t
 
 static const WorldMapMission_t g_Missions[] =
 {
-	{ "TRAINING", "cz_train", "cz_train01", 90, 115, 180, 15 },
-	{ "LOSTCAUSE", "cz_lostcause", "cz_lostcause", 479, 197, 155, 15 },
-	{ "RECOIL", "cz_recoil", "cz_recoil-intro", 332, 207, 150, 15 },
-	{ "SILO", "cz_silo", "cz_silo01", 453, 74, 180, 15 },
-	{ "BRECON", "cz_brecon", "cz_brecon01", 330, 90, 200, 15 },
-	{ "DRUGLAB", "cz_druglab", "cz_druglab1", 139, 211, 170, 15 },
-	{ "MOTORCADE", "cz_motor", "cz_motor1", 287, 129, 200, 15 },
-	{ "THINICE", "cz_thinice", "cz_thinice01", 238, 89, 90, 15 },
-	{ "DOWNED", "cz_downed", "cz_downed1", 149, 257, 200, 15 },
-	{ "TURNCRANK", "cz_turncrank", "cz_turncrank", 74, 132, 190, 15 },
-	{ "HANKAGAI", "cz_hankagai", "cz_hankagai1", 540, 115, 95, 15 },
-	{ "ALAMO", "cz_alamo", "cz_alamo", 317, 144, 55, 15 },
-	{ "HIGHRISE", "cz_highrise", "cz_hr01", 274, 111, 200, 15 },
-	{ "TRUTH", "cz_truth", "cz_truth1", 535, 130, 100, 15 },
-	{ "RUN", "cz_run", "cz_run1", 535, 99, 90, 15 },
-	{ "MIAMI", "cz_miami", "cz_miami1", 139, 154, 170, 15 },
-	{ "FASTLINE", "cz_fastline", "cz_fastline1", 537, 148, 95, 15 },
-	{ "PIPEDREAM", "cz_pipedream", "cz_pipedream1", 372, 141, 90, 15 },
-	{ "SANDSTORM", "cz_sandstorm", "cz_sandstorm", 370, 158, 160, 15 },
+	{ "TRAINING", "TRAINING", "cz_train", "cz_train01", 90, 115, 180, 15 },
+	{ "LOSTCAUSE", "LOSTCAUSE", "cz_lostcause", "cz_lostcause", 479, 197, 155, 15 },
+	{ "RECOIL", "RECOIL", "cz_recoil", "cz_recoil-intro", 332, 207, 150, 15 },
+	{ "SILO", "SECRETWAR", "cz_silo", "cz_silo01", 453, 74, 180, 15 },
+	{ "BRECON", "BRECON", "cz_brecon", "cz_brecon01", 330, 90, 200, 15 },
+	{ "DRUGLAB", "DRUGLAB", "cz_druglab", "cz_druglab1", 139, 211, 170, 15 },
+	{ "MOTORCADE", "MOTORCADE", "cz_motor", "cz_motor1", 287, 129, 200, 15 },
+	{ "THINICE", "THINICE", "cz_thinice", "cz_thinice01", 238, 89, 90, 15 },
+	{ "DOWNED", "DOWNED", "cz_downed", "cz_downed1", 149, 257, 200, 15 },
+	{ "TURNCRANK", "TURNCRANK", "cz_turncrank", "cz_turncrank", 74, 132, 190, 15 },
+	{ "HANKAGAI", "HANKAGAI", "cz_hankagai", "cz_hankagai1", 540, 115, 95, 15 },
+	{ "ALAMO", "ALAMO", "cz_alamo", "cz_alamo", 317, 144, 55, 15 },
+	{ "HIGHRISE", "HIGHRISE", "cz_highrise", "cz_hr01", 274, 111, 200, 15 },
+	{ "TRUTH", "TRUTH", "cz_truth", "cz_truth1", 535, 130, 100, 15 },
+	{ "RUN", "RUN", "cz_run", "cz_run1", 535, 99, 90, 15 },
+	{ "MIAMI", "MIAMI", "cz_miami", "cz_miami1", 139, 154, 170, 15 },
+	{ "FASTLINE", "FASTLINE", "cz_fastline", "cz_fastline1", 537, 148, 95, 15 },
+	{ "PIPEDREAM", "PIPEDREAM", "cz_pipedream", "cz_pipedream1", 372, 141, 90, 15 },
+	{ "SANDSTORM", "SANDSTORM", "cz_sandstorm", "cz_sandstorm", 370, 158, 160, 15 },
 };
 static const int g_iMissionCount = V_ARRAYSIZE( g_Missions );
 
@@ -292,6 +293,7 @@ void CMenuWorldMap::DrawMissionInfo( int idx )
 	const unsigned int green = PackRGBA( 40, 210, 60, 255 );
 	const unsigned int gray = PackRGBA( 190, 190, 190, 255 );
 	const char *p = g_Missions[idx].prefix;
+	const char *pi = g_Missions[idx].info;
 	char key[WORLDMAP_STRING_SIZE];
 
 	if( !m_MissionImgLoaded[idx] )
@@ -304,7 +306,7 @@ void CMenuWorldMap::DrawMissionInfo( int idx )
 	Image( m_MissionImg[idx], 20, 374, 87, 87, true );
 	Text( L( "CZERO_Mission" ), 139, 361, 90, 39, PackRGBA( 215, 215, 215, 255 ), 22, QM_LEFT );
 	Text( L( MissionKey( key, p, "_TITLE" )), 225, 361, 400, 39, green, 22, QM_LEFT );
-	Text( L( MissionKey( key, p, "_BRIEF" )), 140, 392, 300, 70, gray, 14, QM_TOPLEFT );
+	Text( L( MissionKey( key, pi, "_BRIEF" )), 140, 392, 300, 70, gray, 14, QM_TOPLEFT );
 }
 
 void CMenuWorldMap::Draw()
@@ -355,6 +357,7 @@ void CMenuWorldMap::Draw()
 
 		const WorldMapMission_t &m = g_Missions[m_iSelected];
 		const char *p = m.prefix;
+		const char *pi = m.info;
 		char key[WORLDMAP_STRING_SIZE];
 		const unsigned int label = PackRGBA( 215, 215, 215, 255 );
 		const unsigned int value = PackRGBA( 190, 190, 190, 255 );
@@ -363,15 +366,15 @@ void CMenuWorldMap::Draw()
 		Text( L( MissionKey( key, p, "_TITLE" )), 110, 60, 250, 20, PackRGBA( 40, 210, 60, 255 ), 20, QM_LEFT );
 
 		Text( L( "CZERO_Time" ), 10, 90, 110, 20, label, 14, QM_TOPRIGHT );
-		Text( L( MissionKey( key, p, "_TIME" )), 130, 90, 230, 20, value, 14, QM_TOPLEFT );
+		Text( L( MissionKey( key, pi, "_TIME" )), 130, 90, 230, 20, value, 14, QM_TOPLEFT );
 		Text( L( "CZERO_Locale" ), 10, 110, 110, 40, label, 14, QM_TOPRIGHT );
-		Text( L( MissionKey( key, p, "_LOCATION" )), 130, 110, 230, 40, value, 14, QM_TOPLEFT );
+		Text( L( MissionKey( key, pi, "_LOCATION" )), 130, 110, 230, 40, value, 14, QM_TOPLEFT );
 		Text( L( "CZERO_Organization" ), 10, 150, 110, 20, label, 14, QM_TOPRIGHT );
-		Text( L( MissionKey( key, p, "_ORGANIZATION" )), 130, 150, 230, 20, value, 14, QM_TOPLEFT );
+		Text( L( MissionKey( key, pi, "_ORGANIZATION" )), 130, 150, 230, 20, value, 14, QM_TOPLEFT );
 		Text( L( "CZERO_Overview" ), 10, 170, 110, 20, label, 14, QM_TOPRIGHT );
-		Text( L( MissionKey( key, p, "_OVERVIEW" )), 130, 170, 230, 150, value, 14, QM_TOPLEFT );
+		Text( L( MissionKey( key, pi, "_OVERVIEW" )), 130, 170, 230, 150, value, 14, QM_TOPLEFT );
 		Text( L( "CZERO_Objective" ), 10, 320, 110, 20, label, 14, QM_TOPRIGHT );
-		Text( L( MissionKey( key, p, "_OBJECTIVE" )), 130, 320, 230, 100, value, 14, QM_TOPLEFT );
+		Text( L( MissionKey( key, pi, "_OBJECTIVE" )), 130, 320, 230, 100, value, 14, QM_TOPLEFT );
 
 		if( !m_MissionImgLoaded[m_iSelected] )
 		{
