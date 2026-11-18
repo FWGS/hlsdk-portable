@@ -3006,7 +3006,7 @@ struct CZStartKit_t
 static const CZStartKit_t g_StartKits[] =
 {
 	{ "cz_silo03", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "ammo_9mm", 2 }, { "weapon_mp5navy", 1 }, { NULL, 0 } } },
-	{ "cz_silo04", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "ammo_9mm", 2 }, { "weapon_mp5navy", 1 }, { NULL, 0 } } },
+	{ "cz_silo04", { { "item_armor", 1 }, { "weapon_knife", 1 }, { "ammo_9mm", 2 }, { "weapon_mp5navy", 1 }, { "weapon_radiocontrolledbomb", 1 }, { NULL, 0 } } },
 	{ "cz_downed3", { { "item_armor", 1 }, { "weapon_p228", 1 }, { "weapon_knife", 1 }, { "weapon_hegrenade", 1 }, { "weapon_smokegrenade", 1 }, { "weapon_flashbang", 1 }, { "ammo_556nato", 3 }, { "ammo_357sig", 4 }, { "weapon_famas", 1 }, { NULL, 0 } } },
 	{ "cz_druglab3", { { "item_armor", 1 }, { "ammo_57mm", 2 }, { "ammo_buckshot", 4 }, { "weapon_smokegrenade", 1 }, { "weapon_hegrenade", 1 }, { "weapon_flashbang", 1 }, { "weapon_fiveseven", 1 }, { "weapon_knife", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "weapon_blowtorch", 1 }, { "weapon_m3", 1 }, { NULL, 0 } } },
 	{ "cz_druglab4", { { "item_armor", 1 }, { "ammo_57mm", 2 }, { "ammo_buckshot", 4 }, { "weapon_smokegrenade", 1 }, { "weapon_hegrenade", 1 }, { "weapon_flashbang", 1 }, { "weapon_fiveseven", 1 }, { "weapon_knife", 1 }, { "weapon_radiocontrolledbomb", 1 }, { "weapon_blowtorch", 1 }, { "weapon_m3", 1 }, { NULL, 0 } } },
