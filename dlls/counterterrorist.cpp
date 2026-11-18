@@ -3064,7 +3064,7 @@ void CZ_MapStartEvents( CBasePlayer *pPlayer )
 		return;
 	g_bMapStartEventsDone = true;
 
-	// cz_silo04: the trigger at the arrival place starts the run-out and lowers the wall in front of the player.
+	// cz_silo04: the trigger at the arrival place starts the run-out; the wall in front of the player is lowered.
 	// A trigger that already fired is gone, so this does nothing after the level change.
 	if( FStrEq( STRING( gpGlobals->mapname ), "cz_silo04" ))
 	{
@@ -3072,6 +3072,9 @@ void CZ_MapStartEvents( CBasePlayer *pPlayer )
 		while(( pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_once" )) != NULL )
 			if( pTrigger->pev->target && FStrEq( STRING( pTrigger->pev->target ), "Start_runout" ))
 				pTrigger->Touch( pPlayer );
+
+		// the wall (func_door t1) goes down at once, not after the 11.5 seconds of the trigger_relay
+		FireTargets( "t1", pPlayer, pPlayer, USE_ON, 0 );
 	}
 }
 
