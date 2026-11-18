@@ -50,6 +50,17 @@ int DLLEXPORT HUD_AddEntity( int type, struct cl_entity_s *ent, const char *mode
 			&& ent->model && ent->model->type == mod_studio && ent != gEngfuncs.GetViewModel() )
 			return 0;
 
+		// smoke and steam sprites in the normal render mode: the original engine blends them with their own alpha (a soft cloud),
+		// Xash draws them with alpha test only (a solid blob), so they get the blending mode
+		if( ent->curstate.rendermode == kRenderNormal && ent->model && ent->model->type == mod_sprite )
+		{
+			const char *name = ent->model->name;
+			const char *base = strrchr( name, '/' );
+			base = base ? base + 1 : name;
+			if( !strncmp( base, "gas_smoke", 9 ) || !strncmp( base, "smoke", 5 ) || !strncmp( base, "steam", 5 ))
+				ent->curstate.rendermode = kRenderTransTexture;
+		}
+
 		// env_glow lamps (kRenderGlow sprites) are too bright/big up close: tune with cl_glow_alpha / cl_glow_size
 		if( ent->curstate.rendermode == kRenderGlow && ent->model && ent->model->type == mod_sprite
 			&& ent->index > 0 && ent->index < 4096 )
