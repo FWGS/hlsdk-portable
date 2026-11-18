@@ -1940,7 +1940,7 @@ void CHudAmmo::CalcCrosshairDrawMode()
 	static float prevDrawMode = -1;
 	float drawMode = m_pClCrosshairTranslucent->value;
 	
-	if( gHUD.m_NVG.m_iFlags )
+	if( gHUD.m_NVG.IsOn() ) // red crosshair only while the night vision is on
 	{
 		m_bAdditive = 0;
 		return;
@@ -1971,7 +1971,7 @@ void CHudAmmo::CalcCrosshairColor()
 	static char prevColors[64] = { 0 };
 	const char *colors = m_pClCrosshairColor->string;
 
-	if( gHUD.m_NVG.m_iFlags )
+	if( gHUD.m_NVG.IsOn() ) // red crosshair only while the night vision is on
 	{
 		m_R = 250;
 		m_G = 50;

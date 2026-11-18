@@ -819,6 +819,8 @@ public:
 
 	CHudUserCmd(NVGAdjustUp);
 	CHudUserCmd(NVGAdjustDown);
+
+	bool IsOn() const { return m_bOn; }
 private:
 	int m_iAlpha;
 	cvar_t *cl_fancy_nvg;
