@@ -3027,43 +3027,6 @@ void CZ_PrecacheDirectStart( void )
 		UTIL_PrecacheOther( "monster_counter_terrorist_sas" );
 }
 
-// the things the level change starts on the map: the player arrives inside a trigger and it fires at once. When the map is
-// started otherwise (the map command, restart, loading after death) he stands outside of it and nothing starts.
-static bool g_bMapStartEventsDone = false;
-static float g_flWallLowerTime = 0; // cz_silo04: when the wall goes down, 0 = not waiting
-
-void CZ_MapStartReset( void )
-{
-	g_bMapStartEventsDone = false;
-	g_flWallLowerTime = 0;
-}
-
-void CZ_MapStartEvents( CBasePlayer *pPlayer )
-{
-	if( g_flWallLowerTime && gpGlobals->time >= g_flWallLowerTime )
-	{
-		g_flWallLowerTime = 0;
-		FireTargets( "t1", pPlayer, pPlayer, USE_ON, 0 );
-	}
-
-	if( g_bMapStartEventsDone )
-		return;
-	g_bMapStartEventsDone = true;
-
-	// cz_silo04: the trigger at the arrival place starts the run-out; the wall in front of the player is lowered.
-	// A trigger that already fired is gone, so this does nothing after the level change.
-	if( FStrEq( STRING( gpGlobals->mapname ), "cz_silo04" ))
-	{
-		CBaseEntity *pTrigger = NULL;
-		while(( pTrigger = UTIL_FindEntityByClassname( pTrigger, "trigger_once" )) != NULL )
-			if( pTrigger->pev->target && FStrEq( STRING( pTrigger->pev->target ), "Start_runout" ))
-				pTrigger->Touch( pPlayer );
-
-		// the wall (func_door t1) goes down in 2 seconds, not after the 11.5 seconds of the trigger_relay
-		g_flWallLowerTime = gpGlobals->time + 2.0f;
-	}
-}
-
 void CZ_EquipDirectStart( CBasePlayer *pPlayer )
 {
 	const CZStartKit_t *kit = CZ_FindStartKit();
