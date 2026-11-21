@@ -2185,17 +2185,27 @@ public:
 LINK_ENTITY_TO_CLASS( trigger_endsection, CTriggerEndSection );
 
 
+// the engine leaves the game with "disconnect", and with developer on it stays in the console;
+// the end of the game (cz_end) must bring the main menu, so open it right after
+static void CZ_EndSection( const char *section )
+{
+	g_engfuncs.pfnEndSection( section );
+
+	if( stricmp( section, "oem_end_credits" ))
+		SERVER_COMMAND( "escape\n" );
+}
+
 void CTriggerEndSection::EndSectionUse( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
 	// Only save on clients
 	if ( pActivator && !pActivator->IsNetClient() )
 		return;
-    
+
 	SetUse( NULL );
 
 	if ( pev->message )
 	{
-		g_engfuncs.pfnEndSection(STRING(pev->message));
+		CZ_EndSection(STRING(pev->message));
 	}
 	UTIL_Remove( this );
 }
@@ -2226,7 +2236,7 @@ void CTriggerEndSection::EndSectionTouch( CBaseEntity *pOther )
 
 	if (pev->message)
 	{
-		g_engfuncs.pfnEndSection(STRING(pev->message));
+		CZ_EndSection(STRING(pev->message));
 	}
 	UTIL_Remove( this );
 }
