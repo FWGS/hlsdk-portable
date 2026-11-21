@@ -224,8 +224,23 @@ static void CZ_DrawTools( float flTime )
 void CZ_DrawTorchSprites( void );
 
 // Draw status icons along the left-hand side of the screen
+// CZ: the icons of the HudIcons message live only while the server sends it (the original CHudIcons::Draw clears the masks after
+// every frame). The server sends it every frame while an icon is needed and nothing when none is, so the icons go away a moment
+// after the last message. The grace time is for a client that draws faster than the server runs.
+static float g_czHudIconsTime = 0;
+static const char *g_czHudIconNames[] = { "icon_stealth", "icon_camera", "icon_fibercamera", "icon_radio",
+	"icon_radiocontrolledbomb", "icon_blowtorch", "icon_bombdefuse", "icon_hostagezone" };
+
 int CHudStatusIcons::Draw( float flTime )
 {
+	if( g_czHudIconsTime && flTime - g_czHudIconsTime > 0.25f )
+	{
+		g_czHudIconsTime = 0;
+		g_czZoneShown = 0;
+		for( size_t k = 0; k < sizeof( g_czHudIconNames ) / sizeof( g_czHudIconNames[0] ); k++ )
+			DisableIcon( g_czHudIconNames[k] );
+	}
+
 	if (gEngfuncs.IsSpectateOnly())
 		return 1;
 
@@ -290,6 +305,7 @@ int CHudStatusIcons::MsgFunc_HudIcons( const char *pszName, int iSize, void *pbu
 	int active = reader.ReadShort();
 	int owned = reader.ReadShort();
 	g_czZoneShown = active & ( owned | 512 );
+	g_czHudIconsTime = gHUD.m_flTime;
 	extern int g_czToolsOwned;
 	g_czToolsOwned = owned;
 	gEngfuncs.Con_DPrintf( "HudIcons: shown %d active %d owned %d\n", shown, active, owned );
