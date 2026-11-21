@@ -93,6 +93,19 @@ int CHud :: Redraw( float flTime, int intermission )
 	if ( m_flTimeDelta < 0 )
 		m_flTimeDelta = 0;
 
+	// cz_end (the ending) was made for a 4:3 screen: on a wider one the sides show what lies outside of the frame
+	// (the pictures of the credits), so the sides are closed with black bars
+	if( ScreenWidth * 3 > ScreenHeight * 4 )
+	{
+		const char *level = gEngfuncs.pfnGetLevelName();
+		if( level && strstr( level, "cz_end" ))
+		{
+			int bar = ( ScreenWidth - ScreenHeight * 4 / 3 ) / 2;
+			FillRGBABlend( 0, 0, bar, ScreenHeight, 0, 0, 0, 255 );
+			FillRGBABlend( ScreenWidth - bar, 0, bar, ScreenHeight, 0, 0, 0, 255 );
+		}
+	}
+
 	if (m_flShotTime && m_flShotTime < flTime)
 	{
 		gEngfuncs.pfnClientCmd("snapshot\n");
