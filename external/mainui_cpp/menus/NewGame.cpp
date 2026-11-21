@@ -109,7 +109,7 @@ void CMenuNewGame::TrainingCb( CMenuBaseItem *pSelf, void *pExtra )
 	EngFuncs::CvarSetValue( "coop", 0.0f );
 	EngFuncs::PlayBackgroundTrack( NULL, NULL );
 
-	EngFuncs::CvarSetValue( "cl_newgame", 1.0f ); // the server closes the missions again
+	// the training is a mission of its own: the progress of the game stays (only "New Game" closes the missions again)
 
 	// the training map of the game info (trainmap in liblist.gam)
 	EngFuncs::ClientCmdF( false, "map %s\n", gMenu.m_gameinfo.trainmap );
