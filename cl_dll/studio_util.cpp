@@ -17,19 +17,6 @@
 #include "neon_mathfun.h"
 #endif // XASH_ARM
 
-#if XASH_SIMD_NEON
-#if XASH_ARM >= 8
-#define NEON_MLA( acc, a, b )  vfmaq_f32( acc, a, b )
-#define NEON_MLS( acc, a, b )  vfmsq_f32( acc, a, b )
-#elif __ARM_VFPV4__
-#define NEON_MLA( acc, a, b )  vfmaq_f32( acc, a, b )
-#define NEON_MLS( acc, a, b )  vfmsq_f32( acc, a, b )
-#else // XASH_ARM
-#define NEON_MLA( acc, a, b )  vmlaq_f32( acc, a, b )
-#define NEON_MLS( acc, a, b )  vmlsq_f32( acc, a, b )
-#endif // XASH_ARM
-#endif // XASH_SIMD_NEON
-
 /*
 ================
 ConcatTransforms
@@ -187,14 +174,9 @@ void QuaternionSlerp( vec4_t p, vec4_t q, float t, vec4_t qt )
 	sincos_ps( vmulq_n_f32( omega, t ), &st, &ct );
 	float32x4_t one = vdupq_n_f32( 1.0f );
 	float32x4_t cprod = vmulq_f32( vsubq_f32( one, cosom ), vaddq_f32( one, cosom ));
-	const float32x4_t half = vdupq_n_f32( 0.5f );
-	const float32x4_t onehalf = vdupq_n_f32( 1.5f );
-	float32x4_t r = vrsqrteq_f32( cprod );
-	r = vmulq_f32( r, NEON_MLS( onehalf, vmulq_f32( half, cprod ), vmulq_f32( r, r )));
-	r = vmulq_f32( r, NEON_MLS( onehalf, vmulq_f32( half, cprod ), vmulq_f32( r, r )));
-	float32x4_t sinom_recip = r;
+	float32x4_t sinom_recip = rsqrt_ps( cprod );
 	sclq = vmulq_f32( st, sinom_recip );
-	sclp = NEON_MLS( ct, cosom, sclq );   // ct - cosom*sclq
+	sclp = NEON_MLS( ct, cosom, sclq );	// ct − cosom·sclq
 	vst1q_f32( qt, NEON_MLA( vmulq_f32( p_reg, sclp ), q_reg, sclq ));
 #else // XASH_SIMD_NEON
 	int i;
@@ -279,12 +261,7 @@ void QuaternionSlerpX4( vec4_t p[4], vec4_t q[4], float t, vec4_t qt[4] )
 	float32x4_t st, ct;
 	sincos_ps( vmulq_n_f32( omega, t ), &st, &ct );
 	float32x4_t cprod = vmulq_f32( vsubq_f32( one, cosom ), vaddq_f32( one, cosom ));
-	const float32x4_t half = vdupq_n_f32( 0.5f );
-	const float32x4_t onehalf = vdupq_n_f32( 1.5f );
-	float32x4_t r = vrsqrteq_f32( cprod );
-	r = vmulq_f32( r, NEON_MLS( onehalf, vmulq_f32( half, cprod ), vmulq_f32( r, r )));
-	r = vmulq_f32( r, NEON_MLS( onehalf, vmulq_f32( half, cprod ), vmulq_f32( r, r )));
-	float32x4_t sinom_recip = r;
+	float32x4_t sinom_recip = rsqrt_ps( cprod );
 	float32x4_t sclq_s = vmulq_f32( st, sinom_recip );
 	float32x4_t sclp_s = NEON_MLS( ct, cosom, sclq_s );
 	float32x4_t t_reg = vdupq_n_f32( t );
