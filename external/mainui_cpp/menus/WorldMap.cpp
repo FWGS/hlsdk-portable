@@ -25,7 +25,8 @@ enum
 	WORLDMAP_WIDTH = 640,
 	WORLDMAP_HEIGHT = 480,
 	WORLDMAP_STRING_SIZE = 128,
-	WORLDMAP_FIRST_BONUS_BIT = 16384 // the bits from this one are the bonus missions
+	WORLDMAP_FIRST_BONUS_BIT = 16384, // the bits from this one are the bonus missions
+	WORLDMAP_GAME_FINISHED_BIT = 1048576 // the mod's server sets it when the ending is reached
 };
 
 enum
@@ -235,6 +236,11 @@ bool CMenuWorldMap::IsOpen( int idx ) const
 int CMenuWorldMap::LatestOpen() const
 {
 	int best = -1;
+
+	// the game is finished: all the open missions are done, none of them is the current one
+	if( (int)EngFuncs::GetCvarFloat( "cl_levellocks" ) & WORLDMAP_GAME_FINISHED_BIT )
+		return best;
+
 	for( int i = 0; i < g_iMissionCount; i++ )
 	{
 		if( g_iMissionBits[i] < WORLDMAP_FIRST_BONUS_BIT && IsOpen( i ) && ( best < 0 || g_iMissionBits[i] > g_iMissionBits[best] ))

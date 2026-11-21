@@ -117,7 +117,8 @@ enum
 	LEVEL_Miami			= 65536,
 	LEVEL_Fastline		= 131072,
 	LEVEL_Pipedream		= 262144,
-	LEVEL_Sandstorm		= 524288
+	LEVEL_Sandstorm		= 524288,
+	LEVEL_GameFinished	= 1048576	// the ending (cz_end) was reached: no mission is the current one on the world map
 };
 
 class CTriggerStealth;

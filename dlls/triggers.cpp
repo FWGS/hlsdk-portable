@@ -3874,6 +3874,8 @@ void CTriggerEndMission::UpdateLevelLocks(const char *levelName)
 		CBasePlayer::gLevelLocks |= 4096;
 	else if (strstr(levelName, "cz_hr"))
 		CBasePlayer::gLevelLocks |= 8192;
+	else if (strstr(levelName, "cz_end"))
+		CBasePlayer::gLevelLocks |= LEVEL_GameFinished;
 	CBasePlayer *pPlayer = (CBasePlayer *)CBaseEntity::Instance(INDEXENT(1));
 	if (pPlayer)
 	{
