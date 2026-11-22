@@ -45,7 +45,7 @@ project (HLSDK-PORTABLE)
 ################\
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
-option(BUILD_MENU "Build the menu of the game (the world map and the layout)" OFF)
+option(BUILD_MENU "Build the menu of the game (the world map and the layout)" ON)
 option(LTO "Enable interprocedural optimization" OFF)
 option(POLLY "Enable pollyhedral optimization" OFF)
 option(ANDROID_APK "Enable APK styled deploy" OFF)

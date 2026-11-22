@@ -299,7 +299,7 @@ def configure(conf):
 		conf.env.USE_STATIC_FREEVGUI = True
 
 	conf.load('library_naming')
-	conf.add_subproject('game_shared dlls freevgui cl_dll')
+	conf.add_subproject('game_shared dlls cl_dll')
 
 def build(bld):
 	if bld.env.WAFCACHE:
@@ -313,4 +313,4 @@ def build(bld):
 		excl='*.user configuration.py .lock* *conf_check_*/** config.log %s/*' % Build.CACHE_DIR,
 		quiet=True, generator=True)
 
-	bld.add_subproject('game_shared dlls freevgui cl_dll')
+	bld.add_subproject('game_shared dlls cl_dll')
