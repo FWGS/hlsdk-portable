@@ -3,6 +3,10 @@ project(CLDLL)
 
 set(CLDLL_LIBRARY client)
 
+# the client code uses C++11 (auto, std::decay); the old compilers of the CI default to C++98
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 file(GLOB CZ_CLIENT_SRC "*.cpp")
 file(GLOB CZ_EVENTS_SRC "events/*.cpp")
 file(GLOB CZ_WPN_SRC "cs_wpn/*.cpp")
