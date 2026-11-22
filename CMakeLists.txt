@@ -213,6 +213,17 @@ if(BUILD_CLIENT)
 	message(STATUS "Building client enabled")
 
 	add_subdirectory(cl_dll)
+
+	# extras.pk3: the touch controls, the images and the sounds of the menu (other players do not have it in the game folder)
+	file(GLOB_RECURSE EXTRAS_FILES RELATIVE "${CMAKE_SOURCE_DIR}/extras" "${CMAKE_SOURCE_DIR}/extras/*")
+	list(SORT EXTRAS_FILES)
+	file(GLOB_RECURSE EXTRAS_DEPENDS "${CMAKE_SOURCE_DIR}/extras/*")
+	add_custom_command(OUTPUT "${CMAKE_BINARY_DIR}/extras.pk3"
+		COMMAND ${CMAKE_COMMAND} -E tar cf "${CMAKE_BINARY_DIR}/extras.pk3" --format=zip -- ${EXTRAS_FILES}
+		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/extras"
+		DEPENDS ${EXTRAS_DEPENDS})
+	add_custom_target(extras ALL DEPENDS "${CMAKE_BINARY_DIR}/extras.pk3")
+	install(FILES "${CMAKE_BINARY_DIR}/extras.pk3" DESTINATION "${GAMEDIR}")
 endif()
 
 if(BUILD_MENU)
