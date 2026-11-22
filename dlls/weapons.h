@@ -216,7 +216,7 @@ public:
 	float		m_flNextFreqInterval;
 	float		m_flNextBeep;
 	float		m_flNextFreq;
-	char*		m_sBeepName;
+	const char*	m_sBeepName;
 	float		m_fAttenu;
 	float		m_flNextBlink;
 	float		m_fNextDefuse;
@@ -327,7 +327,7 @@ public:
 	virtual void SendWeaponAnim( int iAnim, int skiplocal = 1 );
 	BOOL CanDeploy() override { return TRUE; }
 	virtual BOOL IsUseable();
-	BOOL DefaultDeploy( char* viewModel, char* weaponModel, int iAnim, char* animExt, int skiplocal = 0 );
+	BOOL DefaultDeploy( const char* viewModel, const char* weaponModel, int iAnim, const char* animExt, int skiplocal = 0 );
 	BOOL DefaultReload( int clipSize, int iAnim, float delay );
 	void ItemPostFrame() override;
 	virtual void PrimaryAttack() {}
@@ -427,7 +427,7 @@ class CWeaponBox : public CBaseEntity
 	void Touch( CBaseEntity* pOther ) override;
 	void KeyValue( KeyValueData* pkvd ) override;
 	BOOL IsEmpty();
-	int GiveAmmo( int count, char* name, int maxCarry, int* index = NULL );
+	int GiveAmmo( int count, const char* name, int maxCarry, int* index = NULL );
 	void SetObjectCollisionBox() override;
 
 public:

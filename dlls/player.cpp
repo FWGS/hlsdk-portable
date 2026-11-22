@@ -891,7 +891,7 @@ int CBasePlayer::RemovePlayerItem( CBasePlayerItem* item )
 	return 0;
 }
 
-int CBasePlayer::GiveAmmo( int count, char* name, int maximum )
+int CBasePlayer::GiveAmmo( int count, const char* name, int maximum )
 {
 	if ( !name || !g_pGameRules->CanHaveAmmo( this, name, maximum ) )
 		return -1;
@@ -1464,13 +1464,13 @@ public:
 	int Classify() override { return CLASS_HUMAN_MILITARY; }
 
 	int m_iPose;
-	static char* m_szPoses[];
+	static const char* m_szPoses[];
 #if defined( _MSC_VER )
 #pragma warning( suppress : 26495 )
 #endif
 };
 
-char* CDeadHEV::m_szPoses[] = { "deadback", "deadsitting", "deadstomach", "deadtable" };
+const char* CDeadHEV::m_szPoses[] = { "deadback", "deadsitting", "deadstomach", "deadtable" };
 
 LINK_ENTITY_TO_CLASS( monster_hevsuit_dead, CDeadHEV );
 
@@ -3872,6 +3872,7 @@ void CBasePlayer::CheatImpulseCommands( int impulse )
 			GiveNamedItem( "ammo_357sig" );
 			GiveNamedItem( "ammo_9mm" );
 		}
+		// fall through
 	case 195:
 		CBaseEntity::Create( "node_viewer_fly", pev->origin, pev->angles );
 		break;

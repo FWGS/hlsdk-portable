@@ -22,7 +22,7 @@
 
 skilldata_t gSkillData;
 
-float GetSkillCvar( char* name )
+float GetSkillCvar( const char* name )
 {
 	char buffer[64];
 	sprintf( buffer, "%s%d", name, gSkillData.iSkillLevel );

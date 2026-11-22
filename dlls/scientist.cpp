@@ -761,7 +761,7 @@ public:
 	int m_iPose;
 	int m_deadAnim;
 	static TYPEDESCRIPTION m_SaveData[];
-	static char *m_szPoses[7];
+	static const char *m_szPoses[7];
 	int Save(CSave &save);
 	int Restore(CRestore &restore);
 #if defined( _MSC_VER )
@@ -771,7 +771,7 @@ public:
 
 LINK_ENTITY_TO_CLASS(monster_npc_dead, CDeadNPC);
 
-char *CDeadNPC::m_szPoses[7] =
+const char *CDeadNPC::m_szPoses[7] =
 {
 	"lying_on_back", "lying_on_stomach", "dead_sitting", "dead_hang", "dead_table1", "dead_table2", "dead_table3"
 };

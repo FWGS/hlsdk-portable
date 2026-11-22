@@ -374,7 +374,7 @@ public:
 	BOOL ExitScriptedSequence( );
 	BOOL CineCleanup( );
 
-	CBaseEntity* DropItem ( char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
+	CBaseEntity* DropItem ( const char *pszItemName, const Vector &vecPos, const Vector &vecAng );// drop an item.
 	void BloodSplat(Vector &vecSrc, Vector &vecDir, int color, int amount);
 	virtual void SpawnInit(void) {}
 	virtual BOOL IsPlayerHidden(void);

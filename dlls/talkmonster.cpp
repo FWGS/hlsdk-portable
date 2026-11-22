@@ -51,7 +51,7 @@ TYPEDESCRIPTION	CTalkMonster::m_SaveData[] =
 IMPLEMENT_SAVERESTORE( CTalkMonster, CBaseMonster );
 
 // array of friend names
-char *CTalkMonster::m_szFriends[TLK_CFRIENDS] = 
+const char *CTalkMonster::m_szFriends[TLK_CFRIENDS] = 
 {
 	"monster_barney",
 	"monster_scientist",
@@ -657,7 +657,7 @@ void CTalkMonster :: Killed( entvars_t *pevAttacker, int iGib )
 CBaseEntity	*CTalkMonster::EnumFriends( CBaseEntity *pPrevious, int listNumber, BOOL bTrace )
 {
 	CBaseEntity *pFriend = pPrevious;
-	char *pszFriend;
+	const char *pszFriend;
 	TraceResult tr;
 	Vector vecCheck;
 
@@ -816,7 +816,7 @@ CBaseEntity *CTalkMonster :: FindNearestFriend(BOOL fPlayer)
 	Vector vecStart = pev->origin;
 	Vector vecCheck;
 	int i;
-	char *pszFriend;
+	const char *pszFriend;
 	int cfriends;
 
 	vecStart.z = pev->absmax.z;

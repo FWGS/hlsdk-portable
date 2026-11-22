@@ -127,4 +127,4 @@ struct skilldata_t
 extern skilldata_t gSkillData;
 extern int g_iSkillLevel;
 
-float GetSkillCvar( char* name );
+float GetSkillCvar( const char* name );

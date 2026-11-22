@@ -231,7 +231,7 @@ public:
 	void SetMaxSpeed( const float speed );
 	void ResetMaxSpeed();
 	bool HintMessage( const char* message, BOOL displayIfDead = FALSE, BOOL override = FALSE );
-	int GiveAmmo( int count, char* name, int maximum ) override;
+	int GiveAmmo( int count, const char* name, int maximum ) override;
 	void SendAmmoUpdate();
 	void WaterMove();
 	void EXPORT PlayerDeathThink();

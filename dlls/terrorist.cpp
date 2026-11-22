@@ -233,7 +233,7 @@ public:
 	unsigned short m_usFireMP5;
 	BOOL stealthDeath;
 	BOOL heardCombat;
-	static char* pTerroristSentences[];
+	static const char* pTerroristSentences[];
 };
 
 int g_fTerroristQuestion;
@@ -317,7 +317,7 @@ TYPEDESCRIPTION CTerrorist::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CTerrorist, CSquadMonster );
 
-char* CTerrorist::pTerroristSentences[] =
+const char* CTerrorist::pTerroristSentences[] =
 {
 	"T_GREN",
 	"T_ENEMY",
@@ -2609,13 +2609,13 @@ public:
 	int Classify() override { return CLASS_HUMAN_MILITARY; }
 	void KeyValue( KeyValueData* data ) override;
 	int m_iPose;
-	static char* m_szPoses[3];
+	static const char* m_szPoses[3];
 #if defined( _MSC_VER )
 #pragma warning( suppress : 26495 )
 #endif
 };
 
-char* CDeadTerrorist::m_szPoses[3] = { "deadstomach", "deadside", "deadsitting" };
+const char* CDeadTerrorist::m_szPoses[3] = { "deadstomach", "deadside", "deadsitting" };
 
 void CDeadTerrorist::KeyValue( KeyValueData* data )
 {

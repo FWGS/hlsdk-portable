@@ -18,11 +18,11 @@ float CLocalNav::flLastThinkTime;
 EHANDLE CLocalNav::hostages[20];
 int CLocalNav::tot_hostages;
 
-void CONSOLE_ECHO( char* message, ... )
+void CONSOLE_ECHO( const char* message, ... )
 {
 }
 
-void CONSOLE_ECHO_LOGGED( char* message, ... )
+void CONSOLE_ECHO_LOGGED( const char* message, ... )
 {
 }
 

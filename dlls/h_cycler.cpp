@@ -30,7 +30,7 @@
 class CCycler : public CBaseMonster
 {
 public:
-	void GenericCyclerSpawn( char* model, Vector mins, Vector maxs );
+	void GenericCyclerSpawn( const char* model, Vector mins, Vector maxs );
 	int ObjectCaps() override { return FCAP_ACROSS_TRANSITION | FCAP_IMPULSE_USE; }
 	int TakeDamage( entvars_t* inflictor, entvars_t* attacker, float damage, int damageType ) override;
 	void Spawn() override;
@@ -53,7 +53,7 @@ TYPEDESCRIPTION CCycler::m_SaveData[] =
 
 IMPLEMENT_SAVERESTORE( CCycler, CBaseMonster );
 
-void CCycler::GenericCyclerSpawn( char* model, Vector mins, Vector maxs )
+void CCycler::GenericCyclerSpawn( const char* model, Vector mins, Vector maxs )
 {
 	if ( !model || !model[0] )
 	{

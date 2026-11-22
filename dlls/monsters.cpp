@@ -3799,7 +3799,7 @@ BOOL CBaseMonster :: GetEnemy ( void )
 //=========================================================
 // DropItem - dead monster drops named item 
 //=========================================================
-CBaseEntity* CBaseMonster :: DropItem ( char *pszItemName, const Vector &vecPos, const Vector &vecAng )
+CBaseEntity* CBaseMonster :: DropItem ( const char *pszItemName, const Vector &vecPos, const Vector &vecAng )
 {
 	if ( !pszItemName )
 	{

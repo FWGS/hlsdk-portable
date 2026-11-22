@@ -803,7 +803,7 @@ public:
 	int TakeDamage( entvars_t* inflictor, entvars_t* attacker, float damage, int damageType ) override;
 
 	static TYPEDESCRIPTION m_SaveData[];
-	static char* m_soundNames[3];
+	static const char* m_soundNames[3];
 	int		m_lastSound;	// no need to save/restore, just keeps the same sound from playing twice in a row
 	float	m_maxSpeed;
 	float	m_soundTime;
@@ -823,7 +823,7 @@ TYPEDESCRIPTION CPushable::m_SaveData[] =
 IMPLEMENT_SAVERESTORE( CPushable, CBreakable );
 LINK_ENTITY_TO_CLASS( func_pushable, CPushable );
 
-char* CPushable::m_soundNames[] =
+const char* CPushable::m_soundNames[] =
 {
 	"debris/pushbox1.wav",
 	"debris/pushbox2.wav",

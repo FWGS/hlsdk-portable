@@ -547,7 +547,7 @@ void CBasePlayerWeapon::RetireWeapon()
 	g_pGameRules->GetNextBestWeapon( m_pPlayer, this );
 }
 
-BOOL CBasePlayerWeapon::DefaultDeploy( char* viewModel, char* weaponModel, int animation, char* extension, int skiplocal )
+BOOL CBasePlayerWeapon::DefaultDeploy( const char* viewModel, const char* weaponModel, int animation, const char* extension, int skiplocal )
 {
 	if ( !CanDeploy() )
 		return FALSE;
@@ -943,7 +943,7 @@ BOOL CWeaponBox::IsEmpty()
 	return TRUE;
 }
 
-int CWeaponBox::GiveAmmo( int count, char* name, int maxCarry, int* index )
+int CWeaponBox::GiveAmmo( int count, const char* name, int maxCarry, int* index )
 {
 	int slot;
 	for ( slot = 1; slot < MAX_AMMO_SLOTS; ++slot )

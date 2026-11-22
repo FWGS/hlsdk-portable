@@ -1646,7 +1646,7 @@ public:
 	int Classify() { return CLASS_HUMAN_MILITARY; }
 	void KeyValue( KeyValueData* data );
 	int m_iPose;
-	static char* m_szPoses[3];
+	static const char* m_szPoses[3];
 #if defined( _MSC_VER )
 #pragma warning( suppress : 26495 )
 #endif
@@ -1654,7 +1654,7 @@ public:
 
 LINK_ENTITY_TO_CLASS( monster_hgrunt_dead, CDeadHGrunt );
 
-char* CDeadHGrunt::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
+const char* CDeadHGrunt::m_szPoses[] = { "deadstomach", "deadside", "deadsitting" };
 
 void CDeadHGrunt::KeyValue( KeyValueData* data )
 {
