@@ -78,6 +78,17 @@ int DLLEXPORT HUD_AddEntity( int type, struct cl_entity_s *ent, const char *mode
 
 			float a = cl_glow_alpha ? cl_glow_alpha->value : 1.0f;
 			float sz = cl_glow_size ? cl_glow_size->value : 1.0f;
+
+			// cz_train01: the lamps of the first room, before the elevator (y above the elevator shaft), are far too strong up close
+			if( ent->curstate.origin[1] > -650.0f )
+			{
+				const char *lvl = gEngfuncs.pfnGetLevelName();
+				if( lvl && strstr( lvl, "cz_train01" ))
+				{
+					a = 0.6f;
+					sz = 0.16f;
+				}
+			}
 			int amt = (int)( s_origAmt[i] * a + 0.5f );
 			if( amt < 0 ) amt = 0;
 			if( amt > 255 ) amt = 255;
