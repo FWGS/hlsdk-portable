@@ -132,8 +132,14 @@ int DLLEXPORT HUD_AddEntity( int type, struct cl_entity_s *ent, const char *mode
 			// props with the multiplier 1 are a little brighter in the original than the engine light gives
 			// (test 12.11, the generator and the pipes of cz_silo02 are almost black: the light under them is
 			// 25-55 of 255). 1.4 instead of 1.0
+			// only in cz_silo02, where it was tested: on the other maps the props (shelves with bottles and scanners)
+			// came out brighter than the surroundings
 			if( ent->curstate.iuser4 == 10 )
-				ent->curstate.iuser4 = 14;
+			{
+				const char *lvl = gEngfuncs.pfnGetLevelName();
+				if( lvl && strstr( lvl, "cz_silo02" ))
+					ent->curstate.iuser4 = 14;
+			}
 
 			// iuser4 comes with the delta (czeror delta.lst: 8 bits); no renderamt fallback any more
 			static unsigned char seen[4096];
