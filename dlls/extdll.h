@@ -65,11 +65,27 @@ typedef int BOOL;
 #endif //_WIN32
 
 // Misc C-runtime library headers
-#include "stdio.h"
-#include "stdlib.h"
 #include "minmax.h"
-#ifndef _WIN32
-# define _vsnprintf(a,b,c,d) vsnprintf(a,b,c,d)
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include "safe_snprintf.h"
+#ifndef __restrict
+#define	__restrict 
+#endif
+#if !HAVE_STRLCPY
+extern "C" size_t strlcpy(char * __restrict dst, const char * __restrict src, size_t dsize);
+#endif
+#if !HAVE_STRLCAT
+extern "C" size_t strlcat(char * __restrict dst, const char * __restrict src, size_t dsize);
+#endif
+// NOTE: Never use cmath header in HLSDK
+// because it's required to use std namespace
+// directly if you want to override math calls.
+#include <math.h>
+
+#if !defined(M_PI_F)
+#define M_PI_F          (float)M_PI
 #endif
 #include "math.h"
 

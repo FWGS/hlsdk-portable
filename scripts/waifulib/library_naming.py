@@ -61,6 +61,7 @@ DEFINES = [
 'XASH_X86',
 'XASH_NSWITCH',
 'XASH_PSVITA',
+'XASH_PS4',
 'XASH_WASI',
 'XASH_WASM',
 'XASH_SUNOS',
@@ -107,6 +108,8 @@ def configure(conf):
 		buildos = "nswitch"
 	elif conf.env.XASH_PSVITA:
 		buildos = "psvita"
+	elif conf.env.XASH_PS4:
+		buildos = "ps4"
 	elif conf.env.XASH_IRIX:
 		buildos = "irix"
 	elif conf.env.XASH_WASI:

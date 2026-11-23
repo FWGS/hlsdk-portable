@@ -20,9 +20,9 @@
 #define VECTOR_H
 
 // Misc C-runtime library headers
-#include "stdio.h"
-#include "stdlib.h"
-#include "math.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
 float rsqrt( float x );
 
