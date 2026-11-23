@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -12,20 +12,17 @@
 *   without written permission from Valve LLC.
 *
 ****/
+
 #pragma once
-#if !defined(ITEMS_H)
-#define ITEMS_H
 
 class CItem : public CBaseEntity
 {
 public:
-	void Spawn( void );
-	CBaseEntity *Respawn( void );
-	void EXPORT ItemTouch( CBaseEntity *pOther );
-	void EXPORT Materialize( void );
-	virtual BOOL MyTouch( CBasePlayer *pPlayer )
-	{
-		return FALSE;
-	};
+	void Spawn() override;
+	int Save( CSave& save ) override;
+	int Restore( CRestore& restore ) override;
+	CBaseEntity* Respawn() override;
+	void EXPORT ItemTouch( CBaseEntity* other );
+	void EXPORT Materialize();
+	virtual BOOL MyTouch( CBasePlayer* player ) { return FALSE; }
 };
-#endif // ITEMS_H

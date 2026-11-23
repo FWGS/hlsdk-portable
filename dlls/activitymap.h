@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -12,9 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#pragma once
-#if !defined(ACTIVITYMAP_H)
-#define ACTIVITYMAP_H
+
 #define _A( a ) { a, #a }
 
 activity_map_t activity_map[] =
@@ -95,6 +93,5 @@ _A(	ACT_FLINCH_LEFTARM ),
 _A(	ACT_FLINCH_RIGHTARM ),
 _A(	ACT_FLINCH_LEFTLEG ),
 _A(	ACT_FLINCH_RIGHTLEG ),
-{ 0, NULL }
+0, NULL
 };
-#endif // ACTIVITYMAP_H

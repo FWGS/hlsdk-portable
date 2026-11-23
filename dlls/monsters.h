@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -12,8 +12,7 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-#pragma once
-#if !defined(MONSTERS_H)
+#ifndef MONSTERS_H
 #include "skill.h"
 #define MONSTERS_H
 
@@ -39,13 +38,15 @@
 #define HITGROUP_RIGHTARM	5
 #define HITGROUP_LEFTLEG	6
 #define HITGROUP_RIGHTLEG	7
+#define HITGROUP_SHIELD		8
+
 
 // Monster Spawnflags
 #define	SF_MONSTER_WAIT_TILL_SEEN		1// spawnflag that makes monsters wait until player can see them before attacking.
-#define	SF_MONSTER_GAG				2 // no idle noises from this monster
+#define	SF_MONSTER_GAG					2 // no idle noises from this monster
 #define SF_MONSTER_HITMONSTERCLIP		4
 //										8
-#define SF_MONSTER_PRISONER			16 // monster won't attack anyone, no one will attacke him.
+#define SF_MONSTER_PRISONER				16 // monster won't attack anyone, no one will attacke him.
 //										32
 //										64
 #define	SF_MONSTER_WAIT_FOR_SCRIPT		128 //spawnflag that makes monsters wait to check for attacking until the script is done or they've been attacked
@@ -58,28 +59,31 @@
 #define SF_MONSTER_TURRET_STARTINACTIVE	64
 #define SF_MONSTER_WAIT_UNTIL_PROVOKED	64 // don't attack the player unless provoked
 
-// MoveToOrigin stuff
-#define MOVE_START_TURN_DIST		64 // when this far away from moveGoal, start turning to face next goal
-#define MOVE_STUCK_DIST			32 // if a monster can't step this far, it is stuck.
+
 
 // MoveToOrigin stuff
-#define MOVE_NORMAL			0// normal move in the direction monster is facing
-#define MOVE_STRAFE			1// moves in direction specified, no matter which way monster is facing
+#define		MOVE_START_TURN_DIST	64 // when this far away from moveGoal, start turning to face next goal
+#define		MOVE_STUCK_DIST			32 // if a monster can't step this far, it is stuck.
+
+
+// MoveToOrigin stuff
+#define		MOVE_NORMAL				0// normal move in the direction monster is facing
+#define		MOVE_STRAFE				1// moves in direction specified, no matter which way monster is facing
 
 // spawn flags 256 and above are already taken by the engine
 extern void UTIL_MoveToOrigin( edict_t* pent, const Vector &vecGoal, float flDist, int iMoveType ); 
 
-Vector VecCheckToss( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, float flGravityAdj = 1.0 );
-Vector VecCheckThrow( entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, float flSpeed, float flGravityAdj = 1.0 );
-extern DLL_GLOBAL Vector g_vecAttackDir;
+Vector VecCheckToss(entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, float flGravityAdj = 1.0);
+Vector VecCheckThrow(entvars_t *pev, const Vector &vecSpot1, Vector vecSpot2, float flSpeed, float flGravityAdj = 1.0);
+extern DLL_GLOBAL Vector		g_vecAttackDir;
 extern DLL_GLOBAL CONSTANT float g_flMeleeRange;
 extern DLL_GLOBAL CONSTANT float g_flMediumRange;
 extern DLL_GLOBAL CONSTANT float g_flLongRange;
-extern void EjectBrass(const Vector &vecOrigin, const Vector &vecVelocity, float rotation, int model, int soundtype );
+extern void EjectBrass (const Vector &vecOrigin, const Vector &vecVelocity, float rotation, int model, int soundtype );
 extern void ExplodeModel( const Vector &vecOrigin, float speed, int model, int count );
 
-BOOL FBoxVisible( entvars_t *pevLooker, entvars_t *pevTarget );
-BOOL FBoxVisible( entvars_t *pevLooker, entvars_t *pevTarget, Vector &vecTargetOrigin, float flSize = 0.0 );
+BOOL FBoxVisible ( entvars_t *pevLooker, entvars_t *pevTarget );
+BOOL FBoxVisible ( entvars_t *pevLooker, entvars_t *pevTarget, Vector &vecTargetOrigin, float flSize = 0.0 );
 
 // monster to monster relationship types
 #define R_AL	-2 // (ALLY) pals. Good alternative to R_NO when applicable.
@@ -88,6 +92,7 @@ BOOL FBoxVisible( entvars_t *pevLooker, entvars_t *pevTarget, Vector &vecTargetO
 #define R_DL	1// (DISLIKE) will attack
 #define R_HT	2// (HATE)will attack this character instead of any visible DISLIKEd characters
 #define R_NM	3// (NEMESIS)  A monster Will ALWAYS attack its nemsis, no matter what
+
 
 // these bits represent the monster's memory
 #define MEMORY_CLEAR					0
@@ -119,7 +124,10 @@ enum
 	AITRIGGER_HEARPLAYER,
 	AITRIGGER_HEARCOMBAT,
 	AITRIGGER_SEEPLAYER_UNCONDITIONAL,
-	AITRIGGER_SEEPLAYER_NOT_IN_COMBAT
+	AITRIGGER_SEEPLAYER_NOT_IN_COMBAT,
+	AITRIGGER_SEEPLAYER_HEARCOMBAT,
+	AITRIGGER_SEEPLAYER_HEARCOMBAT_TAKEDAMAGE,
+	AITRIGGER_SEEPLAYER_TAKEDAMAGE,
 };
 /*
 		0 : "No Trigger"
@@ -141,21 +149,26 @@ class CGib : public CBaseEntity
 {
 public:
 	void Spawn( const char *szGibModel );
-	void EXPORT BounceGibTouch( CBaseEntity *pOther );
-	void EXPORT StickyGibTouch( CBaseEntity *pOther );
+	void EXPORT BounceGibTouch ( CBaseEntity *pOther );
+	void EXPORT StickyGibTouch ( CBaseEntity *pOther );
 	void EXPORT WaitTillLand( void );
-	void LimitVelocity( void );
+	void		LimitVelocity( void );
 
-	virtual int ObjectCaps( void ) { return ( CBaseEntity::ObjectCaps() & ~FCAP_ACROSS_TRANSITION ) | FCAP_DONT_SAVE; }
-	static void SpawnHeadGib( entvars_t *pevVictim );
-	static void SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human );
-	static void SpawnStickyGibs( entvars_t *pevVictim, Vector vecOrigin, int cGibs );
+	virtual int	ObjectCaps( void ) { return (CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION) | FCAP_DONT_SAVE; }
+	static	void SpawnHeadGib( entvars_t *pevVictim );
+	static	void SpawnRandomGibs( entvars_t *pevVictim, int cGibs, int human );
+	static  void SpawnStickyGibs( entvars_t *pevVictim, Vector vecOrigin, int cGibs );
 
-	int m_bloodColor;
-	int m_cBloodDecals;
-	int m_material;
-	float m_lifeTime;
+	int		m_bloodColor;
+	int		m_cBloodDecals;
+	int		m_material;
+	float	m_lifeTime;
+	BOOL m_quiet;
+#if defined( _MSC_VER )
+#pragma warning( suppress : 26495 )
+#endif
 };
+
 
 #define CUSTOM_SCHEDULES\
 		virtual Schedule_t *ScheduleFromName( const char *pName );\
@@ -167,9 +180,12 @@ public:
 #define IMPLEMENT_CUSTOM_SCHEDULES(derivedClass, baseClass)\
 		Schedule_t *derivedClass::ScheduleFromName( const char *pName )\
 		{\
-			Schedule_t *pSchedule = ScheduleInList( pName, m_scheduleList, ARRAYSIZE( m_scheduleList ) );\
-			if( !pSchedule )\
-				return baseClass::ScheduleFromName( pName );\
+			Schedule_t *pSchedule = ScheduleInList( pName, m_scheduleList, ARRAYSIZE(m_scheduleList) );\
+			if ( !pSchedule )\
+				return baseClass::ScheduleFromName(pName);\
 			return pSchedule;\
 		}
+
+
+
 #endif	//MONSTERS_H

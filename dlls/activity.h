@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -12,9 +12,10 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#pragma once
-#if !defined(ACTIVITY_H)
+
+#ifndef	ACTIVITY_H
 #define	ACTIVITY_H
+
 
 typedef enum {
 	ACT_RESET = 0,		// Set m_Activity to this invalid value to force a reset to m_IdealActivity
@@ -93,14 +94,20 @@ typedef enum {
 	ACT_FLINCH_LEFTARM,
 	ACT_FLINCH_RIGHTARM,
 	ACT_FLINCH_LEFTLEG,
-	ACT_FLINCH_RIGHTLEG
+	ACT_FLINCH_RIGHTLEG,
+	ACT_FLINCH,
+	ACT_LARGE_FLINCH,
+	ACT_HOLDBOMB,
+	ACT_LASTACTIVITY,
 } Activity;
 
-typedef struct
-{
-	int type;
+
+typedef struct {
+	int	type;
 	const char *name;
 } activity_map_t;
 
 extern activity_map_t activity_map[];
+
+
 #endif	//ACTIVITY_H

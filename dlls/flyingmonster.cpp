@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -13,273 +13,197 @@
 *
 ****/
 
-#include	"extdll.h"
-#include	"util.h"
-#include	"cbase.h"
-#include        "game.h"
-#include	"monsters.h"
-#include	"schedule.h"
-#include	"flyingmonster.h"
+#include "extdll.h"
+#include "util.h"
+#include "cbase.h"
+#include "monsters.h"
+#include "schedule.h"
+#include "flyingmonster.h"
 
-#define FLYING_AE_FLAP		(8)
-#define FLYING_AE_FLAPSOUND	(9)
+#define FLYING_AE_FLAP 8
+#define FLYING_AE_FLAPSOUND 9
 
-extern DLL_GLOBAL edict_t *g_pBodyQueueHead;
-
-int CFlyingMonster::CheckLocalMove( const Vector &vecStart, const Vector &vecEnd, CBaseEntity *pTarget, float *pflDist )
+int CFlyingMonster::CheckLocalMove( const Vector& start, const Vector& end, CBaseEntity* target, float* distance )
 {
-	// UNDONE: need to check more than the endpoint
-	if( FBitSet( pev->flags, FL_SWIM ) && ( UTIL_PointContents( vecEnd ) != CONTENTS_WATER ) )
+	if ( (pev->flags & FL_SWIM) && UTIL_PointContents( end ) != CONTENTS_WATER )
+		return LOCALMOVE_INVALID;
+	TraceResult trace;
+	UTIL_TraceHull( start + Vector( 0, 0, 32 ), end + Vector( 0, 0, 32 ), dont_ignore_monsters,
+		large_hull, edict(), &trace );
+	if ( distance )
+		*distance = (trace.vecEndPos - Vector( 0, 0, 32 ) - start).Length();
+	if ( trace.fStartSolid || trace.flFraction < 1 )
 	{
-		// ALERT( at_aiconsole, "can't swim out of water\n" );
-		return FALSE;
-	}
-
-	TraceResult tr;
-
-	UTIL_TraceHull( vecStart + Vector( 0.0f, 0.0f, 32.0f ), vecEnd + Vector( 0.0f, 0.0f, 32.0f ), dont_ignore_monsters, large_hull, edict(), &tr );
-
-	// ALERT( at_console, "%.0f %.0f %.0f : ", vecStart.x, vecStart.y, vecStart.z );
-	// ALERT( at_console, "%.0f %.0f %.0f\n", vecEnd.x, vecEnd.y, vecEnd.z );
-
-	if( pflDist )
-	{
-		*pflDist = ( ( tr.vecEndPos - Vector( 0.0f, 0.0f, 32.0f ) ) - vecStart ).Length();// get the distance.
-	}
-
-	// ALERT( at_console, "check %d %d %f\n", tr.fStartSolid, tr.fAllSolid, tr.flFraction );
-	if( tr.fStartSolid || tr.flFraction < 1.0f )
-	{
-		if( pTarget && pTarget->edict() == gpGlobals->trace_ent )
+		if ( target && target->edict() == gpGlobals->trace_ent )
 			return LOCALMOVE_VALID;
 		return LOCALMOVE_INVALID;
 	}
-
 	return LOCALMOVE_VALID;
 }
 
-BOOL CFlyingMonster::FTriangulate( const Vector &vecStart, const Vector &vecEnd, float flDist, CBaseEntity *pTargetEnt, Vector *pApex )
+BOOL CFlyingMonster::FTriangulate( const Vector& start, const Vector& end, float distance, CBaseEntity* target, Vector* apex )
 {
-	return CBaseMonster::FTriangulate( vecStart, vecEnd, flDist, pTargetEnt, pApex );
+	return CBaseMonster::FTriangulate( start, end, distance, target, apex );
 }
 
-Activity CFlyingMonster::GetStoppedActivity( void )
-{ 
-	if( pev->movetype != MOVETYPE_FLY )		// UNDONE: Ground idle here, IDLE may be something else
-		return ACT_IDLE;
-
-	return ACT_HOVER; 
+Activity CFlyingMonster::GetStoppedActivity()
+{
+	return pev->movetype == MOVETYPE_FLY ? ACT_HOVER : ACT_IDLE;
 }
 
-void CFlyingMonster::Stop( void ) 
+void CFlyingMonster::Stop()
 {
 	Activity stopped = GetStoppedActivity();
-	if( m_IdealActivity != stopped )
+	if ( m_IdealActivity != stopped )
 	{
 		m_flightSpeed = 0;
 		m_IdealActivity = stopped;
 	}
-	pev->angles.z = 0.0f;
-	pev->angles.x = 0.0f;
+	pev->angles.z = 0;
+	pev->angles.x = 0;
 	m_vecTravel = g_vecZero;
 }
 
 float CFlyingMonster::ChangeYaw( int yawSpeed )
 {
-	if( pev->movetype == MOVETYPE_FLY )
+	if ( pev->movetype == MOVETYPE_FLY )
 	{
-		float diff = FlYawDiff();
-		float target = 0.0f;
-
-		if( m_IdealActivity != GetStoppedActivity() )
+		float difference = FlYawDiff();
+		if ( m_flLastZYawTime == 0 )
+			m_flLastZYawTime = gpGlobals->time - gpGlobals->frametime;
+		float target = 0;
+		if ( m_IdealActivity != GetStoppedActivity() )
 		{
-			if( diff < -20.0f )
-				target = 90.0f;
-			else if( diff > 20.0f )
-				target = -90.0f;
+			if ( difference < -20 )
+				target = 90;
+			else if ( difference > 20 )
+				target = -90;
 		}
-
-		float speed = 220.f;
-
-		if( monsteryawspeedfix.value )
-		{
-			if( m_flLastZYawTime == 0.f )
-				m_flLastZYawTime = gpGlobals->time - gpGlobals->frametime;
-
-			float delta = Q_min( gpGlobals->time - m_flLastZYawTime, 0.25f );
-			m_flLastZYawTime = gpGlobals->time;
-
-			speed *= delta;
-		}
-		else
-			speed *= gpGlobals->frametime;
-
-		pev->angles.z = UTIL_Approach( target, pev->angles.z, speed );
+		float interval = gpGlobals->time - m_flLastZYawTime;
+		m_flLastZYawTime = gpGlobals->time;
+		if ( interval > 0.25f )
+			interval = 0.25f;
+		pev->angles.z = UTIL_Approach( target, pev->angles.z, 220 * interval );
 	}
 	return CBaseMonster::ChangeYaw( yawSpeed );
 }
 
-void CFlyingMonster::Killed( entvars_t *pevAttacker, int iGib )
+void CFlyingMonster::Killed( entvars_t* attacker, int gib )
 {
 	pev->movetype = MOVETYPE_STEP;
-	ClearBits( pev->flags, FL_ONGROUND );
+	pev->flags &= ~FL_ONGROUND;
 	pev->angles.z = 0;
 	pev->angles.x = 0;
-	CBaseMonster::Killed( pevAttacker, iGib );
+	CBaseMonster::Killed( attacker, gib );
 }
 
-void CFlyingMonster::HandleAnimEvent( MonsterEvent_t *pEvent )
+void CFlyingMonster::HandleAnimEvent( MonsterEvent_t* event )
 {
-	switch( pEvent->event )
-	{
-	case FLYING_AE_FLAP:
+	if ( event->event == FLYING_AE_FLAP )
 		m_flightSpeed = 400;
-		break;
-	case FLYING_AE_FLAPSOUND:
-		if( m_pFlapSound )
-			EMIT_SOUND( edict(), CHAN_BODY, m_pFlapSound, 1, ATTN_NORM );	
-		break;
-	default:
-		CBaseMonster::HandleAnimEvent( pEvent );
-		break;
-	}
-}
-
-void CFlyingMonster::Move( float flInterval )
-{
-	if( pev->movetype == MOVETYPE_FLY )
-		m_flGroundSpeed = m_flightSpeed;
-	CBaseMonster::Move( flInterval );
-}
-
-BOOL CFlyingMonster::ShouldAdvanceRoute( float flWaypointDist )
-{
-	// Get true 3D distance to the goal so we actually reach the correct height
-	if( m_Route[m_iRouteIndex].iType & bits_MF_IS_GOAL )
-		flWaypointDist = ( m_Route[m_iRouteIndex].vecLocation - pev->origin ).Length();
-
-	if( flWaypointDist <= 64.0f + ( m_flGroundSpeed * gpGlobals->frametime ) )
-		return TRUE;
-
-	return FALSE;
-}
-
-void CFlyingMonster::MoveExecute( CBaseEntity *pTargetEnt, const Vector &vecDir, float flInterval )
-{
-	if( pev->movetype == MOVETYPE_FLY )
+	else if ( event->event == FLYING_AE_FLAPSOUND )
 	{
-		if( gpGlobals->time - m_stopTime > 1.0f )
-		{
-			if( m_IdealActivity != m_movementActivity )
-			{
-				m_IdealActivity = m_movementActivity;
-				m_flGroundSpeed = m_flightSpeed = 200;
-			}
-		}
-		Vector vecMove = pev->origin + ( ( vecDir + ( m_vecTravel * m_momentum ) ).Normalize() * (m_flGroundSpeed * flInterval ) );
-
-		if( m_IdealActivity != m_movementActivity )
-		{
-			m_flightSpeed = UTIL_Approach( 100, m_flightSpeed, 75.0f * gpGlobals->frametime );
-			if( m_flightSpeed < 100 )
-				m_stopTime = gpGlobals->time;
-		}
-		else
-			m_flightSpeed = UTIL_Approach( 20, m_flightSpeed, 300.0f * gpGlobals->frametime );
-
-		if( CheckLocalMove( pev->origin, vecMove, pTargetEnt, NULL ) )
-		{
-			m_vecTravel = vecMove - pev->origin;
-			m_vecTravel = m_vecTravel.Normalize();
-			UTIL_MoveToOrigin( ENT( pev ), vecMove, ( m_flGroundSpeed * flInterval ), MOVE_STRAFE );
-		}
-		else
-		{
-			m_IdealActivity = GetStoppedActivity();
-			m_stopTime = gpGlobals->time;
-			m_vecTravel = g_vecZero;
-		}
+		if ( m_pFlapSound )
+			EMIT_SOUND( edict(), CHAN_BODY, m_pFlapSound, 1, ATTN_NORM );
 	}
 	else
-		CBaseMonster::MoveExecute( pTargetEnt, vecDir, flInterval );
+		CBaseMonster::HandleAnimEvent( event );
 }
 
-float CFlyingMonster::CeilingZ( const Vector &position )
+void CFlyingMonster::Move( float interval )
 {
-	TraceResult tr;
-
-	Vector minUp = position;
-	Vector maxUp = position;
-	maxUp.z += 4096.0f;
-
-	UTIL_TraceLine( position, maxUp, ignore_monsters, NULL, &tr );
-	if( tr.flFraction != 1.0f )
-		maxUp.z = tr.vecEndPos.z;
-
-	if( ( pev->flags ) & FL_SWIM )
-	{
-		return UTIL_WaterLevel( position, minUp.z, maxUp.z );
-	}
-	return maxUp.z;
+	if ( pev->movetype == MOVETYPE_FLY )
+		m_flGroundSpeed = m_flightSpeed;
+	CBaseMonster::Move( interval );
 }
 
-BOOL CFlyingMonster::ProbeZ( const Vector &position, const Vector &probe, float *pFraction )
+BOOL CFlyingMonster::ShouldAdvanceRoute( float distance )
 {
-	int conPosition = UTIL_PointContents( position );
-	if( ( ( ( pev->flags ) & FL_SWIM ) == FL_SWIM ) ^ ( conPosition == CONTENTS_WATER ) )
+	// Get true 3D distance to the goal so we actually reach the correct height
+	if ( m_Route[m_iRouteIndex].iType & bits_MF_IS_GOAL )
+		distance = (m_Route[m_iRouteIndex].vecLocation - pev->origin).Length();
+	return gpGlobals->frametime * m_flGroundSpeed + 64 >= distance;
+}
+
+void CFlyingMonster::MoveExecute( CBaseEntity* target, const Vector& direction, float interval )
+{
+	if ( pev->movetype != MOVETYPE_FLY )
 	{
-		//    SWIMING & !WATER
-		// or FLYING  & WATER
-		//
-		*pFraction = 0.0f;
-		return TRUE; // We hit a water boundary because we are where we don't belong.
+		CBaseMonster::MoveExecute( target, direction, interval );
+		return;
 	}
-	int conProbe = UTIL_PointContents( probe );
-	if( conProbe == conPosition )
+	if ( gpGlobals->time - m_stopTime > 1 && m_IdealActivity != m_movementActivity )
 	{
-		// The probe is either entirely inside the water (for fish) or entirely
-		// outside the water (for birds).
-		//
-		*pFraction = 1.0f;
+		m_IdealActivity = m_movementActivity;
+		m_flGroundSpeed = m_flightSpeed = 200;
+	}
+	Vector move = pev->origin + (direction + m_vecTravel * m_momentum).Normalize() * (m_flGroundSpeed * interval);
+	if ( m_IdealActivity != m_movementActivity )
+	{
+		m_flightSpeed = UTIL_Approach( 100, m_flightSpeed, 75 * gpGlobals->frametime );
+		if ( m_flightSpeed < 100 )
+			m_stopTime = gpGlobals->time;
+	}
+	else
+		m_flightSpeed = UTIL_Approach( 20, m_flightSpeed, 300 * gpGlobals->frametime );
+	if ( CheckLocalMove( pev->origin, move, target, NULL ) )
+	{
+		m_vecTravel = (move - pev->origin).Normalize();
+		UTIL_MoveToOrigin( edict(), move, m_flGroundSpeed * interval, MOVE_STRAFE );
+	}
+	else
+	{
+		m_IdealActivity = GetStoppedActivity();
+		m_stopTime = gpGlobals->time;
+		m_vecTravel = g_vecZero;
+	}
+}
+
+float CFlyingMonster::CeilingZ( const Vector& position )
+{
+	Vector up = position + Vector( 0, 0, 4096 );
+	TraceResult trace;
+	UTIL_TraceLine( position, up, ignore_monsters, NULL, &trace );
+	if ( trace.flFraction != 1 )
+		up.z = trace.vecEndPos.z;
+	if ( pev->flags & FL_SWIM )
+		return UTIL_WaterLevel( position, position.z, up.z );
+	return up.z;
+}
+
+float CFlyingMonster::FloorZ( const Vector& position )
+{
+	Vector down = position - Vector( 0, 0, 2048 );
+	TraceResult trace;
+	UTIL_TraceLine( position, down, ignore_monsters, NULL, &trace );
+	return trace.flFraction == 1 ? down.z : trace.vecEndPos.z;
+}
+
+BOOL CFlyingMonster::ProbeZ( const Vector& position, const Vector& probe, float* fraction )
+{
+	int contents = UTIL_PointContents( position );
+	if ( ((pev->flags & FL_SWIM) != 0) != (contents == CONTENTS_WATER) )
+	{
+		*fraction = 0;
+		return TRUE;
+	}
+	if ( UTIL_PointContents( probe ) == contents )
+	{
+		*fraction = 1;
 		return FALSE;
 	}
-
-	Vector ProbeUnit = ( probe - position ).Normalize();
-	float ProbeLength = ( probe - position ).Length();
-	float maxProbeLength = ProbeLength;
-	float minProbeLength = 0;
-
-	float diff = maxProbeLength - minProbeLength;
-	while( diff > 1.0f )
+	Vector direction = (probe - position).Normalize();
+	float length = (probe - position).Length();
+	float maximum = length;
+	float minimum = 0;
+	while ( maximum - minimum > 1 )
 	{
-		float midProbeLength = minProbeLength + diff / 2.0f;
-		Vector midProbeVec = midProbeLength * ProbeUnit;
-		if( UTIL_PointContents( position + midProbeVec ) == conPosition )
-		{
-			minProbeLength = midProbeLength;
-		}
+		float middle = minimum + (maximum - minimum) * 0.5f;
+		if ( UTIL_PointContents( position + direction * middle ) == contents )
+			minimum = middle;
 		else
-		{
-			maxProbeLength = midProbeLength;
-		}
-		diff = maxProbeLength - minProbeLength;
+			maximum = middle;
 	}
-	*pFraction = minProbeLength/ProbeLength;
-
+	*fraction = minimum / length;
 	return TRUE;
-}
-
-float CFlyingMonster::FloorZ( const Vector &position )
-{
-	TraceResult tr;
-
-	Vector down = position;
-	down.z -= 2048.0f;
-
-	UTIL_TraceLine( position, down, ignore_monsters, NULL, &tr );
-
-	if( tr.flFraction != 1.0f )
-		return tr.vecEndPos.z;
-
-	return down.z;
 }

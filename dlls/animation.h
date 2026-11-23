@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -12,13 +12,12 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#pragma once
-#if !defined(ANIMATION_H)
+#ifndef ANIMATION_H
 #define ANIMATION_H
 
 #define ACTIVITY_NOT_AVAILABLE		-1
 
-#if !defined(MONSTEREVENT_H)
+#ifndef MONSTEREVENT_H
 #include "monsterevent.h"
 #endif
 
@@ -43,4 +42,6 @@ int ExtractBbox( void *pmodel, int sequence, float *mins, float *maxs );
 
 // From /engine/studio.h
 #define STUDIO_LOOPING		0x0001
+
+
 #endif	//ANIMATION_H

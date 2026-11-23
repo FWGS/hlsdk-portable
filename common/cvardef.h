@@ -40,4 +40,22 @@ typedef struct cvar_s
 	struct cvar_s	*next;
 } cvar_t;
 
+// WARNING: Private structure from Xash3D Engine. Use with caution
+typedef struct convar_s
+{
+	// this part shared with cvar_t
+	char		*name;
+	char		*string;
+	int		flags;
+	float		value;
+	struct convar_s	*next;
+
+	// this part unique for convar_t
+	int		integer;		// atoi( string )
+	int		modified;		// set each time the cvar is changed
+	char		*reset_string;	// cvar_restart will reset to this value
+	char		*latched_string;	// for CVAR_LATCH vars
+	char		*description;	// variable descrition info
+} convar_t;
+
 #endif//CVARDEF_H

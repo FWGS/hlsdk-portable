@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -15,8 +15,8 @@
 //=========================================================
 // Scheduling 
 //=========================================================
-#pragma once
-#if !defined(SCHEDULE_H)
+
+#ifndef	SCHEDULE_H
 #define	SCHEDULE_H
 
 #define	TASKSTATUS_NEW				0			// Just started
@@ -24,6 +24,7 @@
 #define TASKSTATUS_RUNNING_MOVEMENT	2			// Just running movement
 #define TASKSTATUS_RUNNING_TASK		3			// Just running task
 #define TASKSTATUS_COMPLETE			4			// Completed, get next task
+
 
 //=========================================================
 // These are the schedule types
@@ -72,6 +73,12 @@ typedef enum
 		SCHED_BARNACLE_VICTIM_CHOMP,
 		SCHED_AISCRIPT,
 		SCHED_FAIL,
+		SCHED_FORCED_TARGET,
+		SCHED_ADVANCE_TO_POINT,
+		SCHED_FOLLOW_ME,
+		SCHED_FIND_PLAYER,
+		SCHED_WANDER,
+		SCHED_DIE_ANGLED,
 
 		LAST_COMMON_SCHEDULE			// Leave this at the bottom
 } SCHEDULE_TYPE;
@@ -171,7 +178,8 @@ typedef enum
 		TASK_REMEMBER,
 		TASK_FORGET,
 		TASK_WAIT_FOR_MOVEMENT,			// wait until MovementIsComplete()
-		LAST_COMMON_TASK // LEAVE THIS AT THE BOTTOM!! (sjb)
+		TASK_SET_DEATH_ANGLES,
+		LAST_COMMON_TASK, // LEAVE THIS AT THE BOTTOM!! (sjb)
 } SHARED_TASKS;
 
 
@@ -179,7 +187,7 @@ typedef enum
 enum 
 {
 	TARGET_MOVE_NORMAL = 0,
-	TARGET_MOVE_SCRIPTED = 1
+	TARGET_MOVE_SCRIPTED = 1,
 };
 
 
@@ -193,7 +201,7 @@ enum
 	GOAL_MOVE,
 	GOAL_TAKE_COVER,
 	GOAL_MOVE_TARGET,
-	GOAL_EAT
+	GOAL_EAT,
 };
 
 // an array of tasks is a task list
@@ -207,10 +215,11 @@ struct Task_t
 
 struct Schedule_t
 {
+
 	Task_t	*pTasklist;
 	int		cTasks;	 
 	int		iInterruptMask;// a bit mask of conditions that can interrupt this schedule 
-
+	
 	// a more specific mask that indicates which TYPES of sounds will interrupt the schedule in the 
 	// event that the schedule is broken by COND_HEAR_SOUND
 	int		iSoundMask;
@@ -222,7 +231,8 @@ struct Schedule_t
 struct WayPoint_t
 {
 	Vector	vecLocation;
-	int		iType;
+	float waitTime = 0;
+	int		iType = 0;
 };
 
 // these MoveFlag values are assigned to a WayPoint's TYPE in order to demonstrate the 
@@ -279,6 +289,7 @@ struct WayPoint_t
 
 #define bits_COND_TASK_FAILED			( 1 << 30)
 #define bits_COND_SCHEDULE_DONE			( 1 << 31)
+
 
 #define bits_COND_ALL_SPECIAL			(bits_COND_SPECIAL1 | bits_COND_SPECIAL2)
 

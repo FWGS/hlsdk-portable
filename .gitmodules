@@ -1,3 +1,6 @@
 [submodule "freevgui"]
 	path = freevgui
 	url = https://github.com/FWGS/freevgui.git
+[submodule "external/mainui_cpp"]
+	path = external/mainui_cpp
+	url = https://github.com/FWGS/mainui_cpp

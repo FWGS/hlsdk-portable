@@ -19,35 +19,38 @@
 //
 
 #include "hud.h"
-#include "cl_util.h"
 #include "netadr.h"
-#include "parsemsg.h"
+#include "pmtrace.h"
 
-#include "vgui_int.h"
-#include "vgui_TeamFortressViewport.h"
-
-extern "C"
-{
 #include "pm_shared.h"
-}
 
 #include <string.h>
-#include "vcs_info.h"
+#include "interface.h"
+#include "render_api.h"
+#include "mobility_int.h"
+#include "vgui_parser.h"
+#include "particleman.h"
+#include "IParticleMan_Active.h"
+#include "CMiniMem.h"
+#include "environment.h"
 
-cl_enginefunc_t gEngfuncs;
+#include "cl_util.h"
+
+cl_enginefunc_t		gEngfuncs  = { };
+render_api_t		gRenderAPI = { };
+mobile_engfuncs_t	gMobileAPI = { };
 CHud gHUD;
-TeamFortressViewport *gViewPort = NULL;
-mobile_engfuncs_t *gMobileEngfuncs = NULL;
+int g_iXash = 0; // indicates a buildnum
+int g_iMobileAPIVersion = 0;
 
-#if defined( INTERNAL_VGUI_SUPPORT )
-// declare InitVGUISupportAPI so that linker doesn't remove it because nothing references it
-extern "C" void InitVGUISupportAPI( void *api );
-void *g_pKeepVGUISupport = (void *)InitVGUISupportAPI;
-#endif
+IParticleMan *g_pParticleMan = NULL;
 
-void InitInput( void );
-void EV_HookEvents( void );
+void InitInput (void);
+void Game_HookEvents( void );
 void IN_Commands( void );
+void Input_Shutdown (void);
+void CL_LoadParticleMan();
+void CL_UnloadParticleMan();
 
 /*
 ========================== 
@@ -56,24 +59,50 @@ void IN_Commands( void );
 Called when the DLL is first loaded.
 ==========================
 */
-extern "C" 
+int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
 {
-int		DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion );
-int		DLLEXPORT HUD_VidInit( void );
-void	DLLEXPORT HUD_Init( void );
-int		DLLEXPORT HUD_Redraw( float flTime, int intermission );
-int		DLLEXPORT HUD_UpdateClientData( client_data_t *cdata, float flTime );
-void	DLLEXPORT HUD_Reset ( void );
-void	DLLEXPORT HUD_PlayerMove( struct playermove_s *ppmove, int server );
-void	DLLEXPORT HUD_PlayerMoveInit( struct playermove_s *ppmove );
-char	DLLEXPORT HUD_PlayerMoveTexture( char *name );
-int		DLLEXPORT HUD_ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size );
-int		DLLEXPORT HUD_GetHullBounds( int hullnumber, float *mins, float *maxs );
-void	DLLEXPORT HUD_Frame( double time );
-void	DLLEXPORT HUD_VoiceStatus(int entindex, qboolean bTalking);
-void	DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf );
-int DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs );
+	if (iVersion != CLDLL_INTERFACE_VERSION)
+		return 0;
+
+	gEngfuncs = *pEnginefuncs;
+
+	// Register cvar to allow using old touch menus (1 = use old cfg-based menus)
+
+	CVAR_CREATE("cl_oldtouchmenus", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE);
+
+	sscanf( CVAR_GET_STRING( "host_ver" ), "%d", &g_iXash );
+
+	Game_HookEvents();
+	CL_LoadParticleMan();
+
+	return 1;
 }
+
+
+/*
+=============
+HUD_Shutdown
+
+=============
+*/
+void DLLEXPORT HUD_Shutdown( void )
+{
+	gHUD.Shutdown();
+	Input_Shutdown();
+	Localize_Free();
+	g_Environment.Clear();
+	if (g_pParticleMan)
+	{
+		CL_UnloadParticleMan();
+	}
+	auto miniMem = CMiniMem::Instance();
+	if (miniMem)
+	{
+		miniMem->Reset();
+		miniMem->Shutdown();
+	}
+}
+
 
 /*
 ================================
@@ -86,21 +115,21 @@ int DLLEXPORT HUD_GetHullBounds( int hullnumber, float *mins, float *maxs )
 {
 	int iret = 0;
 
-	switch( hullnumber )
+	switch ( hullnumber )
 	{
 	case 0:				// Normal player
-		Vector( -16, -16, -36 ).CopyToArray(mins);
-		Vector( 16, 16, 36 ).CopyToArray(maxs);
+		Vector(-16, -16, -36).CopyToArray(mins);
+		Vector(16, 16, 36).CopyToArray(maxs);
 		iret = 1;
 		break;
 	case 1:				// Crouched player
-		Vector( -16, -16, -18 ).CopyToArray(mins);
-		Vector( 16, 16, 18 ).CopyToArray(maxs);
+		Vector(-16, -16, -18).CopyToArray(mins);
+		Vector(16, 16, 18).CopyToArray(maxs);
 		iret = 1;
 		break;
 	case 2:				// Point based hull
-		Vector( 0, 0, 0 ).CopyToArray(mins);
-		Vector( 0, 0, 0 ).CopyToArray(maxs);
+		Vector(0, 0, 0).CopyToArray(mins);
+		Vector(0, 0, 0).CopyToArray(maxs);
 		iret = 1;
 		break;
 	}
@@ -116,7 +145,7 @@ HUD_ConnectionlessPacket
   size of the response_buffer, so you must zero it out if you choose not to respond.
 ================================
 */
-int DLLEXPORT HUD_ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size )
+int	DLLEXPORT HUD_ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size )
 {
 	// Parse stuff from args
 	// int max_buffer_size = *response_buffer_size;
@@ -145,33 +174,7 @@ void DLLEXPORT HUD_PlayerMove( struct playermove_s *ppmove, int server )
 	PM_Move( ppmove, server );
 }
 
-int DLLEXPORT Initialize( cl_enginefunc_t *pEnginefuncs, int iVersion )
-{
-	gEngfuncs = *pEnginefuncs;
-
-	if( iVersion != CLDLL_INTERFACE_VERSION )
-		return 0;
-
-	// for now filterstuffcmd is last in the engine interface
-	memcpy( &gEngfuncs, pEnginefuncs, sizeof(cl_enginefunc_t) - sizeof( void * ) );
-
-	if( gEngfuncs.pfnGetCvarPointer( "cl_filterstuffcmd" ) == 0 )
-	{
-		gEngfuncs.pfnFilteredClientCmd = gEngfuncs.pfnClientCmd;
-	}
-	else
-	{
-		gEngfuncs.pfnFilteredClientCmd = pEnginefuncs->pfnFilteredClientCmd;
-	}
-
-	EV_HookEvents();
-
-	gEngfuncs.pfnRegisterVariable( "cl_game_build_commit", g_VCSInfo_Commit, 0 );
-	gEngfuncs.pfnRegisterVariable( "cl_game_build_branch", g_VCSInfo_Branch, 0 );
-
-	return 1;
-}
-
+#ifdef _CS16CLIENT_ENABLE_GSRC_SUPPORT
 /*
 =================
 HUD_GetRect
@@ -190,6 +193,7 @@ int *HUD_GetRect( void )
 
 	return extent;
 }
+#endif
 
 /*
 ==========================
@@ -201,11 +205,20 @@ so the HUD can reinitialize itself.
 ==========================
 */
 
+bool isLoaded = false;
+
 int DLLEXPORT HUD_VidInit( void )
 {
 	gHUD.VidInit();
 
-	VGui_Startup();
+	isLoaded = true;
+
+	if (g_pParticleMan)
+	{
+		g_pParticleMan->ResetParticles();
+		g_Environment.Reset();
+		g_Environment.RestoreWeather();
+	}
 
 	return 1;
 }
@@ -224,8 +237,9 @@ void DLLEXPORT HUD_Init( void )
 {
 	InitInput();
 	gHUD.Init();
-	Scheme_Init();
+	//Scheme_Init();
 }
+
 
 /*
 ==========================
@@ -243,6 +257,7 @@ int DLLEXPORT HUD_Redraw( float time, int intermission )
 	return 1;
 }
 
+
 /*
 ==========================
 	HUD_UpdateClientData
@@ -256,11 +271,11 @@ returns 1 if anything has been changed, 0 otherwise.
 ==========================
 */
 
-int DLLEXPORT HUD_UpdateClientData( client_data_t *pcldata, float flTime )
+int DLLEXPORT HUD_UpdateClientData(client_data_t *pcldata, float flTime )
 {
 	IN_Commands();
 
-	return gHUD.UpdateClientData( pcldata, flTime );
+	return gHUD.UpdateClientData(pcldata, flTime );
 }
 
 /*
@@ -273,7 +288,7 @@ Called at start and end of demos to restore to "non"HUD state.
 
 void DLLEXPORT HUD_Reset( void )
 {
-	gHUD.VidInit();
+	gHUD.Reset();
 }
 
 /*
@@ -286,8 +301,12 @@ Called by engine every frame that client .dll is loaded
 
 void DLLEXPORT HUD_Frame( double time )
 {
-	GetClientVoiceMgr()->Frame(time);
+#ifdef _CS16CLIENT_ENABLE_GSRC_SUPPORT
+	gEngfuncs.VGui_ViewportPaintBackground(HUD_GetRect());
+#endif
+
 }
+
 
 /*
 ==========================
@@ -297,9 +316,23 @@ Called when a player starts or stops talking.
 ==========================
 */
 
-void DLLEXPORT HUD_VoiceStatus( int entindex, qboolean bTalking )
+void DLLEXPORT HUD_VoiceStatus(int entindex, qboolean bTalking)
 {
-	GetClientVoiceMgr()->UpdateSpeakerStatus(entindex, bTalking);
+	// gHUD.m_Radio.Voice( entindex, bTalking );
+	if ( entindex > 0 && entindex <= gEngfuncs.GetMaxClients() )
+	{
+		if ( bTalking )
+		{
+			g_PlayerExtraInfo[entindex].radarflashtime = gHUD.m_flTime;
+			g_PlayerExtraInfo[entindex].radarflashes = 99999;
+		}
+		else
+		{
+			g_PlayerExtraInfo[entindex].radarflashtime = -1.0f;
+			g_PlayerExtraInfo[entindex].radarflashes = 0;
+		}
+	}
+
 }
 
 /*
@@ -315,30 +348,172 @@ void DLLEXPORT HUD_DirectorMessage( int iSize, void *pbuf )
 	 gHUD.m_Spectator.DirectorMessage( iSize, pbuf );
 }
 
-int DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *gpMobileEngfuncs )
+/*
+==========================
+HUD_GetRenderInterface
+
+Called when Xash3D sends render api to us
+==========================
+*/
+
+int DLLEXPORT HUD_GetRenderInterface( int version, render_api_t *renderfuncs, render_interface_t *callback )
 {
-	if( gpMobileEngfuncs->version != MOBILITY_API_VERSION )
+	if( version != CL_RENDER_INTERFACE_VERSION )
+		return false;
+
+	gRenderAPI = *renderfuncs;
+
+	// we didn't send callbacks to engine, because we don't use it
+	// *callback = renderInterface;
+
+	// we have here a Host_Error, so check Xash for version
+	if( g_iXash < MIN_XASH_VERSION )
+	{
+		gRenderAPI.Host_Error("Xash3D FWGS version check failed!\nPlease update your Xash3D FWGS!\n");
+	}
+
+	return true;
+}
+
+/*
+========================
+HUD_MobilityInterface
+========================
+*/
+int DLLEXPORT HUD_MobilityInterface( mobile_engfuncs_t *mobileapi )
+{
+	if( mobileapi->version != MOBILITY_API_VERSION )
+	{
+		gEngfuncs.Con_Printf("Client Error: Mobile API version mismatch. Got: %i, want: %i\n",
+			mobileapi->version, MOBILITY_API_VERSION);
+
+		gRenderAPI.Host_Error("Xash3D Android version check failed!\nPlease update your Xash3D Android!\n");
 		return 1;
-	gMobileEngfuncs = gpMobileEngfuncs;
+	}
+
+	g_iMobileAPIVersion = MOBILITY_API_VERSION;
+	gMobileAPI = *mobileapi;
+
+#define TOUCH_ADDDEFAULT (*gMobileAPI.pfnTouchAddDefaultButton)
+
+	gMobileAPI.pfnTouchResetDefaultButtons();
+	unsigned char color[] = { 255, 255, 255, 150 };
+	TOUCH_ADDDEFAULT( "move", "", "_move", 0.000000, 0.444444, 0.460000, 0.995556, color, 0, 0.673353, 0 );
+	TOUCH_ADDDEFAULT( "look", "", "_look", 0.470000, 0.248889, 1.000000, 0.604444, color, 0, 0.377044, 0 );
+	TOUCH_ADDDEFAULT( "joy", "touch/gfx/joy", "_joy", 0.290000, 0.187234, 0.410000, 0.400745, color, 0, 1.000000, 1 );
+	TOUCH_ADDDEFAULT( "dpad", "touch/gfx/dpad", "_dpad", 0.170000, 0.187234, 0.290000, 0.400745, color, 0, 1.000000, 1 );
+	TOUCH_ADDDEFAULT( "invprev", "touch/gfx/left", "invprev", 0.000000, 0.323404, 0.080000, 0.465745, color, 2, 1.000000, 1 );
+	TOUCH_ADDDEFAULT( "invnext", "touch/gfx/right", "invnext", 0.080000, 0.323404, 0.160000, 0.465745, color, 2, 1.000000, 1 );
+	TOUCH_ADDDEFAULT( "reload", "touch/gfx/reload", "+reload", 0.680000, 0.680851, 0.760000, 0.823192, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "use", "touch/gfx/use", "+use", 0.700000, 0.544681, 0.780000, 0.687022, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "spraypaint", "touch/gfx/spraypaint", "impulse 201", 0.700000, 0.817021, 0.780000, 0.959362, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "drop", "touch/gfx/drop", "drop", 0.780000, 0.868085, 0.860000, 1.010426, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "jump", "touch/gfx/jump", "+jump", 0.880000, 0.800000, 0.980000, 0.977926, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "attack", "touch/gfx/attack", "+attack", 0.760000, 0.612766, 0.910000, 0.879655, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "attack2", "touch/gfx/attack2", "+attack2", 0.900000, 0.578723, 1.000000, 0.756649, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "w5", "touch/gfx/w_c4", "slot5", 0.760000, 0.102128, 0.840000, 0.244469, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "w1", "touch/gfx/w_rifle", "slot1", 0.780000, 0.238298, 0.860000, 0.380639, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "w2", "touch/gfx/w_pistol", "slot2", 0.840000, 0.136170, 0.920000, 0.278511, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "w4", "touch/gfx/w_grenade", "slot4", 0.880000, 0.017021, 0.960000, 0.159362, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "w3", "touch/gfx/w_knife", "slot3", 0.920000, 0.136170, 1.000000, 0.278511, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "flight", "touch/gfx/flaghtlight", "impulse 100", 0.280000, 0.851064, 0.360000, 0.993405, color, 2, 1.000000, 1 );
+	TOUCH_ADDDEFAULT( "light", "touch/gfx/light", "toggle_light", 0.360000, 0.851064, 0.440000, 0.993405, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "buy", "touch/gfx/buy", "buy", 0.440000, 0.851064, 0.520000, 0.993405, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "score", "touch/gfx/score", "scoreboard", 0.520000, 0.851064, 0.600000, 0.993405, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "nightvision", "touch/gfx/nightvision", "nightvision;toggle_plusminus", 0.360000, 0.714894, 0.440000, 0.857235, color, 2, 1.000000, 1 );
+	TOUCH_ADDDEFAULT( "minus_nvg", "touch/gfx/minus", "nvgadjustdown", 0.340000, 0.629787, 0.400000, 0.736543, color, 2, 1.000000, 1 );
+	TOUCH_ADDDEFAULT( "plus_nvg", "touch/gfx/plus", "nvgadjustup", 0.400000, 0.629787, 0.460000, 0.736543, color, 2, 1.000000, 1 );
+	TOUCH_ADDDEFAULT( "numbers", "touch_default/show_weapons", "exec touch_default/numbers.cfg", 0.440000, 0.714894, 0.520000, 0.857235, color, 2, 1.000000, 1 );
+	TOUCH_ADDDEFAULT( "duck", "touch/gfx/duck", "+duck", 0.000000, 0.817021, 0.100000, 0.994947, color, 2, 1.000000, 512 );
+	TOUCH_ADDDEFAULT( "duck_sw", "touch/gfx/duck", "crouchtoggle", 0.100000, 0.817021, 0.200000, 0.994947, color, 2, 1.000000, 1 );
+	TOUCH_ADDDEFAULT( "change_team", "touch/gfx/change_team", "chooseteam", 0.540000, 0.000000, 0.620000, 0.142341, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "exit", "touch/gfx/exit", "cancelselect", 0.460000, 0.000000, 0.540000, 0.142341, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "touch_edit", "touch/gfx/settings", "touch_enableedit", 0.380000, 0.000000, 0.460000, 0.142341, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "cmd", "touch/gfx/cmdmenu", "exec touch/cmd/cmd", 0.100000, 0.248889, 0.200000, 0.426815, color, 2, 1.000000, 1 );
+	TOUCH_ADDDEFAULT( "radio", "touch/gfx/radio", "showvguimenu 38", 0.000000, 0.248889, 0.100000, 0.426815, color, 2, 1.000000, 0 );
+	TOUCH_ADDDEFAULT( "walk", "touch/gfx/walk", "+speed", 0.000000, 0.640000, 0.100000, 0.817926, color, 2, 1.000000, 0 );
+
 	return 0;
 }
 
-bool HUD_MessageBox( const char *msg )
+extern "C" void DLLEXPORT HUD_ChatInputPosition( int *x, int *y )
 {
-	gEngfuncs.Con_Printf( msg ); // just in case
+}
 
-	if( IsXashFWGS() )
+extern "C" int DLLEXPORT HUD_GetPlayerTeam(int iplayer)
+{
+	// original seems to return team_id, but I'm not sure it's even set somewhere
+	if ( iplayer >= 1 && iplayer <= MAX_PLAYERS )
+		return g_PlayerExtraInfo[iplayer].teamnumber;
+	return 0;
+}
+
+void CL_UnloadParticleMan()
+{
+	if (g_pParticleMan)
 	{
-		gMobileEngfuncs->pfnSys_Warn( msg );
-		return true;
+		delete g_pParticleMan;
+		g_pParticleMan = NULL;
+	}
+}
+
+void CL_LoadParticleMan()
+{
+	g_pParticleMan = new IParticleMan_Active();
+	if (g_pParticleMan)
+	{
+		g_pParticleMan->SetUp(&gEngfuncs);
+	}
+}
+
+
+#include "cl_dll/IGameClientExports.h"
+
+//-----------------------------------------------------------------------------
+// Purpose: Exports functions that are used by the gameUI for UI dialogs
+//-----------------------------------------------------------------------------
+class CClientExports : public IGameClientExports
+{
+public:
+	// returns the name of the server the user is connected to, if any
+	virtual const char *GetServerHostName()
+	{
+		return gHUD.m_szServerName;
 	}
 
-	// TODO: Load SDL2 and call ShowSimpleMessageBox
+	// ingame voice manipulation
+	virtual bool IsPlayerGameVoiceMuted( int playerIndex )
+	{
+		return false;
+	}
 
-	return false;
-}
+	virtual void MutePlayerGameVoice( int playerIndex )
+	{
+	}
 
-bool IsXashFWGS()
-{
-	return gMobileEngfuncs != NULL;
-}
+	virtual void UnmutePlayerGameVoice( int playerIndex )
+	{
+	}
+
+	const char *GetLevelName( void ) override
+	{
+		const char *fullname = gEngfuncs.pfnGetLevelName();
+		if( fullname[0] )
+		{
+			strncpy( mapname, fullname + 5, sizeof( mapname ));
+			mapname[strlen(mapname) - 4] = '\0';
+		}
+		else mapname[0] = 0;
+
+		return mapname;
+	}
+
+	int GetLocalPlayerTeam() override
+	{
+		return g_PlayerExtraInfo[gHUD.m_Scoreboard.m_iPlayerNum].teamnumber;
+	}
+private:
+	char mapname[64];
+};
+
+EXPOSE_SINGLE_INTERFACE(CClientExports, IGameClientExports, GAMECLIENTEXPORTS_INTERFACE_VERSION)

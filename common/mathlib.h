@@ -41,6 +41,10 @@ typedef vec_t vec3_t[3];
 
 struct mplane_s;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern vec3_t vec3_origin;
 extern	int nanmask;
 
@@ -107,4 +111,8 @@ float	anglemod(float a);
 	)										\
 	:										\
 		BoxOnPlaneSide( (emins), (emaxs), (p)))
+#ifdef __cplusplus
+}
+#endif
+
 #endif // MATHLIB_H

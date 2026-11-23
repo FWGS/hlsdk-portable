@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -12,11 +12,10 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-#pragma once
-#if !defined(SCRIPTED_H)
+#ifndef SCRIPTED_H
 #define SCRIPTED_H
 
-#if !defined(SCRIPTEVENT_H)
+#ifndef SCRIPTEVENT_H
 #include "scriptevent.h"
 #endif
 
@@ -35,7 +34,7 @@ enum SS_INTERRUPT
 {
 	SS_INTERRUPT_IDLE = 0,
 	SS_INTERRUPT_BY_NAME,
-	SS_INTERRUPT_AI
+	SS_INTERRUPT_AI,
 };
 
 // when a monster finishes an AI scripted sequence, we can choose
@@ -78,9 +77,9 @@ public:
 	void	AllowInterrupt( BOOL fAllow );
 	int		IgnoreConditions( void );
 
-	string_t m_iszIdle;		// string index for idle animation
-	string_t m_iszPlay;		// string index for scripted animation
-	string_t m_iszEntity;	// entity that is wanted for this script
+	int	m_iszIdle;		// string index for idle animation
+	int	m_iszPlay;		// string index for scripted animation
+	int m_iszEntity;	// entity that is wanted for this script
 	int m_fMoveTo;
 	int m_iFinishSchedule;
 	float m_flRadius;		// range to search
@@ -92,8 +91,11 @@ public:
 	int	m_saved_movetype;
 	int	m_saved_solid;
 	int m_saved_effects;
-	//Vector m_vecOrigOrigin;
+//	Vector m_vecOrigOrigin;
 	BOOL m_interruptable;
+#if defined( _MSC_VER )
+#pragma warning( suppress : 26495 )
+#endif
 };
 
 class CCineAI : public CCineMonster
@@ -103,4 +105,6 @@ class CCineAI : public CCineMonster
 	BOOL FCanOverrideState ( void );
 	virtual void FixScriptMonsterSchedule( CBaseMonster *pMonster );
 };
-#endif //SCRIPTED_H
+
+
+#endif		//SCRIPTED_H

@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -12,8 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#pragma once
-#if !defined(DECALS_H)
+#ifndef DECALS_H
 #define DECALS_H
 
 //
@@ -62,14 +61,15 @@ enum decal_e
 	DECAL_SMALLSCORCH2,	// Small scorch mark
 	DECAL_SMALLSCORCH3,	// Small scorch mark
 	DECAL_MOMMABIRTH,	// Big momma birth splatter
-	DECAL_MOMMASPLAT
+	DECAL_MOMMASPLAT,
 };
 
 typedef struct 
 {
-	const char *name;
-	int index;
+	const char	*name;
+	int		index;
 } DLL_DECALLIST;
 
 extern DLL_DECALLIST gDecals[];
-#endif //DECALS_H
+
+#endif	// DECALS_H

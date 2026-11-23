@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -12,11 +12,10 @@
 *   use or distribution of this code by or to any unlicensed person is illegal.
 *
 ****/
-#pragma once
-#if !defined(TALKMONSTER_H)
+#ifndef TALKMONSTER_H
 #define TALKMONSTER_H
 
-#if !defined(MONSTERS_H)
+#ifndef MONSTERS_H
 #include "monsters.h"
 #endif
 
@@ -25,7 +24,7 @@
 // Used for scientists and barneys
 //=========================================================
 
-#define TALKRANGE_MIN 500.0f				// don't talk to anyone farther away than this
+#define TALKRANGE_MIN 500.0				// don't talk to anyone farther away than this
 
 #define TLK_STARE_DIST	128				// anyone closer than this and looking at me is probably staring at me.
 
@@ -61,8 +60,9 @@ typedef enum
 	TLK_WOUND,
 	TLK_MORTAL,
 
-	TLK_CGROUPS					// MUST be last entry
+	TLK_CGROUPS,					// MUST be last entry
 } TALKGROUPNAMES;
+
 
 enum
 {
@@ -71,7 +71,7 @@ enum
 	SCHED_MOVE_AWAY_FOLLOW,	// same, but follow afterward
 	SCHED_MOVE_AWAY_FAIL,	// Turn back toward player
 
-	LAST_TALKMONSTER_SCHEDULE		// MUST be last
+	LAST_TALKMONSTER_SCHEDULE,		// MUST be last
 };
 
 enum
@@ -92,7 +92,7 @@ enum
 	TASK_TLK_IDEALYAW,		// set ideal yaw to face who I'm talking to
 	TASK_FACE_PLAYER,		// Face the player
 
-	LAST_TALKMONSTER_TASK			// MUST be last
+	LAST_TALKMONSTER_TASK,			// MUST be last
 };
 
 class CTalkMonster : public CBaseMonster
@@ -111,7 +111,7 @@ public:
 	int				IRelationship ( CBaseEntity *pTarget );
 	virtual int		CanPlaySentence( BOOL fDisregardState );
 	virtual void	PlaySentence( const char *pszSentence, float duration, float volume, float attenuation );
-	void			PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
+	virtual void	PlayScriptedSentence( const char *pszSentence, float duration, float volume, float attenuation, BOOL bConcurrent, CBaseEntity *pListener );
 	void			KeyValue( KeyValueData *pkvd );
 
 	// AI functions
@@ -122,6 +122,7 @@ public:
 	void			HandleAnimEvent( MonsterEvent_t *pEvent );
 	void			PrescheduleThink( void );
 	
+
 	// Conversations / communication
 	int				GetVoicePitch( void );
 	void			IdleRespond( void );
@@ -136,10 +137,9 @@ public:
 	void			ShutUpFriends( void );
 	BOOL			IsTalking( void );
 	void			Talk( float flDuration );	
-
 	// For following
 	BOOL			CanFollow( void );
-	BOOL			IsFollowing( void ) { return m_hTargetEnt != 0 && m_hTargetEnt->IsPlayer(); }
+	BOOL			IsFollowing( void ) { return m_hTargetEnt != NULL && m_hTargetEnt->IsPlayer(); }
 	void			StopFollowing( BOOL clearSchedule );
 	void			StartFollowing( CBaseEntity *pLeader );
 	virtual void	DeclineFollowing( void ) {}
@@ -163,19 +163,24 @@ public:
 	int			m_voicePitch;					// pitch of voice for this head
 	const char	*m_szGrp[TLK_CGROUPS];			// sentence group names
 	float		m_useTime;						// Don't allow +USE until this time
-	string_t			m_iszUse;						// Custom +USE sentence group (follow)
-	string_t			m_iszUnUse;						// Custom +USE sentence group (stop following)
+	int			m_iszUse;						// Custom +USE sentence group (follow)
+	int			m_iszUnUse;						// Custom +USE sentence group (stop following)
 
 	float		m_flLastSaidSmelled;// last time we talked about something that stinks
 	float		m_flStopTalkTime;// when in the future that I'll be done saying this sentence.
 
 	EHANDLE		m_hTalkTarget;	// who to look at while talking
-	CUSTOM_SCHEDULES
+	CUSTOM_SCHEDULES;
+#if defined( _MSC_VER )
+#pragma warning( suppress : 26495 )
+#endif
 };
+
 
 // Clients can push talkmonsters out of their way
 #define		bits_COND_CLIENT_PUSH		( bits_COND_SPECIAL1 )
 // Don't see a client right now.
 #define		bits_COND_CLIENT_UNSEEN		( bits_COND_SPECIAL2 )
 
-#endif //TALKMONSTER_H
+
+#endif		//TALKMONSTER_H

@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -16,82 +16,50 @@
 #include "extdll.h"
 #include "util.h"
 #include "cbase.h"
-#include "monsters.h"
-#include "weapons.h"
-#include "nodes.h"
 #include "player.h"
 #include "items.h"
+#include "skill.h"
 #include "gamerules.h"
-#include "game.h"
-
-extern int gmsgItemPickup;
 
 class CHealthKit : public CItem
 {
-	void Spawn( void );
-	void Precache( void );
-	BOOL MyTouch( CBasePlayer *pPlayer );
-/*
-	virtual int Save( CSave &save ); 
-	virtual int Restore( CRestore &restore );
-	static TYPEDESCRIPTION m_SaveData[];
-*/
+	void Spawn() override;
+	void Precache() override;
+	BOOL MyTouch( CBasePlayer* player ) override;
 };
 
-LINK_ENTITY_TO_CLASS( item_healthkit, CHealthKit )
+LINK_ENTITY_TO_CLASS( item_healthkitold, CHealthKit );
 
-/*
-TYPEDESCRIPTION	CHealthKit::m_SaveData[] =
-{
-
-};
-
-IMPLEMENT_SAVERESTORE( CHealthKit, CItem )
-*/
-
-void CHealthKit::Spawn( void )
+void CHealthKit::Spawn()
 {
 	Precache();
-	SET_MODEL( ENT( pev ), "models/w_medkit.mdl" );
-
+	SET_MODEL( edict(), "models/w_medkit.mdl" );
 	CItem::Spawn();
 }
 
-void CHealthKit::Precache( void )
+void CHealthKit::Precache()
 {
 	PRECACHE_MODEL( "models/w_medkit.mdl" );
 	PRECACHE_SOUND( "items/smallmedkit1.wav" );
 }
 
-BOOL CHealthKit::MyTouch( CBasePlayer *pPlayer )
+BOOL CHealthKit::MyTouch( CBasePlayer* player )
 {
-	if( pPlayer->pev->deadflag != DEAD_NO )
-	{
+	if ( player->pev->deadflag != DEAD_NO || !player->TakeHealth( gSkillData.healthkitCapacity, DMG_GENERIC ) )
 		return FALSE;
-	}
-
-	if( pPlayer->TakeHealth( gSkillData.healthkitCapacity, DMG_GENERIC ) )
-	{
-		MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, pPlayer->pev );
-			WRITE_STRING( STRING( pev->classname ) );
-		MESSAGE_END();
-
-		EMIT_SOUND( ENT( pPlayer->pev ), CHAN_ITEM, "items/smallmedkit1.wav", 1, ATTN_NORM );
-
-		if( g_pGameRules->ItemShouldRespawn( this ) )
-		{
-			Respawn();
-		}
-		else
-		{
-			UTIL_Remove( this );	
-		}
-
-		return TRUE;
-	}
-
-	return FALSE;
+	MESSAGE_BEGIN( MSG_ONE, gmsgItemPickup, NULL, player->pev );
+		WRITE_STRING( STRING( pev->classname ) );
+	MESSAGE_END();
+	if ( !player->m_equipSilent )
+		EMIT_SOUND( player->edict(), CHAN_ITEM, "items/smallmedkit1.wav", 1, ATTN_NORM );
+	if ( g_pGameRules->ItemShouldRespawn( this ) )
+		Respawn();
+	else
+		UTIL_Remove( this );
+	return TRUE;
 }
+
+
 
 //-------------------------------------------------------------
 // Wall mounted health kit
@@ -99,24 +67,27 @@ BOOL CHealthKit::MyTouch( CBasePlayer *pPlayer )
 class CWallHealth : public CBaseToggle
 {
 public:
-	void Spawn();
-	void Precache( void );
-	void EXPORT Off( void );
-	void EXPORT Recharge( void );
-	void KeyValue( KeyValueData *pkvd );
-	void Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
-	virtual int ObjectCaps( void ) { return ( CBaseToggle::ObjectCaps() | FCAP_CONTINUOUS_USE ) & ~FCAP_ACROSS_TRANSITION; }
-	virtual int Save( CSave &save );
-	virtual int Restore( CRestore &restore );
+	void Spawn() override;
+	void Precache() override;
+	void KeyValue( KeyValueData* data ) override;
+	int Save( CSave& save ) override;
+	int Restore( CRestore& restore ) override;
+	int ObjectCaps() override { return FCAP_CONTINUOUS_USE; }
+	void Use( CBaseEntity* activator, CBaseEntity* caller, USE_TYPE useType, float value ) override;
 
 	static TYPEDESCRIPTION m_SaveData[];
-
-	float m_flNextCharge; 
-	int m_iReactivate ; // DeathMatch Delay until reactvated
-	int m_iJuice;
-	int m_iOn;			// 0 = off, 1 = startup, 2 = going
-	float m_flSoundTime;
+	float	m_flNextCharge;
+	int		m_iReactivate; // DeathMatch Delay until reactvated
+	int		m_iJuice;
+	int		m_iOn;			// 0 = off, 1 = startup, 2 = going
+	float	m_flSoundTime;
+	float	m_flUseTime;
+#if defined( _MSC_VER )
+#pragma warning( suppress : 26495 )
+#endif
 };
+
+LINK_ENTITY_TO_CLASS( func_healthcharger, CWallHealth );
 
 TYPEDESCRIPTION CWallHealth::m_SaveData[] =
 {
@@ -125,130 +96,66 @@ TYPEDESCRIPTION CWallHealth::m_SaveData[] =
 	DEFINE_FIELD( CWallHealth, m_iJuice, FIELD_INTEGER ),
 	DEFINE_FIELD( CWallHealth, m_iOn, FIELD_INTEGER ),
 	DEFINE_FIELD( CWallHealth, m_flSoundTime, FIELD_TIME ),
+	DEFINE_FIELD( CWallHealth, m_flUseTime, FIELD_TIME )
 };
 
-IMPLEMENT_SAVERESTORE( CWallHealth, CBaseToggle )
+IMPLEMENT_SAVERESTORE( CWallHealth, CBaseEntity );
 
-LINK_ENTITY_TO_CLASS( func_healthcharger, CWallHealth )
-
-void CWallHealth::KeyValue( KeyValueData *pkvd )
+void CWallHealth::KeyValue( KeyValueData* data )
 {
-	if( FStrEq(pkvd->szKeyName, "style" ) ||
-		FStrEq( pkvd->szKeyName, "height" ) ||
-		FStrEq( pkvd->szKeyName, "value1" ) ||
-		FStrEq( pkvd->szKeyName, "value2" ) ||
-		FStrEq( pkvd->szKeyName, "value3" ) )
+	if ( FStrEq( data->szKeyName, "style" ) || FStrEq( data->szKeyName, "height" ) ||
+		FStrEq( data->szKeyName, "value1" ) || FStrEq( data->szKeyName, "value2" ) ||
+		FStrEq( data->szKeyName, "value3" ) )
 	{
-		pkvd->fHandled = TRUE;
+		data->fHandled = TRUE;
 	}
-	else if( FStrEq( pkvd->szKeyName, "dmdelay" ) )
+	else if ( FStrEq( data->szKeyName, "dmdelay" ) )
 	{
-		m_iReactivate = atoi( pkvd->szValue );
-		pkvd->fHandled = TRUE;
+		m_iReactivate = atoi( data->szValue );
+		data->fHandled = TRUE;
+	}
+	else if ( FStrEq( data->szKeyName, "charges" ) )
+	{
+		m_iJuice = atoi( data->szValue );
+		data->fHandled = TRUE;
 	}
 	else
-		CBaseToggle::KeyValue( pkvd );
+		CBaseToggle::KeyValue( data );
 }
 
 void CWallHealth::Spawn()
 {
 	Precache();
-
 	pev->solid = SOLID_BSP;
 	pev->movetype = MOVETYPE_PUSH;
-
 	UTIL_SetOrigin( pev, pev->origin );		// set size and link into world
 	UTIL_SetSize( pev, pev->mins, pev->maxs );
-	SET_MODEL( ENT( pev ), STRING( pev->model ) );
-	m_iJuice = (int)gSkillData.healthchargerCapacity;
+	SET_MODEL( edict(), STRING( pev->model ) );
+	if ( !m_iJuice )
+		m_iJuice = 1;
 	pev->frame = 0;
 }
 
 void CWallHealth::Precache()
 {
-	PRECACHE_SOUND( "items/medshot4.wav" );
+	PRECACHE_SOUND( "items/medshot5.wav" );
 	PRECACHE_SOUND( "items/medshotno1.wav" );
-	PRECACHE_SOUND( "items/medcharge4.wav" );
 }
 
-void CWallHealth::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
-{ 
-	// Make sure that we have a caller
-	if( !pActivator )
-		return;
-	// if it's not a player, ignore
-	if( !pActivator->IsPlayer() )
-		return;
-
-	// if there is no juice left, turn it off
-	if( m_iJuice <= 0 )
+void CWallHealth::Use( CBaseEntity* activator, CBaseEntity*, USE_TYPE, float )
+{
+	if ( activator && activator->IsPlayer() && m_flUseTime <= gpGlobals->time )
 	{
-		pev->frame = 1;			
-		Off();
-	}
+		m_flUseTime = gpGlobals->time + 1.5f;
 
-	// if the player doesn't have the suit, or there is no juice left, make the deny noise
-	if( ( m_iJuice <= 0 ) || ( !( pActivator->pev->weapons & ( 1 << WEAPON_SUIT ) ) ) || ( ( chargerfix.value ) && ( pActivator->pev->health >= pActivator->pev->max_health ) ) )
-	{
-		if( m_flSoundTime <= gpGlobals->time )
+		// if there is no juice left, turn it off
+		if ( m_iJuice <= 0 )
+			EMIT_SOUND( edict(), CHAN_ITEM, "items/medshotno1.wav", 1, ATTN_NORM );
+		else if ( activator->TakeHealth( 50, DMG_GENERIC ) )
 		{
-			m_flSoundTime = gpGlobals->time + 0.62f;
-			EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshotno1.wav", 1.0, ATTN_NORM );
+			EMIT_SOUND( edict(), CHAN_ITEM, "items/medshot5.wav", 1, ATTN_NORM );
+			if ( --m_iJuice <= 0 )
+				pev->frame = 2;
 		}
-		return;
 	}
-
-	pev->nextthink = pev->ltime + 0.25f;
-	SetThink( &CWallHealth::Off );
-
-	// Time to recharge yet?
-	if( m_flNextCharge >= gpGlobals->time )
-		return;
-
-	// Play the on sound or the looping charging sound
-	if( !m_iOn )
-	{
-		m_iOn++;
-		EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_NORM );
-		m_flSoundTime = 0.56f + gpGlobals->time;
-	}
-	if( ( m_iOn == 1 ) && ( m_flSoundTime <= gpGlobals->time ) )
-	{
-		m_iOn++;
-		EMIT_SOUND( ENT( pev ), CHAN_STATIC, "items/medcharge4.wav", 1.0, ATTN_NORM );
-	}
-
-	// charge the player
-	if( pActivator->TakeHealth( 1, DMG_GENERIC ) )
-	{
-		m_iJuice--;
-	}
-
-	// govern the rate of charge
-	m_flNextCharge = gpGlobals->time + 0.1f;
-}
-
-void CWallHealth::Recharge( void )
-{
-	EMIT_SOUND( ENT( pev ), CHAN_ITEM, "items/medshot4.wav", 1.0, ATTN_NORM );
-	m_iJuice = (int)gSkillData.healthchargerCapacity;
-	pev->frame = 0;			
-	SetThink( &CBaseEntity::SUB_DoNothing );
-}
-
-void CWallHealth::Off( void )
-{
-	// Stop looping sound.
-	if( m_iOn > 1 )
-		STOP_SOUND( ENT( pev ), CHAN_STATIC, "items/medcharge4.wav" );
-
-	m_iOn = 0;
-
-	if( ( !m_iJuice ) && ( ( m_iReactivate = (int)g_pGameRules->FlHealthChargerRechargeTime() ) > 0 ) )
-	{
-		pev->nextthink = pev->ltime + m_iReactivate;
-		SetThink( &CWallHealth::Recharge );
-	}
-	else
-		SetThink( &CBaseEntity::SUB_DoNothing );
 }

@@ -25,18 +25,16 @@
 #include <string.h>
 #include <stdio.h>
 #include "parsemsg.h"
+#include "vgui_parser.h"
+#include "ctype.h"
+#include "draw_util.h"
 
-#include "vgui_TeamFortressViewport.h"
-
-DECLARE_MESSAGE( m_TextMessage, TextMsg )
-
-int CHudTextMessage::Init( void )
+int CHudTextMessage::Init(void)
 {
-	HOOK_MESSAGE( TextMsg );
+	HOOK_MESSAGE( gHUD.m_TextMessage, TextMsg );
 
 	gHUD.AddHudElem( this );
-
-	Reset();
+	m_iFlags = 0;
 
 	return 1;
 }
@@ -46,16 +44,16 @@ int CHudTextMessage::Init( void )
 // the new value is pushed into dst_buffer
 char *CHudTextMessage::LocaliseTextString( const char *msg, char *dst_buffer, int buffer_size )
 {
+	int len = buffer_size;
 	char *dst = dst_buffer;
-	for( char *src = (char*)msg; *src != 0 && ( buffer_size - 1 ) > 0; buffer_size-- )
+	for ( char *src = (char*)msg; *src != 0 && buffer_size > 0; buffer_size-- )
 	{
-		if( *src == '#' )
+		if ( *src == '#' )
 		{
 			// cut msg name out of string
 			static char word_buf[255];
 			char *wdst = word_buf, *word_start = src;
-			int wordbuf_size = (int)sizeof(word_buf);
-			for( ++src; ( ( *src >= 'A' && *src <= 'z' ) || ( *src >= '0' && *src <= '9' ) ) && ( wordbuf_size - 1 ) > 0; wdst++, src++, wordbuf_size-- )
+			for ( ++src ; (*src >= 'A' && *src <= 'z') || (*src >= '0' && *src <= '9'); wdst++, src++ )
 			{
 				*wdst = *src;
 			}
@@ -63,29 +61,49 @@ char *CHudTextMessage::LocaliseTextString( const char *msg, char *dst_buffer, in
 
 			// lookup msg name in titles.txt
 			client_textmessage_t *clmsg = TextMessageGet( word_buf );
-			if( !clmsg || !( clmsg->pMessage ) )
+			if ( !clmsg || !(clmsg->pMessage) )
 			{
-				src = word_start;
-				*dst = *src;
-				dst++, src++;
-				continue;
+				// look also in vgui2 translations
+				const char *str = Localize( word_buf );
+				if( str )
+				{
+					strncpy(dst, str, buffer_size);
+					buffer_size = 0;
+					continue;
+				}
+				else
+				{
+					src = word_start;
+					*dst = *src;
+					dst++, src++;
+					continue;
+				}
 			}
 
-			// copy string into message over the msg name
-			for( char *wsrc = (char*)clmsg->pMessage; *wsrc != 0 && ( buffer_size - 1 ) > 0; wsrc++, dst++, buffer_size-- )
+			if(clmsg->pMessage[0] == '#')
 			{
-				*dst = *wsrc;
+				strncpy(dst, Localize(clmsg->pMessage+1), buffer_size);
+				buffer_size = 0;
 			}
-			buffer_size++;
+			else
+			{
+				// copy string into message over the msg name
+				for ( char *wsrc = (char*)clmsg->pMessage; *wsrc != 0; wsrc++, dst++ )
+				{
+					*dst = *wsrc;
+				}
+				*dst = 0;
+			}
 		}
 		else
 		{
 			*dst = *src;
 			dst++, src++;
+			*dst = 0;
 		}
 	}
 
-	*dst = 0; // ensure null termination
+	dst_buffer[len-1] = 0; // ensure null termination
 	return dst_buffer;
 }
 
@@ -93,46 +111,48 @@ char *CHudTextMessage::LocaliseTextString( const char *msg, char *dst_buffer, in
 char *CHudTextMessage::BufferedLocaliseTextString( const char *msg )
 {
 	static char dst_buffer[1024];
-	LocaliseTextString( msg, dst_buffer, sizeof(dst_buffer) );
+	LocaliseTextString( msg, dst_buffer, 1024 );
 	return dst_buffer;
 }
 
 // Simplified version of LocaliseTextString;  assumes string is only one word
-const char *CHudTextMessage::LookupString( const char *msg, int *msg_dest )
+char *CHudTextMessage::LookupString( char *msg, int *msg_dest )
 {
-	if( !msg )
-		return "";
+	if ( !msg )
+		return (char*)"";
 
 	// '#' character indicates this is a reference to a string in titles.txt, and not the string itself
-	if( msg[0] == '#' ) 
+	if ( msg[0] == '#' ) 
 	{
 		// this is a message name, so look up the real message
-		client_textmessage_t *clmsg = TextMessageGet( msg + 1 );
+		client_textmessage_t *clmsg = TextMessageGet( msg+1 );
 
-		if( !clmsg || !(clmsg->pMessage) )
-			return msg; // lookup failed, so return the original string
-
-		if( msg_dest )
+		if ( !clmsg || !(clmsg->pMessage) )
+			return (char*)msg; // lookup failed, so return the original string
+				
+		if ( msg_dest )
 		{
 			// check to see if titles.txt info overrides msg destination
 			// if clmsg->effect is less than 0, then clmsg->effect holds -1 * message_destination
-			if( clmsg->effect < 0 )  // 
+			if ( clmsg->effect < 0 )  // 
 				*msg_dest = -clmsg->effect;
 		}
 
-		return clmsg->pMessage;
+		if( clmsg->pMessage[0] == '#')
+			return (char *)Localize( clmsg->pMessage + 1);
+
+		return (char*)clmsg->pMessage;
 	}
 	else
-	{
-		// nothing special about this message, so just return the same string
-		return msg;
+	{  // nothing special about this message, so just return the same string
+		return (char*)msg;
 	}
 }
 
 void StripEndNewlineFromString( char *str )
 {
 	int s = strlen( str ) - 1;
-	if( str[s] == '\n' || str[s] == '\r' )
+	if ( str[s] == '\n' || str[s] == '\r' )
 		str[s] = 0;
 }
 
@@ -140,8 +160,8 @@ void StripEndNewlineFromString( char *str )
 // returns a pointer to str
 char* ConvertCRtoNL( char *str )
 {
-	for( char *ch = str; *ch != 0; ch++ )
-		if( *ch == '\r' )
+	for ( char *ch = str; *ch != 0; ch++ )
+		if ( *ch == '\r' )
 			*ch = '\n';
 	return str;
 }
@@ -158,47 +178,79 @@ char* ConvertCRtoNL( char *str )
 //   string: message parameter 4
 // any string that starts with the character '#' is a message name, and is used to look up the real message in titles.txt
 // the next (optional) one to four strings are parameters for that string (which can also be message names if they begin with '#')
+#define MAX_TEXTMSG_STRING 512
 int CHudTextMessage::MsgFunc_TextMsg( const char *pszName, int iSize, void *pbuf )
 {
-	BEGIN_READ( pbuf, iSize );
+	BufferReader reader( pszName, pbuf, iSize );
 
-	int msg_dest = READ_BYTE();
+	int msg_dest = reader.ReadByte();
+	int clientIdx = -1;
 
-#define MSG_BUF_SIZE 128
-	char szBuf[6][MSG_BUF_SIZE];
+	static char szBuf[6][MAX_TEXTMSG_STRING];
+	char *msg_text = LookupString( reader.ReadString(), &msg_dest );
+	msg_text = strncpy( szBuf[0], msg_text, MAX_TEXTMSG_STRING );
+	szBuf[0][MAX_TEXTMSG_STRING - 1] = 0;
 
-	strlcpy( szBuf[0], LookupString( READ_STRING(), &msg_dest ), MSG_BUF_SIZE );
-
+	// keep reading strings and using C format strings for substituting the strings into the localised text string
 	for( int i = 1; i <= 4; i++ )
 	{
-		// keep reading strings and using C format strings for subsituting the strings into the localised text string
-		strlcpy( szBuf[i], LookupString( READ_STRING() ), MSG_BUF_SIZE );
-		StripEndNewlineFromString( szBuf[i] ); // these strings are meant for subsitution into the main strings, so cull the automatic end newlines
+		char *raw = reader.ReadString();
+		
+		// Don't replace the second format argument (player name)
+		char *str = (i == 2) ? raw : LookupString( raw );
+		const char *localized = (i == 2) ? str : Localize( str );
+
+		strncpy( szBuf[i], localized, MAX_TEXTMSG_STRING );
+		szBuf[i][MAX_TEXTMSG_STRING-1] = 0;
+
+		// these strings are meant for substitution into the main strings, so cull the automatic end newlines
+		StripEndNewlineFromString( szBuf[i] );
 	}
 
 	char *psz = szBuf[5];
 
-	if( gViewPort && gViewPort->AllowedToPrintText() == FALSE )
-		return 1;
+	const char *args[4] = { szBuf[1], szBuf[2], szBuf[3], szBuf[4] };
 
-	switch( msg_dest )
+	switch ( msg_dest )
 	{
 	case HUD_PRINTCENTER:
-		safe_snprintf( psz, MSG_BUF_SIZE, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
-		CenterPrint( ConvertCRtoNL( psz ) );
+	{
+		Localize_Format( psz, MAX_TEXTMSG_STRING, msg_text, args, 4 );
+
+		ConvertCRtoNL( psz );
+
+		int len = DrawUtils::ConsoleStringLen( psz );
+
+		DrawUtils::DrawConsoleString( (ScreenWidth - len) / 2, ScreenHeight / 3, psz );
+
+		CenterPrint( psz );
 		break;
+	}
 	case HUD_PRINTNOTIFY:
 		psz[0] = 1;  // mark this message to go into the notify buffer
-		safe_snprintf( psz + 1, MSG_BUF_SIZE - 1, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
+		Localize_Format( psz + 1, MAX_TEXTMSG_STRING - 1, msg_text, args, 4 );
 		ConsolePrint( ConvertCRtoNL( psz ) );
 		break;
+
 	case HUD_PRINTTALK:
-		safe_snprintf( psz, MSG_BUF_SIZE, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
-		gHUD.m_SayText.SayTextPrint( ConvertCRtoNL( psz ), MSG_BUF_SIZE );
+		psz[0] = 2; // mark, so SayTextPrint will color it
+		Localize_Format( psz + 1, MAX_TEXTMSG_STRING - 1, msg_text, args, 4 );
+		gHUD.m_SayText.SayTextPrint( ConvertCRtoNL( psz ), 128 );
 		break;
+
 	case HUD_PRINTCONSOLE:
-		safe_snprintf( psz, MSG_BUF_SIZE, szBuf[0], szBuf[1], szBuf[2], szBuf[3], szBuf[4] );
+		Localize_Format( psz, MAX_TEXTMSG_STRING, msg_text, args, 4 );
 		ConsolePrint( ConvertCRtoNL( psz ) );
+		break;
+
+	case HUD_PRINTRADIO:
+		psz[0] = 2;
+		// szBuf[1] is server-controlled and used as the format here.
+		// Localize_Format only honors %s<n>, so a hostile format is inert.
+		Localize_Format( psz + 1, MAX_TEXTMSG_STRING - 1, szBuf[1], &args[1], 3 );
+
+		clientIdx = atoi( szBuf[0] );
+		gHUD.m_SayText.SayTextPrint( ConvertCRtoNL( psz ), 128, clientIdx );
 		break;
 	}
 

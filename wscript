@@ -301,7 +301,7 @@ def configure(conf):
 	if conf.env.DEST_OS == 'ps4':
 		conf.add_subproject('external/ps4compat')
 
-	conf.add_subproject('game_shared dlls freevgui cl_dll')
+	conf.add_subproject('game_shared dlls cl_dll')
 
 def build(bld):
 	if bld.env.WAFCACHE:
@@ -318,4 +318,4 @@ def build(bld):
 	if bld.env.DEST_OS == 'ps4':
 		bld.add_subproject('external/ps4compat')
 
-	bld.add_subproject('game_shared dlls freevgui cl_dll')
+	bld.add_subproject('game_shared dlls cl_dll')

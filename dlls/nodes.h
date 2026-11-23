@@ -1,9 +1,9 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
+*
+*	This product contains software technology licensed from Id
+*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc.
 *	All Rights Reserved.
 *
 *   This source code contains proprietary and confidential information of
@@ -15,9 +15,10 @@
 //=========================================================
 // nodes.h
 //=========================================================
-#pragma once
-#if !defined(NODES_H)
+
+#ifndef NODES_H
 #define NODES_H
+
 //=========================================================
 // DEFINE
 //=========================================================
@@ -40,7 +41,7 @@ public:
 	Vector  m_vecOriginPeek; // location of this node (LAND nodes are NODE_HEIGHT higher).
 	BYTE    m_Region[3]; // Which of 256 regions do each of the coordinate belong?
 	int		m_afNodeInfo;// bits that tell us more about this location
-	
+
 	int		m_cNumLinks; // how many links this node has
 	int		m_iFirstLink;// index of this node's first link in the link pool.
 
@@ -59,6 +60,8 @@ public:
 	short	m_sHintType;// there is something interesting in the world at this node's position
 	short	m_sHintActivity;// there is something interesting in the world at this node's position
 	float	m_flHintYaw;// monster on this node should face this yaw to face the hint.
+	char	m_nIndex;
+	int		m_nodeType;
 };
 
 //=========================================================
@@ -79,8 +82,8 @@ class CLink
 {
 public:
 	int		m_iSrcNode;// the node that 'owns' this link ( keeps us from having to make reverse lookups )
-	int		m_iDestNode;// the node on the other end of the link. 
-	
+	int		m_iDestNode;// the node on the other end of the link.
+
 	entvars_t	*m_pLinkEnt;// the entity that blocks this connection (doors, etc)
 
 	// m_szLinkEntModelname is not necessarily NULL terminated (so we can store it in a more alignment-friendly 4 bytes)
@@ -89,6 +92,7 @@ public:
 	int		m_afLinkInfo;// information about this link
 	float	m_flWeight;// length of the link line segment
 };
+
 
 typedef struct
 {
@@ -100,20 +104,15 @@ typedef struct
 {
 	Vector v;
 	short n;		// Nearest node or -1 if no node found.
+#if defined( _MSC_VER )
+#pragma warning( suppress : 26495 )
+#endif
 } CACHE_ENTRY;
 
 //=========================================================
-// CGraph 
+// CGraph
 //=========================================================
-#define _GRAPH_VERSION_RETAIL 16 // Retail Half-Life graph version. Don't increment this
-#if XASH_64BIT
-#define	_GRAPH_VERSION	(16 * 10)
-#else
-#define	_GRAPH_VERSION	(16) // !!!increment this whenever graph/node/link classes change, to obsolesce older disk files.
-#endif
-#define GRAPH_VERSION (int)_GRAPH_VERSION
-#define GRAPH_VERSION_RETAIL (int)_GRAPH_VERSION_RETAIL
-
+#define	GRAPH_VERSION	(int)16// !!!increment this whever graph/node/link classes change, to obsolesce older disk files.
 class CGraph
 {
 public:
@@ -125,7 +124,7 @@ public:
 
 	CNode	*m_pNodes;// pointer to the memory block that contains all node info
 	CLink	*m_pLinkPool;// big list of all node connections
-	signed char    *m_pRouteInfo; // compressed routing information the nodes use.
+	char    *m_pRouteInfo; // compressed routing information the nodes use.
 
 	int		m_cNodes;// total number of nodes
 	int		m_cLinks;// total number of links
@@ -159,7 +158,7 @@ public:
 	int m_nHashLinks;
 
 
-	// kinda sleazy. In order to allow variety in active idles for monster groups in a room with more than one node, 
+	// kinda sleazy. In order to allow variety in active idles for monster groups in a room with more than one node,
 	// we keep track of the last node we searched from and store it here. Subsequent searches by other monsters will pick
 	// up where the last search stopped.
 	int		m_iLastActiveIdleSearch;
@@ -185,10 +184,10 @@ public:
 	void	ShowNodeConnections ( int iNode );
 	void	InitGraph( void );
 	int		AllocNodes ( void );
-	
-	int		CheckNODFile(const char *szMapName);
-	int		FLoadGraph(const char *szMapName);
-	int		FSaveGraph(const char *szMapName);
+
+	int		CheckNODFile(char *szMapName);
+	int		FLoadGraph(char *szMapName);
+	int		FSaveGraph(char *szMapName);
 	int		FSetGraphPointers(void);
 	void	CheckNode(Vector vecOrigin, int iNode);
 
@@ -205,37 +204,38 @@ public:
 
 	int			HullIndex( const CBaseEntity *pEntity );	// what hull the monster uses
 	int			NodeType( const CBaseEntity *pEntity );		// what node type the monster uses
-	inline int	CapIndex( int afCapMask ) 
-	{ 
-		if (afCapMask & (bits_CAP_OPEN_DOORS | bits_CAP_AUTO_DOORS | bits_CAP_USE)) 
-			return 1; 
-		return 0; 
+	inline int	CapIndex( int afCapMask )
+	{
+		if (afCapMask & (bits_CAP_OPEN_DOORS | bits_CAP_AUTO_DOORS | bits_CAP_USE))
+			return 1;
+		return 0;
 	}
 
-	void	ByteswapGraph();
-	void	ByteswapNodes();
-	void	ByteswapLinks();
-	void	ByteswapDistInfo();
-	void	ByteswapHashLinks();
 
 	inline	CNode &Node( int i )
 	{
-#if _DEBUG
-		if ( !m_pNodes || i < 0 || i >= m_cNodes )
+#ifdef _DEBUG
+		if ( !m_pNodes || i < 0 || i > m_cNodes )
 			ALERT( at_error, "Bad Node!\n" );
+#endif
+#if defined( _MSC_VER )
+#pragma warning( suppress : 6011 )
 #endif
 		return m_pNodes[i];
 	}
 
 	inline	CLink &Link( int i )
 	{
-#if _DEBUG
-		if ( !m_pLinkPool || i < 0 || i >= m_cLinks )
+#ifdef _DEBUG
+		if ( !m_pLinkPool || i < 0 || i > m_cLinks )
 			ALERT( at_error, "Bad link!\n" );
+#endif
+#if defined( _MSC_VER )
+#pragma warning( suppress : 6011 )
 #endif
 		return m_pLinkPool[i];
 	}
-	
+
 	inline CLink &NodeLink( int iNode, int iLink )
 	{
 		return Link( Node( iNode ).m_iFirstLink + iLink );
@@ -251,42 +251,35 @@ public:
 		return NodeLink( iNode, iLink ).m_iDestNode;
 	}
 
-#if 0
-	inline CNode &SourceNode( int iNode, int iLink )
-	{
-		return Node( NodeLink( iNode, iLink ).m_iSrcNode );
-	}
-
-	inline CNode &DestNode( int iNode, int iLink )
-	{
-		return Node( NodeLink( iNode, iLink ).m_iDestNode );
-	}
-
-	inline	CNode *PNodeLink ( int iNode, int iLink ) 
-	{
-		return &DestNode( iNode, iLink );
-	}
+#if defined( _MSC_VER )
+#pragma warning( suppress : 26495 )
 #endif
 };
 
 //=========================================================
-// Nodes start out as ents in the level. The node graph 
-// is built, then these ents are discarded. 
+// Nodes start out as ents in the level. The node graph
+// is built, then these ents are discarded.
 //=========================================================
 class CNodeEnt : public CBaseEntity
 {
 	void Spawn( void );
 	void KeyValue( KeyValueData *pkvd );
-	virtual int	ObjectCaps( void ) { return CBaseEntity :: ObjectCaps() & ~FCAP_ACROSS_TRANSITION; }
+	virtual int ObjectCaps( void ) { return 0; }
 
 	short m_sHintType;
 	short m_sHintActivity;
+	char m_nIndex;
+	int m_nodeType;
+#if defined( _MSC_VER )
+#pragma warning( suppress : 26495 )
+#endif
 };
+
 
 //=========================================================
 // CStack - last in, first out.
 //=========================================================
-class CStack 
+class CStack
 {
 public:
 			CStack( void );
@@ -301,6 +294,7 @@ private:
 	int		m_stack[ MAX_STACK_NODES ];
 	int		m_level;
 };
+
 
 //=========================================================
 // CQueue - first in, first out.
@@ -319,11 +313,11 @@ public:
 
 private:
 	int	m_cSize;
-    struct tag_QUEUE_NODE
-    {
-        int   Id;
-        float Priority;
-    } m_queue[ MAX_STACK_NODES ];
+	struct tag_QUEUE_NODE
+	{
+		int   Id;
+		float Priority;
+	} m_queue[ MAX_STACK_NODES ];
 	int m_head;
 	int m_tail;
 };
@@ -346,11 +340,11 @@ public:
 
 private:
 	int	m_cSize;
-    struct tag_HEAP_NODE
-    {
-        int   Id;
-        float Priority;
-    } m_heap[ MAX_STACK_NODES ];
+	struct tag_HEAP_NODE
+	{
+		int   Id;
+		float Priority;
+	} m_heap[ MAX_STACK_NODES ];
 	void Heap_SiftDown(int);
 	void Heap_SiftUp(void);
 
@@ -380,8 +374,9 @@ enum
 	HINT_TACTICAL_AMBUSH,
 
 	HINT_STUKA_PERCH = 300,
-	HINT_STUKA_LANDING
+	HINT_STUKA_LANDING,
 };
 
 extern CGraph WorldGraph;
-#endif // NODES_H
+
+#endif

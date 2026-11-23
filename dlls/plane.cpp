@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -16,10 +16,10 @@
 #include "extdll.h"
 #include "plane.h"
 
-//=========================================================
-// Plane
-//=========================================================
-CPlane::CPlane( void )
+#if defined( _MSC_VER )
+#pragma warning( suppress : 26495 )
+#endif
+CPlane::CPlane()
 {
 	m_fInitialized = FALSE;
 }
@@ -28,32 +28,19 @@ CPlane::CPlane( void )
 // InitializePlane - Takes a normal for the plane and a
 // point on the plane and 
 //=========================================================
-void CPlane::InitializePlane( const Vector &vecNormal, const Vector &vecPoint )
+void CPlane::InitializePlane( const Vector& normal, const Vector& point )
 {
-	m_vecNormal = vecNormal;
-	m_flDist = DotProduct( m_vecNormal, vecPoint );
+	m_vecNormal = normal;
+	m_flDist = DotProduct( m_vecNormal, point );
 	m_fInitialized = TRUE;
 }
 
-//=========================================================
-// PointInFront - determines whether the given vector is 
-// in front of the plane. 
-//=========================================================
-BOOL CPlane::PointInFront( const Vector &vecPoint )
+BOOL CPlane::PointInFront( const Vector& point )
 {
-	float flFace;
-
-	if( !m_fInitialized )
+	if ( !m_fInitialized )
 	{
 		return FALSE;
 	}
 
-	flFace = DotProduct( m_vecNormal, vecPoint ) - m_flDist;
-
-	if( flFace >= 0 )
-	{
-		return TRUE;
-	}
-
-	return FALSE;
+	return DotProduct( m_vecNormal, point ) - m_flDist >= 0;
 }

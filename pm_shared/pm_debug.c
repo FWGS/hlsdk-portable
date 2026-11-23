@@ -1,23 +1,6 @@
-/***
-*
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
-*	All Rights Reserved.
-*
-*   Use, distribution, and modification of this source code and/or resulting
-*   object code is restricted to non-commercial enhancements to products from
-*   Valve LLC.  All other use, distribution, or modification is prohibited
-*   without written permission from Valve LLC.
-*
-****/
-#include <math.h>
-#include "mathlib.h"
-#if HAVE_TGMATH_H
-#include <tgmath.h>
-#endif
+/*** ****/
 
+#include "mathlib.h"
 #include "const.h"
 #include "usercmd.h"
 #include "pm_defs.h"
@@ -27,17 +10,15 @@
 
 #include <string.h>
 
-#if _MSC_VER
 #pragma warning(disable : 4244)
 #pragma warning(disable : 4305)
-#endif
 
 extern playermove_t *pmove;
 
 // Expand debugging BBOX particle hulls by this many units.
 #define BOX_GAP 0.0f               
 
-static int PM_boxpnt[6][4] =
+static const int PM_boxpnt[6][4] =
 {
 	{ 0, 4, 6, 2 }, // +X
 	{ 0, 1, 5, 4 }, // +Y
@@ -49,51 +30,6 @@ static int PM_boxpnt[6][4] =
 
 void PM_ShowClipBox( void )
 {
-#if _DEBUG
-	vec3_t org;
-	vec3_t offset = { 0, 0, 0 };
-
-	if ( !pmove->runfuncs )
-		return;
-
-	// More debugging, draw the particle bbox for player and for the entity we are looking directly at.
-	//  aslo prints entity info to the console overlay.
-	//if ( !pmove->server )
-	//	return;
-
-	// Draw entity in center of view
-	// Also draws the normal to the clip plane that intersects our movement ray.  Leaves a particle
-	//  trail at the intersection point.
-	PM_ViewEntity();
-
-	VectorCopy( pmove->origin, org );
-
-	if ( pmove->server )
-	{
-		VectorAdd( org, offset, org );
-	}
-	else
-	{
-		VectorSubtract( org, offset, org );
-	}
-
-	// Show our BBOX in particles.
-	PM_DrawBBox( pmove->player_mins[pmove->usehull], pmove->player_maxs[pmove->usehull], org, pmove->server ? 132 : 0, 0.1 );
-
-	PM_ParticleLine( org, org, pmove->server ? 132 : 0, 0.1f, 5.0f );
-/*
-	{
-		int i;
-		for ( i = 0; i < pmove->numphysent; i++ )
-		{
-			if ( pmove->physents[ i ].info >= 1 && pmove->physents[ i ].info <= 4 )
-			{
-			 	PM_DrawBBox( pmove->player_mins[pmove->usehull], pmove->player_maxs[pmove->usehull], pmove->physents[i].origin, 132, 0.1 );
-			}
-		}
-	}
-*/
-#endif
 }
 
 /*
@@ -183,13 +119,13 @@ void PM_DrawPhysEntBBox(int num, int pcolor, float life)
 		{
 			vec3_t	forward, right, up;
 
-			AngleVectorsTranspose( pe->angles, forward, right, up);
-			for( j = 0; j < 8; j++ )
+			AngleVectorsTranspose(pe->angles, forward, right, up);
+			for (j = 0; j < 8; j++)
 			{
 				VectorCopy(p[j], tmp);
-				p[j][0] = DotProduct( tmp, forward );
-				p[j][1] = DotProduct( tmp, right );
-				p[j][2] = DotProduct( tmp, up );
+				p[j][0] = DotProduct  ( tmp, forward );
+				p[j][1] = DotProduct ( tmp, right );
+				p[j][2] = DotProduct  ( tmp, up );
 			}
 		}
 
@@ -268,8 +204,6 @@ void PM_DrawBBox(vec3_t mins, vec3_t maxs, vec3_t origin, int pcolor, float life
 }
 
 
-#if !DEDICATED
-
 /*
 ================
 PM_ViewEntity
@@ -289,20 +223,10 @@ void PM_ViewEntity( void )
 	int i;
 	pmtrace_t trace;
 	int pcolor = 77;
-	// float fup;
-
-#if 0
-	if ( !pm_showclip.value )
-		return;
-#endif
 
 	AngleVectors (pmove->angles, forward, right, up);  // Determine movement angles
 
 	VectorCopy( pmove->origin, origin);
-
-	/*fup = 0.5f * ( pmove->player_mins[pmove->usehull][2] + pmove->player_maxs[pmove->usehull][2] );
-	fup += pmove->view_ofs[2];
-	fup -= 4;*/
 
 	for (i = 0; i < 3; i++)
 	{
@@ -323,4 +247,3 @@ void PM_ViewEntity( void )
 	}
 }
 
-#endif

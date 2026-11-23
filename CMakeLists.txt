@@ -45,6 +45,7 @@ project (HLSDK-PORTABLE)
 ################\
 option(BUILD_CLIENT "Build client dll" ON)
 option(BUILD_SERVER "Build server dll" ON)
+option(BUILD_MENU "Build the menu of the game (the world map and the layout)" ON)
 option(LTO "Enable interprocedural optimization" OFF)
 option(POLLY "Enable pollyhedral optimization" OFF)
 option(ANDROID_APK "Enable APK styled deploy" OFF)
@@ -215,8 +216,24 @@ add_subdirectory(game_shared)
 if(BUILD_CLIENT)
 	message(STATUS "Building client enabled")
 
-	add_subdirectory(freevgui)
 	add_subdirectory(cl_dll)
+
+	# extras.pk3: the touch controls, the images and the sounds of the menu (other players do not have it in the game folder)
+	file(GLOB_RECURSE EXTRAS_FILES RELATIVE "${CMAKE_SOURCE_DIR}/extras" "${CMAKE_SOURCE_DIR}/extras/*")
+	list(SORT EXTRAS_FILES)
+	file(GLOB_RECURSE EXTRAS_DEPENDS "${CMAKE_SOURCE_DIR}/extras/*")
+	add_custom_command(OUTPUT "${CMAKE_BINARY_DIR}/extras.pk3"
+		COMMAND ${CMAKE_COMMAND} -E tar cf "${CMAKE_BINARY_DIR}/extras.pk3" --format=zip -- ${EXTRAS_FILES}
+		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/extras"
+		DEPENDS ${EXTRAS_DEPENDS})
+	add_custom_target(extras ALL DEPENDS "${CMAKE_BINARY_DIR}/extras.pk3")
+	install(FILES "${CMAKE_BINARY_DIR}/extras.pk3" DESTINATION "${GAMEDIR}")
+endif()
+
+if(BUILD_MENU)
+	message(STATUS "Building menu enabled")
+
+	add_subdirectory(external/mainui_cpp)
 endif()
 
 if(BUILD_SERVER)
@@ -224,7 +241,7 @@ if(BUILD_SERVER)
 	add_subdirectory(dlls)
 endif()
 
-if(NOT BUILD_SERVER AND NOT BUILD_CLIENT)
+if(NOT BUILD_SERVER AND NOT BUILD_CLIENT AND NOT BUILD_MENU)
 	message(FATAL_ERROR "Nothing to build")
 endif()
 

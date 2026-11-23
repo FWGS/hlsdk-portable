@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -13,19 +13,20 @@
 *
 ****/
 // Spectator.h
-#pragma once
-#if !defined(SPECTATOR_H)
+
+#ifndef SPECTATOR_H
 #define SPECTATOR_H
 
-class CBaseSpectator : public CBaseEntity 
+class CBaseSpectator : public CBaseEntity
 {
 public:
-	void Spawn();
-	void SpectatorConnect( void );
-	void SpectatorDisconnect( void );
-	void SpectatorThink( void );
+	void Spawn() override;
+	void SpectatorConnect();
+	void SpectatorDisconnect();
+	void SpectatorThink();
 
 private:
-	void SpectatorImpulseCommand( void );
+	void SpectatorImpulseCommand();
 };
-#endif // SPECTATOR_H
+
+#endif

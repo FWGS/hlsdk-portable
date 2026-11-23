@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -12,54 +12,63 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#pragma once
-#if !defined(CLIENT_H)
+
+#ifndef CLIENT_H
 #define CLIENT_H
 
-extern void respawn( entvars_t *pev, BOOL fCopyCorpse );
-extern BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[ 128 ] );
-extern void ClientDisconnect( edict_t *pEntity );
-extern void ClientKill( edict_t *pEntity );
-extern void ClientPutInServer( edict_t *pEntity );
-extern void ClientCommand( edict_t *pEntity );
-extern void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer );
-extern void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax );
-extern void ServerDeactivate( void );
-extern void StartFrame( void );
-extern void PlayerPostThink( edict_t *pEntity );
-extern void PlayerPreThink( edict_t *pEntity );
-extern void ParmsNewLevel( void );
-extern void ParmsChangeLevel( void );
+struct entity_state_s;
+struct clientdata_s;
+struct weapon_data_s;
+struct usercmd_s;
+struct netadr_s;
+struct delta_s;
 
-extern void ClientPrecache( void );
+void		respawn( entvars_t* pev, BOOL copyCorpse );
+BOOL		ClientConnect( edict_t* entity, const char* name, const char* address, char rejectReason[128] );
+void		ClientDisconnect( edict_t* entity );
+void		ClientKill( edict_t* entity );
+void		ClientPutInServer( edict_t* entity );
+void		ClientCommand( edict_t* entity );
+void		ClientUserInfoChanged( edict_t* entity, char* infoBuffer );
+void		ServerActivate( edict_t* edictList, int edictCount, int clientMax );
+void		ServerDeactivate();
+void		StartFrame();
+void		PlayerPreThink( edict_t* entity );
+void		PlayerPostThink( edict_t* entity );
+void		ParmsNewLevel();
+void		ParmsChangeLevel();
+void		ClientPrecache();
+const char*	GetGameDescription();
+void		PlayerCustomization( edict_t* entity, customization_t* customization );
+void		SpectatorConnect( edict_t* entity );
+void		SpectatorDisconnect( edict_t* entity );
+void		SpectatorThink( edict_t* entity );
+void		Sys_Error( const char* error );
+void		SetupVisibility( edict_t* viewEntity, edict_t* client, unsigned char** pvs, unsigned char** pas );
+void		UpdateClientData( const edict_t* entity, int sendWeapons, clientdata_s* data );
+int			AddToFullPack( entity_state_s* state, int index, edict_t* entity, edict_t* host,
+				int hostFlags, int player, unsigned char* set );
+void		CreateBaseline( int player, int index, entity_state_s* baseline, edict_t* entity,
+				int playerModelIndex, Vector playerMins, Vector playerMaxs );
+void		RegisterEncoders();
+int			GetWeaponData( edict_t* player, weapon_data_s* data );
+void		CmdStart( const edict_t* player, const usercmd_s* command, unsigned int seed );
+void		CmdEnd( const edict_t* player );
+int			ConnectionlessPacket( const netadr_s* from, const char* args, char* response, int* responseSize );
+int			GetHullBounds( int hull, float* mins, float* maxs );
+void		CreateInstancedBaselines();
+int			InconsistentFile( const edict_t* player, const char* filename, char* disconnectMessage );
+int			AllowLagCompensation();
+void		Host_Say( edict_t* entity, int teamOnly );
+void		ResetPlayerPVS( edict_t* client, int clientIndex );
+void		MarkEntityInPVS( int clientIndex, int entityIndex, float time, bool inPVS );
+bool		CheckEntityRecentlyInPVS( int clientIndex, int entityIndex, float time );
+bool		CheckPlayerPVSLeafChanged( edict_t* client, int clientIndex );
+extern "C" EXPORT void SV_SaveGameComment( char* buffer, int bufferSize );
 
-extern const char *GetGameDescription( void );
-extern void PlayerCustomization( edict_t *pEntity, customization_t *pCust );
+void		LinkUserMessages();
+void		UpdateEntitiesOnClientConnect( edict_t* player );
+const char*	GetWeaponName( entvars_t* inflictor, entvars_t* killer );
+edict_t*	EntSelectSpawnPoint( CBaseEntity* player );
 
-extern void SpectatorConnect( edict_t *pEntity );
-extern void SpectatorDisconnect( edict_t *pEntity );
-extern void SpectatorThink( edict_t *pEntity );
-
-extern void Sys_Error( const char *error_string );
-
-extern void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pvs, unsigned char **pas );
-extern void UpdateClientData( const struct edict_s *ent, int sendweapons, struct clientdata_s *cd );
-extern int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet );
-extern void CreateBaseline( int player, int eindex, struct entity_state_s *baseline, struct edict_s *entity, int playermodelindex, vec3_t player_mins, vec3_t player_maxs );
-extern void RegisterEncoders( void );
-
-extern int GetWeaponData( struct edict_s *player, struct weapon_data_s *info );
-
-extern void CmdStart( const edict_t *player, const struct usercmd_s *cmd, unsigned int random_seed );
-extern void CmdEnd ( const edict_t *player );
-
-extern int ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size );
-
-extern int GetHullBounds( int hullnumber, float *mins, float *maxs );
-
-extern void CreateInstancedBaselines( void );
-
-extern int InconsistentFile( const edict_t *player, const char *filename, char *disconnect_message );
-
-extern int AllowLagCompensation( void );
-#endif // CLIENT_H
+#endif

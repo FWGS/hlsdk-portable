@@ -1,27 +1,4 @@
-/***
-*
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
-*	
-*	This product contains software technology licensed from Id 
-*	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
-*	All Rights Reserved.
-*
-*   Use, distribution, and modification of this source code and/or resulting
-*   object code is restricted to non-commercial enhancements to products from
-*   Valve LLC.  All other use, distribution, or modification is prohibited
-*   without written permission from Valve LLC.
-*
-****/
-// Robin, 4-22-98: Moved set_suicide_frame() here from player.cpp to allow us to 
-//				   have one without a hardcoded player.mdl in tf_client.cpp
-
-/*
-
-===== client.cpp ========================================================
-
-  client/server game specific stuff
-
-*/
+//==
 
 #include "extdll.h"
 #include "util.h"
@@ -36,963 +13,568 @@
 #include "customentity.h"
 #include "weapons.h"
 #include "weaponinfo.h"
+#include "entity_state.h"
 #include "usercmd.h"
 #include "netadr.h"
 #include "pm_shared.h"
+#include "voice_gamemgr.h"
+#include "hostage_localnav.h"
+#include <ctype.h>
+#include "buildslave_assert.h"
+#include "czeror/cz_music.h"
+#include "czeror/cz_seqapi.h"
 
-extern DLL_GLOBAL ULONG		g_ulModelIndexPlayer;
-extern DLL_GLOBAL BOOL		g_fGameOver;
-extern DLL_GLOBAL int		g_iSkillLevel;
-extern DLL_GLOBAL ULONG		g_ulFrameCount;
+#define ASSERT_FILE BUILDSLAVE_PATH( L"czero\\dlls\\client.cpp" )
 
-extern void CopyToBodyQue( entvars_t* pev );
-extern int giPrecacheGrunt;
 extern int gmsgSayText;
-
-extern cvar_t allow_spectators;
-extern cvar_t multibyte_only;
-
+extern int g_fGameOver;
 extern int g_teamplay;
+extern unsigned long g_ulFrameCount;
+extern unsigned short g_usExplosion;
+extern CVoiceGameMgr g_VoiceGameMgr;
+extern void CopyToBodyQue( entvars_t* pev );
 
-void LinkUserMessages( void );
+static int g_serveractive;
 
-/*
- * used by kill command and disconnect command
- * ROBIN: Moved here from player.cpp, to allow multiple player models
- */
-void set_suicide_frame( entvars_t *pev )
-{       
-	if( !FStrEq( STRING( pev->model ), "models/player.mdl" ) )
-		return; // allready gibbed
-
-	//pev->frame = $deatha11;
+void set_suicide_frame( entvars_t* pev )
+{
+	if ( !FStrEq( STRING( pev->model ), "models/player.mdl" ) )
+		return;
 	pev->solid = SOLID_NOT;
 	pev->movetype = MOVETYPE_TOSS;
 	pev->deadflag = DEAD_DEAD;
-	pev->nextthink = -1.0f;
+	pev->nextthink = -1;
 }
 
-
-/*
-===========
-ClientConnect
-
-called when a player connects to a server
-============
-*/
-BOOL ClientConnect( edict_t *pEntity, const char *pszName, const char *pszAddress, char szRejectReason[128] )
+BOOL ClientConnect( edict_t* entity, const char* name, const char* address, char rejectReason[128] )
 {
-	return g_pGameRules->ClientConnected( pEntity, pszName, pszAddress, szRejectReason );
-
-// a client connecting during an intermission can cause problems
-//	if( intermission_running )
-//		ExitIntermission();
+	return g_pGameRules->ClientConnected( entity, name, address, rejectReason );
 }
 
-/*
-===========
-ClientDisconnect
-
-called when a player disconnects from a server
-
-GLOBALS ASSUMED SET:  g_fGameOver
-============
-*/
-void ClientDisconnect( edict_t *pEntity )
+void ClientDisconnect( edict_t* entity )
 {
-	if( g_fGameOver )
+	if ( g_fGameOver )
 		return;
 
-	char text[256] = "";
-	if( pEntity->v.netname )
-		safe_snprintf( text, sizeof( text ), "- %s has left the game\n", STRING( pEntity->v.netname ));
-
-	MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
-		WRITE_BYTE( ENTINDEX( pEntity ) );
+	char text[256];
+	sprintf( text, "- %s has left the game\n", STRING( entity->v.netname ) );
+	MESSAGE_BEGIN( MSG_ALL, gmsgSayText );
+		WRITE_BYTE( ENTINDEX( entity ) );
 		WRITE_STRING( text );
 	MESSAGE_END();
 
-	CSound *pSound = CSoundEnt::SoundPointerForIndex( CSoundEnt::ClientSoundIndex( pEntity ) );
-
-	// since this client isn't around to think anymore, reset their sound. 
-	if( pSound )
-	{
-		pSound->Reset();
-	}
-
-	// since the edict doesn't get deleted, fix it so it doesn't interfere.
-	pEntity->v.takedamage = DAMAGE_NO;// don't attract autoaim
-	pEntity->v.solid = SOLID_NOT;// nonsolid
-	pEntity->v.effects = 0;// clear any effects
-	pEntity->v.flags = 0;// clear any flags
-	UTIL_SetOrigin( &pEntity->v, pEntity->v.origin );
-
-	g_pGameRules->ClientDisconnected( pEntity );
+	CSound* sound = CSoundEnt::SoundPointerForIndex( CSoundEnt::ClientSoundIndex( entity ) );
+	if ( sound )
+		sound->Reset();
+	entity->v.solid = SOLID_NOT;
+	entity->v.takedamage = DAMAGE_NO;
+	UTIL_SetOrigin( &entity->v, entity->v.origin );
+	g_pGameRules->ClientDisconnected( entity );
 }
 
-// called by ClientKill and DeadThink
-void respawn( entvars_t *pev, BOOL fCopyCorpse )
+void respawn( entvars_t* pev, BOOL copyCorpse )
 {
-	if( gpGlobals->coop || gpGlobals->deathmatch )
+	if ( !gpGlobals->coop && !gpGlobals->deathmatch )
 	{
-		if( fCopyCorpse )
-		{
-			// make a copy of the dead body for appearances sake
-			CopyToBodyQue( pev );
-		}
-
-		// respawn player
-		GetClassPtr( (CBasePlayer *)pev )->Spawn();
-	}
-	else
-	{       // restart the entire server
 		SERVER_COMMAND( "reload\n" );
+		return;
 	}
+	if ( copyCorpse )
+		CopyToBodyQue( pev );
+	GetClassPtr( (CBasePlayer*)pev )->Spawn();
 }
 
-/*
-============
-ClientKill
-
-Player entered the suicide command
-
-GLOBALS ASSUMED SET:  g_ulModelIndexPlayer
-============
-*/
-void ClientKill( edict_t *pEntity )
+void ClientKill( edict_t* entity )
 {
-	entvars_t *pev = &pEntity->v;
-
-	CBasePlayer *pl = (CBasePlayer*)CBasePlayer::Instance( pev );
-
-	if( pl->m_fNextSuicideTime > gpGlobals->time )
-		return;  // prevent suiciding too ofter
-
-	pl->m_fNextSuicideTime = gpGlobals->time + 1.0f;  // don't let them suicide for 5 seconds after suiciding
-
-	// have the player kill themself
-	pev->health = 0;
-	pl->Killed( pev, GIB_NEVER );
-
-	//pev->modelindex = g_ulModelIndexPlayer;
-	//pev->frags -= 2;		// extra penalty
-	//respawn( pev );
+	CBasePlayer* player = (CBasePlayer*)CBaseEntity::Instance( &entity->v );
+	if ( !( player->m_fNextSuicideTime <= gpGlobals->time ) )
+		return;
+	player->m_fNextSuicideTime = gpGlobals->time + 1;
+	entity->v.health = 0;
+	player->Killed( &entity->v, GIB_NEVER );
 }
 
-/*
-===========
-ClientPutInServer
-
-called each time a player is spawned
-============
-*/
-void ClientPutInServer( edict_t *pEntity )
+void ClientPutInServer( edict_t* entity )
 {
-	CBasePlayer *pPlayer;
-
-	entvars_t *pev = &pEntity->v;
-
-	pPlayer = GetClassPtr( (CBasePlayer *)pev );
-	pPlayer->SetCustomDecalFrames( -1 ); // Assume none;
-	pPlayer->SetPrefsFromUserinfo( g_engfuncs.pfnGetInfoKeyBuffer( pEntity ) );
-
-	// Allocate a CBasePlayer for pev, and call spawn
-	pPlayer->Spawn();
-
-	// Reset interpolation during first frame
-	pPlayer->pev->effects |= EF_NOINTERP;
-
-	pPlayer->pev->iuser1 = 0;
-	pPlayer->pev->iuser2 = 0;
+	CBasePlayer* player = GetClassPtr( (CBasePlayer*)&entity->v );
+	player->SetCustomDecalFrames( -1 );
+	player->m_iAccessoryBits = 0;
+	player->m_iOldAccessoryBits = 0;
+	player->Spawn();
+	player->pev->effects |= EF_NOINTERP;
 }
 
-#include "voice_gamemgr.h"
-extern CVoiceGameMgr g_VoiceGameMgr;
-
-//-----------------------------------------------------------------------------
-// Purpose: determine if a uchar32 represents a valid Unicode code point
-//-----------------------------------------------------------------------------
-bool Q_IsValidUChar32( unsigned int uVal )
+void Host_Say( edict_t* entity, int teamOnly )
 {
-	// Values > 0x10FFFF are explicitly invalid; ditto for UTF-16 surrogate halves,
-	// values ending in FFFE or FFFF, or values in the 0x00FDD0-0x00FDEF reserved range
-	return ( ( uVal - 0x0u ) < 0x110000u ) && ( (uVal - 0x00D800u) > 0x7FFu ) && ( (uVal & 0xFFFFu) < 0xFFFEu ) && ( ( uVal - 0x00FDD0u ) > 0x1Fu );
-}
-
-// Decode one character from a UTF-8 encoded string. Treats 6-byte CESU-8 sequences
-// as a single character, as if they were a correctly-encoded 4-byte UTF-8 sequence.
-int Q_UTF8ToUChar32( const char *pUTF8_, unsigned int &uValueOut, bool &bErrorOut )
-{
-	const unsigned char *pUTF8 = (const unsigned char*)pUTF8_;
-
-	int nBytes = 1;
-	unsigned int uValue = pUTF8[0];
-	unsigned int uMinValue = 0;
-
-	// 0....... single byte
-	if( uValue < 0x80 )
-		goto decodeFinishedNoCheck;
-
-	// Expecting at least a two-byte sequence with 0xC0 <= first <= 0xF7 (110...... and 11110...)
-	if( ( uValue - 0xC0u ) > 0x37u || ( pUTF8[1] & 0xC0 ) != 0x80 )
-		goto decodeError;
-
-	uValue = ( uValue << 6 ) - ( 0xC0 << 6 ) + pUTF8[1] - 0x80;
-	nBytes = 2;
-	uMinValue = 0x80;
-
-	// 110..... two-byte lead byte
-	if( !( uValue & ( 0x20 << 6 ) ) )
-		goto decodeFinished;
-
-	// Expecting at least a three-byte sequence
-	if( ( pUTF8[2] & 0xC0 ) != 0x80 )
-		goto decodeError;
-
-	uValue = ( uValue << 6 ) - ( 0x20 << 12 ) + pUTF8[2] - 0x80;
-	nBytes = 3;
-	uMinValue = 0x800;
-
-	// 1110.... three-byte lead byte
-decodeFinished:
-	if( uValue >= uMinValue && Q_IsValidUChar32( uValue ) )
-	{
-decodeFinishedNoCheck:
-		uValueOut = uValue;
-		bErrorOut = false;
-		return nBytes;
-	}
-decodeError:
-	uValueOut = '?';
-	bErrorOut = true;
-	return nBytes;
-#if 0
-decodeFinishedMaybeCESU8:
-	// Do we have a full UTF-16 surrogate pair that's been UTF-8 encoded afterwards?
-	// That is, do we have 0xD800-0xDBFF followed by 0xDC00-0xDFFF? If so, decode it all.
-	if( ( uValue - 0xD800u ) < 0x400u && pUTF8[3] == 0xED && (unsigned char)( pUTF8[4] - 0xB0 ) < 0x10 && ( pUTF8[5] & 0xC0 ) == 0x80 )
-	{
-		uValue = 0x10000 + ( ( uValue - 0xD800u ) << 10 ) + ( (unsigned char)( pUTF8[4] - 0xB0 ) << 6 ) + pUTF8[5] - 0x80;
-		nBytes = 6;
-		uMinValue = 0x10000;
-	}
-	goto decodeFinished;
-#endif
-}
-
-//-----------------------------------------------------------------------------
-// Purpose: Returns true if UTF-8 string contains invalid sequences.
-//-----------------------------------------------------------------------------
-bool Q_UnicodeValidate( const char *pUTF8 )
-{
-	bool bError = false;
-
-	if( !multibyte_only.value )
-		return true;
-
-	while( *pUTF8 )
-	{
-		unsigned int uVal;
-		// Our UTF-8 decoder silently fixes up 6-byte CESU-8 (improperly re-encoded UTF-16) sequences.
-		// However, these are technically not valid UTF-8. So if we eat 6 bytes at once, it's an error.
-		int nCharSize = Q_UTF8ToUChar32( pUTF8, uVal, bError );
-		if( bError || nCharSize == 6 )
-			return false;
-		pUTF8 += nCharSize;
-	}
-	return true;
-}
-
-
-//// HOST_SAY
-// String comes in as
-// say blah blah blah
-// or as
-// blah blah blah
-//
-void Host_Say( edict_t *pEntity, int teamonly )
-{
-	CBasePlayer *client;
-	int		j;
-	char	*p; //, *pc;
-	char	text[128];
-	char    szTemp[256];
-	const char *cpSay = "say";
-	const char *cpSayTeam = "say_team";
-	const char *pcmd = CMD_ARGV( 0 );
-
-	// We can get a raw string now, without the "say " prepended
-	if( CMD_ARGC() == 0 )
+	const char* command = CMD_ARGV( 0 );
+	if ( CMD_ARGC() == 0 )
+		return;
+	CBasePlayer* sender = GetClassPtr( (CBasePlayer*)&entity->v );
+	if ( !( sender->m_flNextChatTime <= gpGlobals->time ) )
 		return;
 
-	entvars_t *pev = &pEntity->v;
-	CBasePlayer* player = GetClassPtr( (CBasePlayer *)pev );
-
-	//Not yet.
-	if( player->m_flNextChatTime > gpGlobals->time )
-		 return;
-
-	if( !stricmp( pcmd, cpSay ) || !stricmp( pcmd, cpSayTeam ) )
+	char temporary[256];
+	char* message;
+	if ( !stricmp( command, "say" ) || !stricmp( command, "say_team" ) )
 	{
-		if( CMD_ARGC() >= 2 )
-		{
-			p = (char *)CMD_ARGS();
-		}
-		else
-		{
-			// say with a blank message, nothing to do
+		if ( CMD_ARGC() <= 1 )
 			return;
-		}
+		message = (char*)CMD_ARGS();
 	}
-	else  // Raw text, need to prepend argv[0]
-	{
-		if( CMD_ARGC() >= 2 )
-		{
-			safe_snprintf( szTemp, sizeof( szTemp ), "%s %s", (char *)pcmd, (char *)CMD_ARGS() );
-		}
-		else
-		{
-			// Just a one word command, use the first word...sigh
-			strlcpy( szTemp, (char *)pcmd, sizeof( szTemp ));
-		}
-
-		p = szTemp;
-	}
-
-	// remove quotes if present
-	if( p && *p == '"' )
-	{
-		p++;
-		p[strlen( p ) - 1] = 0;
-	}
-
-	if( !p || !p[0] || !Q_UnicodeValidate ( p ) )
-		return;  // no character found, so say nothing
-
-	// turn on color set 2  (color on,  no sound)
-	if( player->IsObserver() && ( teamonly ) )
-		safe_snprintf( text, sizeof( text ), "%c(SPEC) %s: ", 2, STRING( pEntity->v.netname ) );
-	else if( teamonly )
-		safe_snprintf( text, sizeof( text ), "%c(TEAM) %s: ", 2, STRING( pEntity->v.netname ) );
 	else
-		safe_snprintf( text, sizeof( text ), "%c%s: ", 2, STRING( pEntity->v.netname ) );
-
-	j = sizeof( text ) - 2 - strlen( text );  // -2 for /n and null terminator
-	if( (int)strlen( p ) > j )
-		p[j] = 0;
-
-	strcat( text, p );
-	strcat( text, "\n" );
-
-	player->m_flNextChatTime = gpGlobals->time + CHAT_INTERVAL;
-
-	// loop through all players
-	// Start with the first player.
-	// This may return the world in single player if the client types something between levels or during spawn
-	// so check it, or it will infinite loop
-
-	client = NULL;
-	while( ( ( client = (CBasePlayer*)UTIL_FindEntityByClassname( client, "player" ) ) != NULL ) && ( !FNullEnt( client->edict() ) ) ) 
 	{
-		if( !client->pev )
-			continue;
+		if ( CMD_ARGC() > 1 )
+			_snprintf( temporary, sizeof( temporary ), "%s %s", command, CMD_ARGS() );
+		else
+			_snprintf( temporary, sizeof( temporary ), "%s", command );
+		temporary[sizeof( temporary ) - 1] = '\0';
+		message = temporary;
+	}
+	if ( *message == '"' )
+	{
+		++message;
+		message[strlen( message ) - 1] = '\0';
+	}
+	if ( !message || !*message )
+		return;
+	const unsigned char* character = (const unsigned char*)message;
+	while ( *character && ( !isprint( *character ) || isspace( *character ) ) )
+		++character;
+	if ( !*character )
+		return;
 
-		if( client->edict() == pEntity )
-			continue;
+	char text[128];
+	if ( teamOnly )
+		sprintf( text, "%c(TEAM) %s: ", 2, STRING( entity->v.netname ) );
+	else
+		sprintf( text, "%c%s: ", 2, STRING( entity->v.netname ) );
+	const size_t available = sizeof( text ) - 2 - strlen( text );
+	if ( strlen( message ) > available )
+		message[available] = '\0';
+	strcat( text, message );
+	strcat( text, "\n" );
+	sender->m_flNextChatTime = gpGlobals->time + 1;
 
-		if( !( client->IsNetClient() ) )	// Not a client ? (should never be true)
+	CBaseEntity* recipient = NULL;
+	while ( ( recipient = UTIL_FindEntityByClassname( recipient, "player" ) ) != NULL )
+	{
+		if ( FNullEnt( recipient->edict() ) )
+			break;
+		if ( !recipient->pev || ENT( recipient->pev ) == entity || !recipient->IsNetClient() )
 			continue;
-		// can the receiver hear the sender? or has he muted him?
-		if( g_VoiceGameMgr.PlayerHasBlockedPlayer( client, player ) )
+		if ( g_VoiceGameMgr.PlayerHasBlockedPlayer( (CBasePlayer*)recipient, sender ) )
 			continue;
-		if( !player->IsObserver() && teamonly && g_pGameRules->PlayerRelationship( client, CBaseEntity::Instance( pEntity ) ) != GR_TEAMMATE )
+		if ( teamOnly && g_pGameRules->PlayerRelationship( (CBasePlayer*)recipient, CBaseEntity::Instance( entity ) ) != GR_TEAMMATE )
 			continue;
-
-		// Spectators can only talk to other specs
-		if( player->IsObserver() && teamonly )
-			if ( !client->IsObserver() )
-				continue;
-
-		MESSAGE_BEGIN( MSG_ONE, gmsgSayText, NULL, client->pev );
-			WRITE_BYTE( ENTINDEX( pEntity ) );
+		MESSAGE_BEGIN( MSG_ONE, gmsgSayText, NULL, recipient->pev );
+			WRITE_BYTE( ENTINDEX( entity ) );
 			WRITE_STRING( text );
 		MESSAGE_END();
 	}
-
-	// print to the sending client
-	MESSAGE_BEGIN( MSG_ONE, gmsgSayText, NULL, &pEntity->v );
-		WRITE_BYTE( ENTINDEX( pEntity ) );
+	MESSAGE_BEGIN( MSG_ONE, gmsgSayText, NULL, &entity->v );
+		WRITE_BYTE( ENTINDEX( entity ) );
 		WRITE_STRING( text );
 	MESSAGE_END();
-
-	// echo to server console
 	g_engfuncs.pfnServerPrint( text );
 
-	const char *temp;
-	if( teamonly )
-		temp = "say_team";
-	else
-		temp = "say";
-
-	// team match?
-	if( g_teamplay )
+	const char* verb = teamOnly ? "say_team" : "say";
+	if ( g_teamplay )
 	{
-		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" %s \"%s\"\n", 
-			STRING( pEntity->v.netname ), 
-			GETPLAYERUSERID( pEntity ),
-			GETPLAYERAUTHID( pEntity ),
-			g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( pEntity ), "model" ),
-			temp,
-			p );
+		UTIL_LogPrintf( "\"%s<%i><%s><%s>\" %s \"%s\"\n", STRING( entity->v.netname ),
+			GETPLAYERUSERID( entity ), GETPLAYERAUTHID( entity ),
+			g_engfuncs.pfnInfoKeyValue( g_engfuncs.pfnGetInfoKeyBuffer( entity ), "model" ), verb, message );
 	}
 	else
 	{
-		UTIL_LogPrintf( "\"%s<%i><%s><%i>\" %s \"%s\"\n", 
-			STRING( pEntity->v.netname ), 
-			GETPLAYERUSERID( pEntity ),
-			GETPLAYERAUTHID( pEntity ),
-			GETPLAYERUSERID( pEntity ),
-			temp,
-			p );
+		UTIL_LogPrintf( "\"%s<%i><%s><%i>\" %s \"%s\"\n", STRING( entity->v.netname ),
+			GETPLAYERUSERID( entity ), GETPLAYERAUTHID( entity ), GETPLAYERUSERID( entity ), verb, message );
 	}
 }
 
-/*
-===========
-ClientCommand
-called each time a player uses a "cmd" command
-============
-*/
-extern cvar_t *g_enable_cheats;
-
-// Use CMD_ARGV,  CMD_ARGV, and CMD_ARGC to get pointers the character string command.
-void ClientCommand( edict_t *pEntity )
+void ClientCommand( edict_t* entity )
 {
-	const char *pcmd = CMD_ARGV( 0 );
-	const char *pstr;
-
-	// Is the client spawned yet?
-	if( !pEntity->pvPrivateData )
+	const char* command = CMD_ARGV( 0 );
+	if ( !entity->pvPrivateData )
 		return;
-
-	entvars_t *pev = &pEntity->v;
-
-	if( FStrEq( pcmd, "say" ) )
+	CBasePlayer* player = GetClassPtr( (CBasePlayer*)&entity->v );
+	if ( FStrEq( command, "say" ) )
+		Host_Say( entity, FALSE );
+	else if ( FStrEq( command, "say_team" ) )
+		Host_Say( entity, TRUE );
+	else if ( FStrEq( command, "fullupdate" ) )
+		player->ForceClientDllUpdate();
+	else if ( FStrEq( command, "give" ) )
 	{
-		Host_Say( pEntity, 0 );
+		if ( CVAR_GET_FLOAT( "sv_cheats" ) != 0 )
+			player->GiveNamedItem( STRING( ALLOC_STRING( CMD_ARGV( 1 ) ) ) );
 	}
-	else if( FStrEq( pcmd, "say_team" ) )
+	else if ( FStrEq( command, "fov" ) )
 	{
-		Host_Say( pEntity, 1 );
+		if ( CVAR_GET_FLOAT( "sv_cheats" ) != 0 && CMD_ARGC() > 1 )
+			player->m_iFOV = atoi( CMD_ARGV( 1 ) );
+		else
+			CLIENT_PRINTF( entity, print_console, UTIL_VarArgs( "\"fov\" is \"%d\"\n", player->m_iFOV ) );
 	}
-	else if( FStrEq( pcmd, "fullupdate" ) )
+	else if ( FStrEq( command, "use" ) )
+		player->SelectItem( CMD_ARGV( 1 ) );
+	else if ( strstr( command, "weapon_" ) == command )
+		player->SelectItem( command );
+	else if ( FStrEq( command, "lastinv" ) )
+		player->SelectLastItem();
+	else if ( FStrEq( command, "spectate" ) && ( entity->v.flags & FL_PROXY ) )
 	{
-		GetClassPtr( (CBasePlayer *)pev )->ForceClientDllUpdate(); 
+		edict_t* spot = g_pGameRules->GetPlayerSpawnSpot( player );
+		player->StartObserver( entity->v.origin, spot->v.angles );
 	}
-	else if( FStrEq(pcmd, "give" ) )
+	else if ( !g_pGameRules->ClientCommand( player, command ) )
 	{
-		if( g_enable_cheats->value != 0 )
+		char safeCommand[128];
+		strncpy( safeCommand, command, sizeof( safeCommand ) - 1 );
+		safeCommand[sizeof( safeCommand ) - 1] = '\0';
+		for ( char* character = safeCommand; *character; ++character )
 		{
-			int iszItem = ALLOC_STRING( CMD_ARGV( 1 ) );	// Make a copy of the classname
-			GetClassPtr( (CBasePlayer *)pev )->GiveNamedItem( STRING( iszItem ) );
+			if ( *character == '%' )
+				*character = ' ';
 		}
+		ClientPrint( &entity->v, HUD_PRINTCONSOLE, UTIL_VarArgs( "Unknown command: %s\n", safeCommand ) );
 	}
-	else if( FStrEq( pcmd, "fire" ) )
-	{
-		if( g_enable_cheats->value != 0 )
-		{
-			CBaseEntity *pPlayer = CBaseEntity::Instance( pEntity );
-			if( CMD_ARGC() > 1 )
-			{
-				FireTargets( CMD_ARGV( 1 ), pPlayer, pPlayer, USE_TOGGLE, 0 );
-			}
-			else
-			{
-				TraceResult tr;
-				UTIL_MakeVectors( pev->v_angle );
-				UTIL_TraceLine(
-					pev->origin + pev->view_ofs,
-					pev->origin + pev->view_ofs + gpGlobals->v_forward * 1000,
-					dont_ignore_monsters, pEntity, &tr
-				);
+}
 
-				if( tr.pHit )
-				{
-					CBaseEntity *pHitEnt = CBaseEntity::Instance( tr.pHit );
-					if( pHitEnt )
-					{
-						pHitEnt->Use( pPlayer, pPlayer, USE_TOGGLE, 0 );
-						ClientPrint( &pEntity->v, HUD_PRINTCONSOLE, UTIL_VarArgs( "Fired %s \"%s\"\n", STRING( pHitEnt->pev->classname ), STRING( pHitEnt->pev->targetname ) ) );
-					}
-				}
-			}
-		}
-	}
-	else if( FStrEq( pcmd, "drop" ) )
+void ClientUserInfoChanged( edict_t* entity, char* infoBuffer )
+{
+	if ( !entity->pvPrivateData )
+		return;
+	if ( entity->v.netname && *STRING( entity->v.netname ) &&
+		strcmp( STRING( entity->v.netname ), g_engfuncs.pfnInfoKeyValue( infoBuffer, "name" ) ) )
 	{
-		// player is dropping an item. 
-		GetClassPtr( (CBasePlayer *)pev )->DropPlayerItem( (char *)CMD_ARGV( 1 ) );
-	}
-	else if( FStrEq( pcmd, "fov" ) )
-	{
-		if( g_enable_cheats->value != 0 && CMD_ARGC() > 1 )
+		char name[256];
+		strncpy( name, g_engfuncs.pfnInfoKeyValue( infoBuffer, "name" ), sizeof( name ) - 1 );
+		name[sizeof( name ) - 1] = '\0';
+		for ( char* character = name; *character; ++character )
 		{
-			GetClassPtr( (CBasePlayer *)pev )->m_iFOV = atoi( CMD_ARGV( 1 ) );
+			if ( *character == '%' )
+				*character = ' ';
+		}
+		g_engfuncs.pfnSetClientKeyValue( ENTINDEX( entity ), infoBuffer, "name", name );
+		char text[256];
+		_snprintf( text, sizeof( text ), "* %s changed name to %s\n", STRING( entity->v.netname ), g_engfuncs.pfnInfoKeyValue( infoBuffer, "name" ) );
+		text[sizeof( text ) - 1] = '\0';
+		MESSAGE_BEGIN( MSG_ALL, gmsgSayText );
+			WRITE_BYTE( ENTINDEX( entity ) );
+			WRITE_STRING( text );
+		MESSAGE_END();
+		if ( g_teamplay )
+		{
+			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" changed name to \"%s\"\n", STRING( entity->v.netname ),
+				GETPLAYERUSERID( entity ), GETPLAYERAUTHID( entity ),
+				g_engfuncs.pfnInfoKeyValue( infoBuffer, "model" ), g_engfuncs.pfnInfoKeyValue( infoBuffer, "name" ) );
 		}
 		else
 		{
-			CLIENT_PRINTF( pEntity, print_console, UTIL_VarArgs( "\"fov\" is \"%d\"\n", (int)GetClassPtr( (CBasePlayer *)pev )->m_iFOV ) );
+			UTIL_LogPrintf( "\"%s<%i><%s><%i>\" changed name to \"%s\"\n", STRING( entity->v.netname ),
+				GETPLAYERUSERID( entity ), GETPLAYERAUTHID( entity ), GETPLAYERUSERID( entity ), g_engfuncs.pfnInfoKeyValue( infoBuffer, "name" ) );
 		}
 	}
-	else if( FStrEq( pcmd, "use" ) )
-	{
-		GetClassPtr( (CBasePlayer *)pev )->SelectItem( (char *)CMD_ARGV( 1 ) );
-	}
-	else if( ( ( pstr = strstr( pcmd, "weapon_" ) ) != NULL ) && ( pstr == pcmd ) )
-	{
-		GetClassPtr( (CBasePlayer *)pev )->SelectItem( pcmd );
-	}
-	else if( FStrEq( pcmd, "lastinv" ) )
-	{
-		GetClassPtr( (CBasePlayer *)pev )->SelectLastItem();
-	}
-	else if( FStrEq( pcmd, "spectate" ) ) // clients wants to become a spectator
-	{
-		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
-		if( !pPlayer->IsObserver() )
-		{
-			// always allow proxies to become a spectator
-			if( ( pev->flags & FL_PROXY ) || allow_spectators.value )
-			{
-				edict_t *pentSpawnSpot = g_pGameRules->GetPlayerSpawnSpot( pPlayer );
-				pPlayer->StartObserver( pev->origin, VARS( pentSpawnSpot )->angles );
-
-				// notify other clients of player switching to spectator mode
-				UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s switched to spectator mode\n",
-						( pev->netname && ( STRING( pev->netname ) )[0] != 0 ) ? STRING( pev->netname ) : "unconnected" ) );
-			}
-			else
-				ClientPrint( pev, HUD_PRINTCONSOLE, "Spectator mode is disabled.\n" );
-		}
-		else
-		{
-			pPlayer->StopObserver();
-
-			// notify other clients of player left spectators
-			UTIL_ClientPrintAll( HUD_PRINTNOTIFY, UTIL_VarArgs( "%s has left spectator mode\n",
-					( pev->netname && ( STRING( pev->netname ) )[0] != 0 ) ? STRING( pev->netname ) : "unconnected" ) );
-		}
-	}
-	else if( FStrEq( pcmd, "specmode" ) ) // new spectator mode
-	{
-		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
-
-		if( pPlayer->IsObserver() )
-			pPlayer->Observer_SetMode( atoi( CMD_ARGV( 1 ) ) );
-	}
-	else if( FStrEq( pcmd, "closemenus" ) )
-	{
-		// just ignore it
-	}
-	else if( FStrEq( pcmd, "follownext" ) )	// follow next player
-	{
-		CBasePlayer *pPlayer = GetClassPtr( (CBasePlayer *)pev );
-
-		if( pPlayer->IsObserver() )
-			pPlayer->Observer_FindNextPlayer( atoi( CMD_ARGV( 1 ) ) ? true : false );
-	}
-	else if( g_pGameRules->ClientCommand( GetClassPtr( (CBasePlayer *)pev ), pcmd ) )
-	{
-		// MenuSelect returns true only if the command is properly handled,  so don't print a warning
-	}
-	else if( FStrEq( pcmd, "VModEnable" ) )
-	{
-		// clear 'Unknown command: VModEnable' in singleplayer
-		return;
-	}
-	else
-	{
-		// tell the user they entered an unknown command
-		char command[128];
-
-		// check the length of the command (prevents crash)
-		// max total length is 192 ...and we're adding a string below ("Unknown command: %s\n")
-		strlcpy( command, pcmd, sizeof( command ));
-
-		// First parse the name and remove any %'s
-		for( char *pApersand = command; *pApersand; pApersand++ )
-		{
-			// Replace it with a space
-			if( *pApersand == '%' )
-				*pApersand = ' ';
-		}
-
-		// tell the user they entered an unknown command
-		ClientPrint( &pEntity->v, HUD_PRINTCONSOLE, UTIL_VarArgs( "Unknown command: %s\n", command ) );
-	}
+	g_pGameRules->ClientUserInfoChanged( GetClassPtr( (CBasePlayer*)&entity->v ), infoBuffer );
 }
 
-/*
-========================
-ClientUserInfoChanged
-
-called after the player changes
-userinfo - gives dll a chance to modify it before
-it gets sent into the rest of the engine.
-========================
-*/
-void ClientUserInfoChanged( edict_t *pEntity, char *infobuffer )
+void ServerDeactivate()
 {
-	// Is the client spawned yet?
-	if( !pEntity->pvPrivateData )
-		return;
+	// the entities that pointed to the built sequence entries go away with the map
+	CZ_SequenceReset();
 
-	// msg everyone if someone changes their name,  and it isn't the first time (changing no name to current name)
-	if( pEntity->v.netname && ( STRING( pEntity->v.netname ) )[0] != 0 && !FStrEq( STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) ) )
-	{
-		char sName[256];
-		char *pName = g_engfuncs.pfnInfoKeyValue( infobuffer, "name" );
-		strlcpy( sName, pName, sizeof( sName ));
-
-		// First parse the name and remove any %'s
-		for( char *pApersand = sName; pApersand != NULL && *pApersand != 0; pApersand++ )
-		{
-			// Replace it with a space
-			if( *pApersand == '%' )
-				*pApersand = ' ';
-		}
-
-		// Set the name
-		g_engfuncs.pfnSetClientKeyValue( ENTINDEX( pEntity ), infobuffer, "name", sName );
-
-		if( gpGlobals->maxClients > 1 )
-		{
-			char text[256];
-			safe_snprintf( text, sizeof( text ), "* %s changed name to %s\n", STRING( pEntity->v.netname ), g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
-			MESSAGE_BEGIN( MSG_ALL, gmsgSayText, NULL );
-				WRITE_BYTE( ENTINDEX( pEntity ) );
-				WRITE_STRING( text );
-			MESSAGE_END();
-		}
-
-		// team match?
-		if( g_teamplay )
-		{
-			UTIL_LogPrintf( "\"%s<%i><%s><%s>\" changed name to \"%s\"\n", 
-				STRING( pEntity->v.netname ), 
-				GETPLAYERUSERID( pEntity ), 
-				GETPLAYERAUTHID( pEntity ),
-				g_engfuncs.pfnInfoKeyValue( infobuffer, "model" ), 
-				g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
-		}
-		else
-		{
-			UTIL_LogPrintf( "\"%s<%i><%s><%i>\" changed name to \"%s\"\n", 
-				STRING( pEntity->v.netname ), 
-				GETPLAYERUSERID( pEntity ), 
-				GETPLAYERAUTHID( pEntity ),
-				GETPLAYERUSERID( pEntity ), 
-				g_engfuncs.pfnInfoKeyValue( infobuffer, "name" ) );
-		}
-	}
-
-	g_pGameRules->ClientUserInfoChanged( GetClassPtr( (CBasePlayer *)&pEntity->v ), infobuffer );
+	if ( g_serveractive == 1 )
+		g_serveractive = 0;
 }
 
-static int g_serveractive = 0;
-
-void ServerDeactivate( void )
+void ServerActivate( edict_t* edictList, int edictCount, int clientMax )
 {
-	//ALERT( at_console, "ServerDeactivate()\n" );
-
-	// It's possible that the engine will call this function more times than is necessary
-	//  Therefore, only run it one time for each call to ServerActivate 
-	if( g_serveractive != 1 )
-	{
-		return;
-	}
-
-	g_serveractive = 0;
-
-	// Peform any shutdown operations here...
-	//
-}
-
-void ServerActivate( edict_t *pEdictList, int edictCount, int clientMax )
-{
-	int		i;
-	CBaseEntity	*pClass;
-
-	//ALERT( at_console, "ServerActivate()\n" );
-
-	// Every call to ServerActivate should be matched by a call to ServerDeactivate
 	g_serveractive = 1;
-
-	// Clients have not been initialized yet
-	for( i = 0; i < edictCount; i++ )
+	CLocalNav::Reset();
+	CZ_MusicReset();
+	for ( int index = 0; index < edictCount; ++index )
 	{
-		if( pEdictList[i].free )
+		edict_t* entity = &edictList[index];
+		if ( entity->free || index < clientMax || !entity->pvPrivateData )
 			continue;
-
-		// Clients aren't necessarily initialized until ClientPutInServer()
-		if( (i > 0 && i <= clientMax) || !pEdictList[i].pvPrivateData )
-			continue;
-
-		pClass = CBaseEntity::Instance( &pEdictList[i] );
-		// Activate this entity if it's got a class & isn't dormant
-		if( pClass && !( pClass->pev->flags & FL_DORMANT ) )
+		CBaseEntity* instance = CBaseEntity::Instance( entity );
+		if ( instance && !( instance->pev->flags & FL_DORMANT ) )
 		{
-			pClass->Activate();
+			instance->Activate();
+			instance->Restart();
 		}
 		else
-		{
-			ALERT( at_console, "Can't instance %s\n", STRING( pEdictList[i].v.classname ) );
-		}
+			ALERT( at_console, "Can't instance %s\n", STRING( entity->v.classname ) );
 	}
-
-	// Link user messages here to make sure first client can get them...
 	LinkUserMessages();
 }
 
-/*
-================
-PlayerPreThink
-
-Called every frame before physics are run
-================
-*/
-void PlayerPreThink( edict_t *pEntity )
+void PlayerPreThink( edict_t* entity )
 {
-	//ALERT( at_console, "PreThink( %g, frametime %g )\n", gpGlobals->time, gpGlobals->frametime );
-
-	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE( pEntity );
-
-	if( pPlayer )
-		pPlayer->PreThink();
+	if ( entity && entity->pvPrivateData )
+		((CBasePlayer*)entity->pvPrivateData)->PreThink();
 }
 
-/*
-================
-PlayerPostThink
-
-Called every frame after physics are run
-================
-*/
-void PlayerPostThink( edict_t *pEntity )
+void PlayerPostThink( edict_t* entity )
 {
-	//ALERT( at_console, "PostThink( %g, frametime %g )\n", gpGlobals->time, gpGlobals->frametime );
-
-	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE( pEntity );
-
-	if( pPlayer )
-		pPlayer->PostThink();
+	if ( entity && entity->pvPrivateData )
+		((CBasePlayer*)entity->pvPrivateData)->PostThink();
 }
 
-void ParmsNewLevel( void )
+void ParmsNewLevel()
 {
 }
 
-void ParmsChangeLevel( void )
+void ParmsChangeLevel()
 {
-	// retrieve the pointer to the save data
-	SAVERESTOREDATA *pSaveData = (SAVERESTOREDATA *)gpGlobals->pSaveData;
-
-	if( pSaveData )
-		pSaveData->connectionCount = BuildChangeList( pSaveData->levelList, MAX_LEVEL_CONNECTIONS );
+	if ( gpGlobals->pSaveData )
+	{
+		SAVERESTOREDATA* data = (SAVERESTOREDATA*)gpGlobals->pSaveData;
+		data->connectionCount = BuildChangeList( data->levelList, MAX_LEVEL_CONNECTIONS );
+	}
 }
 
-//
-// GLOBALS ASSUMED SET:  g_ulFrameCount
-//
-void StartFrame( void )
+void StartFrame()
 {
-	//ALERT( at_console, "SV_Physics( %g, frametime %g )\n", gpGlobals->time, gpGlobals->frametime );
-
-	if( g_pGameRules )
+	if ( g_pGameRules )
 		g_pGameRules->Think();
-
-	if( g_fGameOver )
-		return;
-
-	gpGlobals->teamplay = teamplay.value;
-	g_ulFrameCount++;
+	CLocalNav::Think();
+	if ( !g_fGameOver )
+	{
+		++g_ulFrameCount;
+		gpGlobals->teamplay = teamplay.value;
+	}
 }
 
-void ClientPrecache( void )
+const char* sPlayerModelFiles[] = { "models/player.mdl" };
+
+void ClientPrecache()
 {
-	// setup precaches always needed
-	PRECACHE_SOUND( "player/sprayer.wav" );			// spray paint sound for PreAlpha
-
-	// PRECACHE_SOUND( "player/pl_jumpland2.wav" );		// UNDONE: play 2x step sound
-
+	PRECACHE_SOUND( "weapons/dryfire_pistol.wav" );
+	PRECACHE_SOUND( "weapons/dryfire_rifle.wav" );
+	PRECACHE_SOUND( "player/pl_shot1.wav" );
+	PRECACHE_SOUND( "player/pl_die1.wav" );
+	PRECACHE_SOUND( "player/headshot1.wav" );
+	PRECACHE_SOUND( "player/headshot2.wav" );
+	PRECACHE_SOUND( "player/headshot3.wav" );
+	PRECACHE_SOUND( "player/bhit_flesh-1.wav" );
+	PRECACHE_SOUND( "player/bhit_flesh-2.wav" );
+	PRECACHE_SOUND( "player/bhit_flesh-3.wav" );
+	PRECACHE_SOUND( "player/bhit_kevlar-1.wav" );
+	PRECACHE_SOUND( "player/bhit_helmet-1.wav" );
+	PRECACHE_SOUND( "player/die1.wav" );
+	PRECACHE_SOUND( "player/die2.wav" );
+	PRECACHE_SOUND( "player/die3.wav" );
+	PRECACHE_SOUND( "player/death6.wav" );
+	PRECACHE_SOUND( "radio/locknload.wav" );
+	PRECACHE_SOUND( "radio/letsgo.wav" );
+	PRECACHE_SOUND( "radio/moveout.wav" );
+	PRECACHE_SOUND( "radio/com_go.wav" );
+	PRECACHE_SOUND( "radio/rescued.wav" );
+	PRECACHE_SOUND( "radio/rounddraw.wav" );
+	PRECACHE_SOUND( "items/kevlar.wav" );
+	PRECACHE_SOUND( "items/ammopickup2.wav" );
+	PRECACHE_SOUND( "items/nvg_on.wav" );
+	PRECACHE_SOUND( "items/nvg_off.wav" );
+	PRECACHE_SOUND( "items/equip_nvg.wav" );
+	PRECACHE_SOUND( "weapons/c4_beep1.wav" );
+	PRECACHE_SOUND( "weapons/c4_beep2.wav" );
+	PRECACHE_SOUND( "weapons/c4_beep3.wav" );
+	PRECACHE_SOUND( "weapons/c4_beep4.wav" );
+	PRECACHE_SOUND( "weapons/c4_beep5.wav" );
+	PRECACHE_SOUND( "weapons/c4_explode1.wav" );
+	PRECACHE_SOUND( "weapons/c4_plant.wav" );
+	PRECACHE_SOUND( "weapons/c4_disarm.wav" );
+	PRECACHE_SOUND( "weapons/c4_disarmed.wav" );
+	PRECACHE_SOUND( "weapons/explode3.wav" );
+	PRECACHE_SOUND( "weapons/explode4.wav" );
+	PRECACHE_SOUND( "weapons/explode5.wav" );
+	PRECACHE_SOUND( "player/sprayer.wav" );
 	PRECACHE_SOUND( "player/pl_fallpain2.wav" );
 	PRECACHE_SOUND( "player/pl_fallpain3.wav" );
-
-	PRECACHE_SOUND( "player/pl_step1.wav" );		// walk on concrete
+	PRECACHE_SOUND( "player/pl_snow1.wav" );
+	PRECACHE_SOUND( "player/pl_snow2.wav" );
+	PRECACHE_SOUND( "player/pl_snow3.wav" );
+	PRECACHE_SOUND( "player/pl_snow4.wav" );
+	PRECACHE_SOUND( "player/pl_snow5.wav" );
+	PRECACHE_SOUND( "player/pl_snow6.wav" );
+	PRECACHE_SOUND( "player/pl_step1.wav" );
 	PRECACHE_SOUND( "player/pl_step2.wav" );
 	PRECACHE_SOUND( "player/pl_step3.wav" );
 	PRECACHE_SOUND( "player/pl_step4.wav" );
-
-	PRECACHE_SOUND( "common/npc_step1.wav" );		// NPC walk on concrete
+	PRECACHE_SOUND( "common/npc_step1.wav" );
 	PRECACHE_SOUND( "common/npc_step2.wav" );
 	PRECACHE_SOUND( "common/npc_step3.wav" );
 	PRECACHE_SOUND( "common/npc_step4.wav" );
-
-	PRECACHE_SOUND( "player/pl_metal1.wav" );		// walk on metal
+	PRECACHE_SOUND( "player/pl_metal1.wav" );
 	PRECACHE_SOUND( "player/pl_metal2.wav" );
 	PRECACHE_SOUND( "player/pl_metal3.wav" );
 	PRECACHE_SOUND( "player/pl_metal4.wav" );
-
-	PRECACHE_SOUND( "player/pl_dirt1.wav" );		// walk on dirt
+	PRECACHE_SOUND( "player/pl_dirt1.wav" );
 	PRECACHE_SOUND( "player/pl_dirt2.wav" );
 	PRECACHE_SOUND( "player/pl_dirt3.wav" );
 	PRECACHE_SOUND( "player/pl_dirt4.wav" );
-
-	PRECACHE_SOUND( "player/pl_duct1.wav" );		// walk in duct
+	PRECACHE_SOUND( "player/pl_crete1.wav" );
+	PRECACHE_SOUND( "player/pl_crete2.wav" );
+	PRECACHE_SOUND( "player/pl_crete3.wav" );
+	PRECACHE_SOUND( "player/pl_crete4.wav" );
+	PRECACHE_SOUND( "player/pl_duct1.wav" );
 	PRECACHE_SOUND( "player/pl_duct2.wav" );
 	PRECACHE_SOUND( "player/pl_duct3.wav" );
 	PRECACHE_SOUND( "player/pl_duct4.wav" );
-
-	PRECACHE_SOUND( "player/pl_grate1.wav" );		// walk on grate
+	PRECACHE_SOUND( "player/pl_carpet1.wav" );
+	PRECACHE_SOUND( "player/pl_carpet2.wav" );
+	PRECACHE_SOUND( "player/pl_carpet3.wav" );
+	PRECACHE_SOUND( "player/pl_carpet4.wav" );
+	PRECACHE_SOUND( "player/pl_gravel1.wav" );
+	PRECACHE_SOUND( "player/pl_gravel2.wav" );
+	PRECACHE_SOUND( "player/pl_gravel3.wav" );
+	PRECACHE_SOUND( "player/pl_gravel4.wav" );
+	PRECACHE_SOUND( "player/pl_grate1.wav" );
 	PRECACHE_SOUND( "player/pl_grate2.wav" );
 	PRECACHE_SOUND( "player/pl_grate3.wav" );
 	PRECACHE_SOUND( "player/pl_grate4.wav" );
-
-	PRECACHE_SOUND( "player/pl_slosh1.wav" );		// walk in shallow water
+	PRECACHE_SOUND( "player/pl_slosh1.wav" );
 	PRECACHE_SOUND( "player/pl_slosh2.wav" );
 	PRECACHE_SOUND( "player/pl_slosh3.wav" );
 	PRECACHE_SOUND( "player/pl_slosh4.wav" );
-
-	PRECACHE_SOUND( "player/pl_tile1.wav" );		// walk on tile
+	PRECACHE_SOUND( "player/pl_grass1.wav" );
+	PRECACHE_SOUND( "player/pl_grass2.wav" );
+	PRECACHE_SOUND( "player/pl_grass3.wav" );
+	PRECACHE_SOUND( "player/pl_grass4.wav" );
+	PRECACHE_SOUND( "player/pl_tile1.wav" );
 	PRECACHE_SOUND( "player/pl_tile2.wav" );
 	PRECACHE_SOUND( "player/pl_tile3.wav" );
 	PRECACHE_SOUND( "player/pl_tile4.wav" );
 	PRECACHE_SOUND( "player/pl_tile5.wav" );
-
-	PRECACHE_SOUND( "player/pl_swim1.wav" );		// breathe bubbles
+	PRECACHE_SOUND( "player/pl_swim1.wav" );
 	PRECACHE_SOUND( "player/pl_swim2.wav" );
 	PRECACHE_SOUND( "player/pl_swim3.wav" );
 	PRECACHE_SOUND( "player/pl_swim4.wav" );
-
-	PRECACHE_SOUND( "player/pl_ladder1.wav" );	// climb ladder rung
+	PRECACHE_SOUND( "player/pl_ladder1.wav" );
 	PRECACHE_SOUND( "player/pl_ladder2.wav" );
 	PRECACHE_SOUND( "player/pl_ladder3.wav" );
 	PRECACHE_SOUND( "player/pl_ladder4.wav" );
-
-	PRECACHE_SOUND( "player/pl_wade1.wav" );		// wade in water
+	PRECACHE_SOUND( "player/pl_wade1.wav" );
 	PRECACHE_SOUND( "player/pl_wade2.wav" );
 	PRECACHE_SOUND( "player/pl_wade3.wav" );
 	PRECACHE_SOUND( "player/pl_wade4.wav" );
-
-	PRECACHE_SOUND( "debris/wood1.wav" );			// hit wood texture
+	PRECACHE_SOUND( "player/pl_wood1.wav" );
+	PRECACHE_SOUND( "player/pl_wood2.wav" );
+	PRECACHE_SOUND( "player/pl_wood3.wav" );
+	PRECACHE_SOUND( "player/pl_wood4.wav" );
+	PRECACHE_SOUND( "debris/wood1.wav" );
 	PRECACHE_SOUND( "debris/wood2.wav" );
 	PRECACHE_SOUND( "debris/wood3.wav" );
-
-	PRECACHE_SOUND( "plats/train_use1.wav" );		// use a train
-
+	PRECACHE_SOUND( "player/pl_snow_light1.wav" );
+	PRECACHE_SOUND( "player/pl_snow_light2.wav" );
+	PRECACHE_SOUND( "player/pl_snow_light3.wav" );
+	PRECACHE_SOUND( "player/pl_snow_light4.wav" );
+	PRECACHE_SOUND( "plats/train_use1.wav" );
 	PRECACHE_SOUND( "plats/vehicle_ignition.wav" );
-
-	PRECACHE_SOUND( "buttons/spark5.wav" );		// hit computer texture
+	PRECACHE_SOUND( "buttons/spark5.wav" );
 	PRECACHE_SOUND( "buttons/spark6.wav" );
 	PRECACHE_SOUND( "debris/glass1.wav" );
 	PRECACHE_SOUND( "debris/glass2.wav" );
 	PRECACHE_SOUND( "debris/glass3.wav" );
-
-	PRECACHE_SOUND( SOUND_FLASHLIGHT_ON );
-	PRECACHE_SOUND( SOUND_FLASHLIGHT_OFF );
-
-	// player gib sounds
+	PRECACHE_SOUND( "items/flashlight1.wav" );
+	PRECACHE_SOUND( "items/flashlight1.wav" );
 	PRECACHE_SOUND( "common/bodysplat.wav" );
-
-	// player pain sounds
 	PRECACHE_SOUND( "player/pl_pain2.wav" );
 	PRECACHE_SOUND( "player/pl_pain4.wav" );
 	PRECACHE_SOUND( "player/pl_pain5.wav" );
 	PRECACHE_SOUND( "player/pl_pain6.wav" );
 	PRECACHE_SOUND( "player/pl_pain7.wav" );
-
-	PRECACHE_MODEL( "models/player.mdl" );
-
-	// hud sounds
+	PRECACHE_MODEL( (char*)sPlayerModelFiles[0] );
 	PRECACHE_SOUND( "common/wpn_hudoff.wav" );
 	PRECACHE_SOUND( "common/wpn_hudon.wav" );
 	PRECACHE_SOUND( "common/wpn_moveselect.wav" );
 	PRECACHE_SOUND( "common/wpn_select.wav" );
 	PRECACHE_SOUND( "common/wpn_denyselect.wav" );
-
-	// geiger sounds
-	PRECACHE_SOUND( "player/geiger6.wav" );
-	PRECACHE_SOUND( "player/geiger5.wav" );
-	PRECACHE_SOUND( "player/geiger4.wav" );
-	PRECACHE_SOUND( "player/geiger3.wav" );
-	PRECACHE_SOUND( "player/geiger2.wav" );
-	PRECACHE_SOUND( "player/geiger1.wav" );
-
-	if( giPrecacheGrunt )
-		UTIL_PrecacheOther( "monster_human_grunt" );
+	PRECACHE_MODEL( "sprites/wall_puff1.spr" );
+	PRECACHE_MODEL( "sprites/wall_puff2.spr" );
+	PRECACHE_MODEL( "sprites/wall_puff3.spr" );
+	PRECACHE_MODEL( "sprites/wall_puff4.spr" );
+	PRECACHE_MODEL( "sprites/black_smoke1.spr" );
+	PRECACHE_MODEL( "sprites/black_smoke2.spr" );
+	PRECACHE_MODEL( "sprites/black_smoke3.spr" );
+	PRECACHE_MODEL( "sprites/black_smoke4.spr" );
+	PRECACHE_MODEL( "sprites/fast_wallpuff1.spr" );
+	PRECACHE_MODEL( "sprites/pistol_smoke1.spr" );
+	PRECACHE_MODEL( "sprites/pistol_smoke2.spr" );
+	PRECACHE_MODEL( "sprites/rifle_smoke1.spr" );
+	PRECACHE_MODEL( "sprites/rifle_smoke2.spr" );
+	PRECACHE_MODEL( "sprites/rifle_smoke3.spr" );
+	PRECACHE_MODEL( "sprites/bottom.spr" );
+	PRECACHE_MODEL( "sprites/bottom2.spr" );
+	PRECACHE_MODEL( "sprites/bottom3.spr" );
+	PRECACHE_MODEL( "sprites/bottom_left.spr" );
+	PRECACHE_MODEL( "sprites/bottom_left2.spr" );
+	PRECACHE_MODEL( "sprites/bottom_left3.spr" );
+	PRECACHE_MODEL( "sprites/bottom_right.spr" );
+	PRECACHE_MODEL( "sprites/bottom_right2.spr" );
+	PRECACHE_MODEL( "sprites/bottom_right3.spr" );
+	PRECACHE_MODEL( "sprites/left.spr" );
+	PRECACHE_MODEL( "sprites/left2.spr" );
+	PRECACHE_MODEL( "sprites/left3.spr" );
+	PRECACHE_MODEL( "sprites/right.spr" );
+	PRECACHE_MODEL( "sprites/right2.spr" );
+	PRECACHE_MODEL( "sprites/right3.spr" );
+	PRECACHE_MODEL( "sprites/top.spr" );
+	PRECACHE_MODEL( "sprites/top2.spr" );
+	PRECACHE_MODEL( "sprites/top3.spr" );
+	PRECACHE_MODEL( "sprites/top_left.spr" );
+	PRECACHE_MODEL( "sprites/top_left2.spr" );
+	PRECACHE_MODEL( "sprites/top_left3.spr" );
+	PRECACHE_MODEL( "sprites/top_right.spr" );
+	PRECACHE_MODEL( "sprites/top_right2.spr" );
+	PRECACHE_MODEL( "sprites/top_right3.spr" );
+	PRECACHE_MODEL( "sprites/vertical.spr" );
+	PRECACHE_MODEL( "sprites/horizontal.spr" );
+	PRECACHE_SOUND( "weapons/ric_metal-1.wav" );
+	PRECACHE_SOUND( "weapons/ric_metal-2.wav" );
+	PRECACHE_SOUND( "player/electro1.wav" );
+	PRECACHE_SOUND( "player/electro2.wav" );
+	PRECACHE_SOUND( "weapons/electro4.wav" );
+	PRECACHE_SOUND( "player/burn1.wav" );
+	PRECACHE_SOUND( "player/burn2.wav" );
+	PRECACHE_SOUND( "ambience/defuse_loop.wav" );
+	PRECACHE_SOUND( "ambience/training_walla.wav" );
+	PRECACHE_SOUND( "ambience/gate_pound.wav" );
+	PRECACHE_SOUND( "ambience/door_metal_shake2.wav" );
+	g_usExplosion = PRECACHE_EVENT( 1, "events/explosion.sc" );
 }
 
-/*
-===============
-GetGameDescription
-
-Returns the descriptive name of this .dll.  E.g., Half-Life, or Team Fortress 2
-===============
-*/
-const char *GetGameDescription()
+const char* GetGameDescription()
 {
-	if( g_pGameRules ) // this function may be called before the world has spawned, and the game rules initialized
-		return g_pGameRules->GetGameDescription();
-	else
-		return "Half-Life";
+	return g_pGameRules ? g_pGameRules->GetGameDescription() : "Counter-Strike: Condition Zero";
 }
 
-/*
-================
-Sys_Error
-
-Engine is going to shut down, allows setting a breakpoint in game .dll to catch that occasion
-================
-*/
-void Sys_Error( const char *error_string )
+void Sys_Error( const char* )
 {
-	// Default case, do nothing.  MOD AUTHORS:  Add code ( e.g., _asm { int 3 }; here to cause a breakpoint for debugging your game .dlls
 }
 
-/*
-================
-PlayerCustomization
-
-A new player customization has been registered on the server
-UNDONE:  This only sets the # of frames of the spray can logo
-animation right now.
-================
-*/
-void PlayerCustomization( edict_t *pEntity, customization_t *pCust )
+void PlayerCustomization( edict_t* entity, customization_t* customization )
 {
-	CBasePlayer *pPlayer = (CBasePlayer *)GET_PRIVATE( pEntity );
-
-	if( !pPlayer )
+	CBasePlayer* player = entity ? (CBasePlayer*)entity->pvPrivateData : NULL;
+	if ( !player )
 	{
 		ALERT( at_console, "PlayerCustomization:  Couldn't get player!\n" );
 		return;
 	}
-
-	if( !pCust )
+	if ( !customization )
 	{
 		ALERT( at_console, "PlayerCustomization:  NULL customization!\n" );
 		return;
 	}
-
-	switch( pCust->resource.type )
+	switch ( customization->resource.type )
 	{
-	case t_decal:
-		pPlayer->SetCustomDecalFrames( pCust->nUserData2 ); // Second int is max # of frames.
-		break;
 	case t_sound:
 	case t_skin:
 	case t_model:
-		// Ignore for now.
+		break;
+	case t_decal:
+		player->SetCustomDecalFrames( customization->nUserData2 );
 		break;
 	default:
 		ALERT( at_console, "PlayerCustomization:  Unknown customization type!\n" );
@@ -1000,380 +582,252 @@ void PlayerCustomization( edict_t *pEntity, customization_t *pCust )
 	}
 }
 
-/*
-================
-SpectatorConnect
-
-A spectator has joined the game
-================
-*/
-void SpectatorConnect( edict_t *pEntity )
+void SpectatorConnect( edict_t* entity )
 {
-	CBaseSpectator *pPlayer = (CBaseSpectator *)GET_PRIVATE( pEntity );
-
-	if( pPlayer )
-		pPlayer->SpectatorConnect();
+	if ( entity && entity->pvPrivateData )
+		((CBaseSpectator*)entity->pvPrivateData)->SpectatorConnect();
 }
 
-/*
-================
-SpectatorConnect
-
-A spectator has left the game
-================
-*/
-void SpectatorDisconnect( edict_t *pEntity )
+void SpectatorDisconnect( edict_t* entity )
 {
-	CBaseSpectator *pPlayer = (CBaseSpectator *)GET_PRIVATE( pEntity );
-
-	if( pPlayer )
-		pPlayer->SpectatorDisconnect();
+	if ( entity && entity->pvPrivateData )
+		((CBaseSpectator*)entity->pvPrivateData)->SpectatorDisconnect();
 }
 
-/*
-================
-SpectatorConnect
-
-A spectator has sent a usercmd
-================
-*/
-void SpectatorThink( edict_t *pEntity )
+void SpectatorThink( edict_t* entity )
 {
-	CBaseSpectator *pPlayer = (CBaseSpectator *)GET_PRIVATE( pEntity );
-
-	if( pPlayer )
-		pPlayer->SpectatorThink();
+	if ( entity && entity->pvPrivateData )
+		((CBaseSpectator*)entity->pvPrivateData)->SpectatorThink();
 }
 
-////////////////////////////////////////////////////////
-// PAS and PVS routines for client messaging
-//
-
-/*
-================
-SetupVisibility
-
-A client can have a separate "view entity" indicating that his/her view should depend on the origin of that
-view entity.  If that's the case, then pViewEntity will be non-NULL and will be used.  Otherwise, the current
-entity's origin is used.  Either is offset by the view_ofs to get the eye position.
-
-From the eye position, we set up the PAS and PVS to use for filtering network messages to the client.  At this point, we could
- override the actual PAS or PVS values, or use a different origin.
-
-NOTE:  Do not cache the values of pas and pvs, as they depend on reusable memory in the engine, they are only good for this one frame
-================
-*/
-void SetupVisibility( edict_t *pViewEntity, edict_t *pClient, unsigned char **pvs, unsigned char **pas )
+void SetupVisibility( edict_t* viewEntity, edict_t* client, unsigned char** pvs, unsigned char** pas )
 {
-	Vector org;
-	edict_t *pView = pClient;
-
-	// Find the client's PVS
-	if( pViewEntity )
+	edict_t* view = viewEntity ? viewEntity : client;
+	if ( client->v.flags & FL_PROXY )
 	{
-		pView = pViewEntity;
-	}
-
-	if( pClient->v.flags & FL_PROXY )
-	{
-		*pvs = NULL;	// the spectator proxy sees
-		*pas = NULL;	// and hears everything
+		*pvs = NULL;
+		*pas = NULL;
 		return;
 	}
-
-	if( pView->v.effects & EF_MERGE_VISIBILITY )
-	{
-		if( FClassnameIs( pView, "env_sky" ) )
-		{
-			org = pView->v.origin;
-		}
-		else return; // don't merge pvs
-	}
-	else
-	{
-		org = pView->v.origin + pView->v.view_ofs;
-		if( pView->v.flags & FL_DUCKING )
-		{
-			org = org + ( VEC_HULL_MIN - VEC_DUCK_HULL_MIN );
-		}
-	}
-
-	*pvs = ENGINE_SET_PVS( org );
-	*pas = ENGINE_SET_PAS( org );
+	Vector origin = view->v.origin + view->v.view_ofs;
+	if ( view->v.flags & FL_DUCKING )
+		origin = origin + ( VEC_HULL_MIN - VEC_DUCK_HULL_MIN );
+	*pvs = ENGINE_SET_PVS( origin );
+	*pas = ENGINE_SET_PAS( origin );
 }
 
-#include "entity_state.h"
+#define MAX_ENTITIES	1380
+#ifndef MAX_CLIENTS
+#define MAX_CLIENTS		32
+#endif
 
-/*
-AddToFullPack
-
-Return 1 if the entity state has been filled in for the ent and the entity will be propagated to the client, 0 otherwise
-
-state is the server maintained copy of the state info that is transmitted to the client
-a MOD could alter values copied into state to send the "host" a different look for a particular entity update, etc.
-e and ent are the entity that is being added to the update, if 1 is returned
-host is the player's edict of the player whom we are sending the update to
-player is 1 if the ent/e is a player and 0 otherwise
-pSet is either the PAS or PVS that we previous set up.  We can use it to ask the engine to filter the entity against the PAS or PVS.
-we could also use the pas/ pvs that we set in SetupVisibility, if we wanted to.  Caching the value is valid in that case, but still only for the current frame
-*/
-int AddToFullPack( struct entity_state_s *state, int e, edict_t *ent, edict_t *host, int hostflags, int player, unsigned char *pSet )
+typedef struct
 {
-	int i;
-	CBaseEntity *Entity;
+	float m_fTimeEnteredPVS;
+} ENTITYPVSSTATUS;
 
-	// don't send if flagged for NODRAW and it's not the host getting the message
-	if( ( ent->v.effects & EF_NODRAW ) && ( ent != host ) )
-		return 0;
+typedef struct
+{
+	ENTITYPVSSTATUS m_Status[MAX_ENTITIES];
+	int headnode;
+	int num_leafs;
+	short leafnums[MAX_ENT_LEAFS];
+} PLAYERPVSSTATUS;
 
-	// Ignore ents without valid / visible models
-	if( !ent->v.modelindex || !STRING( ent->v.model ) )
-		return 0;
+static PLAYERPVSSTATUS g_PVSStatus[MAX_CLIENTS];
 
-	// Don't send spectators to other players
-	if( ( ent->v.flags & FL_SPECTATOR ) && ( ent != host ) )
+void ResetPlayerPVS( edict_t* client, int clientnum )
+{
+	ASSERT_AT( clientnum >=0 && clientnum < MAX_CLIENTS, 1182 );
+	PLAYERPVSSTATUS& status = g_PVSStatus[clientnum];
+	memset( &status, 0, sizeof( status ) );
+	status.headnode = client->headnode;
+	status.num_leafs = client->num_leafs;
+	memcpy( status.leafnums, client->leafnums, sizeof( status.leafnums ) );
+}
+
+bool CheckPlayerPVSLeafChanged( edict_t* client, int clientnum )
+{
+	ASSERT_AT( clientnum >=0 && clientnum < MAX_CLIENTS, 1196 );
+	const PLAYERPVSSTATUS& status = g_PVSStatus[clientnum];
+	if ( status.headnode != client->headnode || status.num_leafs != client->num_leafs )
+		return true;
+	for ( int leaf = 0; leaf < client->num_leafs; ++leaf )
 	{
-		return 0;
+		if ( status.leafnums[leaf] != client->leafnums[leaf] )
+			return true;
 	}
+	return false;
+}
 
-	// Ignore if not the host and not touching a PVS/PAS leaf
-	// If pSet is NULL, then the test will always succeed and the entity will be added to the update
-	if( ent != host )
+void MarkEntityInPVS( int clientnum, int entitynum, float time, bool inPVS )
+{
+	ASSERT_AT( clientnum >=0 && clientnum < MAX_CLIENTS, 1220 );
+	ASSERT_AT( entitynum >= 0 && entitynum < MAX_ENTITIES, 1221 );
+	g_PVSStatus[clientnum].m_Status[entitynum].m_fTimeEnteredPVS = inPVS ? time : 0;
+}
+
+bool CheckEntityRecentlyInPVS( int clientnum, int entitynum, float time )
+{
+	ASSERT_AT( clientnum >=0 && clientnum < MAX_CLIENTS, 1232 );
+	ASSERT_AT( entitynum >= 0 && entitynum < MAX_ENTITIES, 1233 );
+	float entered = g_PVSStatus[clientnum].m_Status[entitynum].m_fTimeEnteredPVS;
+	return entered != 0 && time <= entered + 1;
+}
+
+int AddToFullPack( entity_state_s* state, int index, edict_t* entity, edict_t* host,
+	int hostFlags, int player, unsigned char* set )
+{
+	const int visibilityController = 1 << 18;
+	const int visibilityTarget = 1 << 19;
+	const bool controlsVisibility = ( entity->v.flags & visibilityController ) != 0;
+	if ( !controlsVisibility &&
+		( ( ( entity->v.effects & EF_NODRAW ) && entity != host ) ||
+		!entity->v.modelindex || !STRING( entity->v.model ) ) )
+		return 0;
+	if ( ( entity->v.flags & FL_SPECTATOR ) && entity != host )
+		return 0;
+	const int hostIndex = ENTINDEX( host ) - 1;
+	if ( CheckPlayerPVSLeafChanged( host, hostIndex ) )
+		ResetPlayerPVS( host, hostIndex );
+	if ( entity != host && !CheckEntityRecentlyInPVS( hostIndex, index, gpGlobals->time ) )
 	{
-		if( !ENGINE_CHECK_VISIBILITY( (const struct edict_s *)ent, pSet ) )
+		bool visible;
+		if ( ( entity->v.flags & visibilityTarget ) && entity->v.iuser2 )
+			visible = entity->v.iuser1 != 0;
+		else
+			visible = ENGINE_CHECK_VISIBILITY( entity, set ) != 0;
+		if ( controlsVisibility )
 		{
-			// env_sky is visible always
-			if( !FClassnameIs( ent, "env_sky" ) )
+			edict_t* target = FIND_ENTITY_BY_STRING( NULL, "targetname", STRING( entity->v.target ) );
+			while ( !FNullEnt( target ) )
 			{
-				return 0;
+				if ( target->v.iuser2 )
+					target->v.iuser1 = visible ? 1 : 0;
+				target = FIND_ENTITY_BY_STRING( target, "targetname", STRING( entity->v.target ) );
 			}
 		}
-	}
-
-	// Don't send entity to local client if the client says it's predicting the entity itself.
-	if( ent->v.flags & FL_SKIPLOCALHOST )
-	{
-		if( hostflags & 4 )
-			return 0; // it's a portal pass
-
-		if( ( hostflags & 1 ) && ( ent->v.owner == host ) )
+		MarkEntityInPVS( hostIndex, index, gpGlobals->time, visible );
+		if ( !visible )
 			return 0;
 	}
-	
-	if( host->v.groupinfo )
+	if ( ( entity->v.flags & FL_SKIPLOCALHOST ) && ( hostFlags & 1 ) && host == entity->v.owner )
+		return 0;
+	if ( host->v.groupinfo )
 	{
 		UTIL_SetGroupTrace( host->v.groupinfo, GROUP_OP_AND );
-
-		// Should always be set, of course
-		if( ent->v.groupinfo )
+		if ( entity->v.groupinfo )
 		{
-			if( g_groupop == GROUP_OP_AND )
-			{
-				if( !( ent->v.groupinfo & host->v.groupinfo ) )
-					return 0;
-			}
-			else if( g_groupop == GROUP_OP_NAND )
-			{
-				if( ent->v.groupinfo & host->v.groupinfo )
-					return 0;
-			}
+			if ( g_groupop == GROUP_OP_AND && !( entity->v.groupinfo & host->v.groupinfo ) )
+				return 0;
+			if ( g_groupop == GROUP_OP_NAND && ( entity->v.groupinfo & host->v.groupinfo ) )
+				return 0;
 		}
-
 		UTIL_UnsetGroupTrace();
 	}
-
-	memset( state, 0, sizeof(*state) );
-
-	// Assign index so we can track this entity from frame to frame and
-	//  delta from it.
-	state->number = e;
-	state->entityType = ENTITY_NORMAL;
-
-	// Flag custom entities.
-	if( ent->v.flags & FL_CUSTOMENTITY )
-	{
-		state->entityType = ENTITY_BEAM;
-	}
-
-	// 
-	// Copy state data
-	//
-
-	// Round animtime to nearest millisecond
-	state->animtime = (int)( 1000.0f * ent->v.animtime ) / 1000.0f;
-
-	memcpy( state->origin, ent->v.origin, 3 * sizeof(float) );
-	memcpy( state->angles, ent->v.angles, 3 * sizeof(float) );
-	memcpy( state->mins, ent->v.mins, 3 * sizeof(float) );
-	memcpy( state->maxs, ent->v.maxs, 3 * sizeof(float) );
-
-	memcpy( state->startpos, ent->v.startpos, 3 * sizeof(float) );
-	memcpy( state->endpos, ent->v.endpos, 3 * sizeof(float) );
-	memcpy( state->velocity, ent->v.velocity, 3 * sizeof(float) );
-
-	state->impacttime = ent->v.impacttime;
-	state->starttime = ent->v.starttime;
-
-	state->modelindex = ent->v.modelindex;
-
-	state->frame = ent->v.frame;
-
-	state->skin = ent->v.skin;
-	state->effects = ent->v.effects;
-
-	// This non-player entity is being moved by the game .dll and not the physics simulation system
-	//  make sure that we interpolate it's position on the client if it moves
-	if( !player &&
-		 ent->v.animtime &&
-		 ent->v.velocity[0] == 0 && 
-		 ent->v.velocity[1] == 0 && 
-		 ent->v.velocity[2] == 0 )
-	{
+	memset( state, 0, sizeof( *state ) );
+	state->entityType = ( entity->v.flags & FL_CUSTOMENTITY ) ? ENTITY_BEAM : ENTITY_NORMAL;
+	state->number = index;
+	state->animtime = (float)( (int)( 1000.0 * entity->v.animtime ) / 1000.0 );
+	state->origin = entity->v.origin;
+	state->angles = entity->v.angles;
+	state->mins = entity->v.mins;
+	state->maxs = entity->v.maxs;
+	state->startpos = entity->v.startpos;
+	state->endpos = entity->v.endpos;
+	state->impacttime = entity->v.impacttime;
+	state->starttime = entity->v.starttime;
+	state->modelindex = entity->v.modelindex;
+	state->frame = entity->v.frame;
+	state->skin = (short)entity->v.skin;
+	state->effects = entity->v.effects;
+	if ( !player && entity->v.animtime != 0 && entity->v.velocity == g_vecZero )
 		state->eflags |= EFLAG_SLERP;
-	}
-
-	state->scale		= ent->v.scale;
-	state->solid		= ent->v.solid;
-	state->colormap		= ent->v.colormap;
-
-	state->movetype		= ent->v.movetype;
-	state->sequence		= ent->v.sequence;
-	state->framerate	= ent->v.framerate;
-	state->body		= ent->v.body;
-
-	for( i = 0; i < 4; i++ )
-	{
-		state->controller[i] = ent->v.controller[i];
-	}
-
-	for( i = 0; i < 2; i++ )
-	{
-		state->blending[i] = ent->v.blending[i];
-	}
-
-	state->rendermode	= ent->v.rendermode;
-	state->renderamt	= (int)ent->v.renderamt; 
-	state->renderfx		= ent->v.renderfx;
-	state->rendercolor.r	= (byte)ent->v.rendercolor.x;
-	state->rendercolor.g	= (byte)ent->v.rendercolor.y;
-	state->rendercolor.b	= (byte)ent->v.rendercolor.z;
-
-	state->aiment = 0;
-	if( ent->v.aiment )
-	{
-		state->aiment = ENTINDEX( ent->v.aiment );
-	}
-
+	state->scale = entity->v.scale;
+	state->solid = (short)entity->v.solid;
+	state->colormap = entity->v.colormap;
+	state->movetype = entity->v.movetype;
+	state->sequence = entity->v.sequence;
+	state->framerate = entity->v.framerate;
+	state->body = entity->v.body;
+	memcpy( state->controller, entity->v.controller, sizeof( state->controller ) );
+	memcpy( state->blending, entity->v.blending, sizeof( entity->v.blending ) );
+	state->rendermode = entity->v.rendermode;
+	state->renderamt = (int)entity->v.renderamt;
+	state->renderfx = entity->v.renderfx;
+	state->rendercolor.r = (byte)(int)entity->v.rendercolor.x;
+	state->rendercolor.g = (byte)(int)entity->v.rendercolor.y;
+	state->rendercolor.b = (byte)(int)entity->v.rendercolor.z;
+	state->aiment = entity->v.aiment ? ENTINDEX( entity->v.aiment ) : 0;
 	state->owner = 0;
-	if( ent->v.owner )
+	if ( entity->v.owner )
 	{
-		int owner = ENTINDEX( ent->v.owner );
-
-		// Only care if owned by a player
-		if( owner >= 1 && owner <= gpGlobals->maxClients )
-		{
-			state->owner = owner;	
-		}
+		int owner = ENTINDEX( entity->v.owner );
+		if ( owner > 0 && owner <= gpGlobals->maxClients )
+			state->owner = owner;
 	}
-
-	state->onground = 0;
-	if( ent->v.groundentity )
+	if ( player )
 	{
-		state->onground = ENTINDEX( ent->v.groundentity );
-	}
-
-	// HACK:  Somewhat...
-	// Class is overridden for non-players to signify a breakable glass object ( sort of a class? )
-	if( !player )
-	{
-		state->playerclass  = ent->v.playerclass;
-	}
-
-	// Special stuff for players only
-	if( player )
-	{
-		memcpy( state->basevelocity, ent->v.basevelocity, 3 * sizeof(float) );
-
-		state->weaponmodel	= MODEL_INDEX( STRING( ent->v.weaponmodel ) );
-		state->gaitsequence	= ent->v.gaitsequence;
-		state->spectator	= ent->v.flags & FL_SPECTATOR;
-		state->friction		= ent->v.friction;
-
-		state->gravity		= ent->v.gravity;
-		//state->team		= ent->v.team;
-
-		state->usehull		= ( ent->v.flags & FL_DUCKING ) ? 1 : 0;
-		state->health		= (int)ent->v.health;
-	}
-
-	if( ( Entity = CBaseEntity::Instance( ent ))
-	    && Entity->Classify() != CLASS_NONE
-	    && Entity->Classify() != CLASS_MACHINE )
-	{
-		SetBits( state->eflags, EFLAG_FLESH_SOUND );
+		state->basevelocity = entity->v.basevelocity;
+		state->weaponmodel = entity->v.weaponmodel ? MODEL_INDEX( STRING( entity->v.weaponmodel ) ) : 0;
+		state->gaitsequence = entity->v.gaitsequence;
+		state->spectator = entity->v.flags & FL_SPECTATOR;
+		state->friction = entity->v.friction;
+		state->gravity = entity->v.gravity;
+		state->usehull = ( entity->v.flags & FL_DUCKING ) != 0;
+		state->health = (int)entity->v.health;
 	}
 	else
-	{
-		ClearBits( state->eflags, EFLAG_FLESH_SOUND );
-	}
-
+		state->playerclass = entity->v.playerclass;
+	state->iuser4 = entity->v.iuser4;
+	state->iuser3 = entity->v.iuser3;
+	state->iuser1 = entity->v.iuser1;
+	state->iuser2 = entity->v.iuser2;
+	CBaseEntity* instance = entity ? (CBaseEntity*)entity->pvPrivateData : NULL;
+	if ( instance && instance->Classify() != CLASS_NONE && instance->Classify() != CLASS_MACHINE )
+		state->eflags |= EFLAG_FLESH_SOUND;
+	else
+		state->eflags &= ~EFLAG_FLESH_SOUND;
 	return 1;
 }
 
-// defaults for clientinfo messages
-#define	DEFAULT_VIEWHEIGHT	28
-
-/*
-===================
-CreateBaseline
-
-Creates baselines used for network encoding, especially for player data since players are not spawned until connect time.
-===================
-*/
-void CreateBaseline( int player, int eindex, struct entity_state_s *baseline, struct edict_s *entity, int playermodelindex, vec3_t player_mins, vec3_t player_maxs )
+void CreateBaseline( int player, int index, entity_state_s* baseline, edict_t* entity,
+	int playerModelIndex, Vector playerMins, Vector playerMaxs )
 {
-	baseline->origin		= entity->v.origin;
-	baseline->angles		= entity->v.angles;
-	baseline->frame			= entity->v.frame;
-	baseline->skin			= (short)entity->v.skin;
-
-	// render information
-	baseline->rendermode		= (byte)entity->v.rendermode;
-	baseline->renderamt		= (byte)entity->v.renderamt;
-	baseline->rendercolor.r		= (byte)entity->v.rendercolor.x;
-	baseline->rendercolor.g		= (byte)entity->v.rendercolor.y;
-	baseline->rendercolor.b		= (byte)entity->v.rendercolor.z;
-	baseline->renderfx		= (byte)entity->v.renderfx;
-
-	if( player )
+	baseline->origin = entity->v.origin;
+	baseline->angles = entity->v.angles;
+	baseline->frame = entity->v.frame;
+	baseline->skin = (short)entity->v.skin;
+	baseline->rendermode = (byte)entity->v.rendermode;
+	baseline->renderamt = (byte)(int)entity->v.renderamt;
+	baseline->rendercolor.r = (byte)(int)entity->v.rendercolor.x;
+	baseline->rendercolor.g = (byte)(int)entity->v.rendercolor.y;
+	baseline->rendercolor.b = (byte)(int)entity->v.rendercolor.z;
+	baseline->renderfx = (byte)entity->v.renderfx;
+	if ( player )
 	{
-		baseline->mins		= player_mins;
-		baseline->maxs		= player_maxs;
-
-		baseline->colormap	= eindex;
-		baseline->modelindex	= playermodelindex;
-		baseline->friction	= 1.0;
-		baseline->movetype	= MOVETYPE_WALK;
-
-		baseline->scale		= entity->v.scale;
-		baseline->solid		= SOLID_SLIDEBOX;
-		baseline->framerate	= 1.0;
-		baseline->gravity	= 1.0;
-
+		baseline->mins = playerMins;
+		baseline->maxs = playerMaxs;
+		baseline->colormap = index;
+		baseline->modelindex = playerModelIndex;
+		baseline->friction = 1;
+		baseline->movetype = MOVETYPE_WALK;
+		baseline->solid = SOLID_SLIDEBOX;
+		baseline->framerate = 1;
+		baseline->gravity = 1;
+		baseline->scale = entity->v.scale;
 	}
 	else
 	{
-		baseline->mins		= entity->v.mins;
-		baseline->maxs		= entity->v.maxs;
-
-		baseline->colormap	= 0;
-		baseline->modelindex	= entity->v.modelindex;//SV_ModelIndex(pr_strings + entity->v.model);
-		baseline->movetype	= entity->v.movetype;
-
-		baseline->scale		= entity->v.scale;
-		baseline->solid		= entity->v.solid;
-		baseline->framerate	= entity->v.framerate;
-		baseline->gravity	= entity->v.gravity;
+		baseline->mins = entity->v.mins;
+		baseline->maxs = entity->v.maxs;
+		baseline->colormap = 0;
+		baseline->modelindex = entity->v.modelindex;
+		baseline->movetype = entity->v.movetype;
+		baseline->scale = entity->v.scale;
+		baseline->solid = (short)entity->v.solid;
+		baseline->framerate = entity->v.framerate;
+		baseline->gravity = entity->v.gravity;
 	}
 }
 
@@ -1383,581 +837,400 @@ typedef struct
 	int field;
 } entity_field_alias_t;
 
-#define FIELD_ORIGIN0			0
-#define FIELD_ORIGIN1			1
-#define FIELD_ORIGIN2			2
-#define FIELD_ANGLES0			3
-#define FIELD_ANGLES1			4
-#define FIELD_ANGLES2			5
+enum
+{
+	FIELD_ORIGIN0,
+	FIELD_ORIGIN1,
+	FIELD_ORIGIN2,
+	FIELD_ANGLES0,
+	FIELD_ANGLES1,
+	FIELD_ANGLES2,
+	CUSTOMFIELD_SKIN,
+	CUSTOMFIELD_SEQUENCE,
+	CUSTOMFIELD_ANIMTIME
+};
 
 static entity_field_alias_t entity_field_alias[] =
 {
-	{ "origin[0]",			0 },
-	{ "origin[1]",			0 },
-	{ "origin[2]",			0 },
-	{ "angles[0]",			0 },
-	{ "angles[1]",			0 },
-	{ "angles[2]",			0 },
+	{ "origin[0]", 0 },
+	{ "origin[1]", 0 },
+	{ "origin[2]", 0 },
+	{ "angles[0]", 0 },
+	{ "angles[1]", 0 },
+	{ "angles[2]", 0 }
 };
-
-void Entity_FieldInit( struct delta_s *pFields )
-{
-	entity_field_alias[FIELD_ORIGIN0].field		= DELTA_FINDFIELD( pFields, entity_field_alias[FIELD_ORIGIN0].name );
-	entity_field_alias[FIELD_ORIGIN1].field		= DELTA_FINDFIELD( pFields, entity_field_alias[FIELD_ORIGIN1].name );
-	entity_field_alias[FIELD_ORIGIN2].field		= DELTA_FINDFIELD( pFields, entity_field_alias[FIELD_ORIGIN2].name );
-	entity_field_alias[FIELD_ANGLES0].field		= DELTA_FINDFIELD( pFields, entity_field_alias[FIELD_ANGLES0].name );
-	entity_field_alias[FIELD_ANGLES1].field		= DELTA_FINDFIELD( pFields, entity_field_alias[FIELD_ANGLES1].name );
-	entity_field_alias[FIELD_ANGLES2].field		= DELTA_FINDFIELD( pFields, entity_field_alias[FIELD_ANGLES2].name );
-}
-
-/*
-==================
-Entity_Encode
-
-Callback for sending entity_state_t info over network. 
-FIXME:  Move to script
-==================
-*/
-void Entity_Encode( struct delta_s *pFields, const unsigned char *from, const unsigned char *to )
-{
-	entity_state_t *f, *t;
-	int localplayer = 0;
-	static int initialized = 0;
-
-	if( !initialized )
-	{
-		Entity_FieldInit( pFields );
-		initialized = 1;
-	}
-
-	f = (entity_state_t *)from;
-	t = (entity_state_t *)to;
-
-	// Never send origin to local player, it's sent with more resolution in clientdata_t structure
-	localplayer = ( t->number - 1 ) == ENGINE_CURRENT_PLAYER();
-	if( localplayer )
-	{
-		DELTA_UNSETBYINDEX( pFields, entity_field_alias[FIELD_ORIGIN0].field );
-		DELTA_UNSETBYINDEX( pFields, entity_field_alias[FIELD_ORIGIN1].field );
-		DELTA_UNSETBYINDEX( pFields, entity_field_alias[FIELD_ORIGIN2].field );
-	}
-
-	if( ( t->impacttime != 0 ) && ( t->starttime != 0 ) )
-	{
-		DELTA_UNSETBYINDEX( pFields, entity_field_alias[FIELD_ORIGIN0].field );
-		DELTA_UNSETBYINDEX( pFields, entity_field_alias[FIELD_ORIGIN1].field );
-		DELTA_UNSETBYINDEX( pFields, entity_field_alias[FIELD_ORIGIN2].field );
-
-		DELTA_UNSETBYINDEX( pFields, entity_field_alias[FIELD_ANGLES0].field );
-		DELTA_UNSETBYINDEX( pFields, entity_field_alias[FIELD_ANGLES1].field );
-		DELTA_UNSETBYINDEX( pFields, entity_field_alias[FIELD_ANGLES2].field );
-	}
-
-	if( ( t->movetype == MOVETYPE_FOLLOW ) &&
-		( t->aiment != 0 ) )
-	{
-		DELTA_UNSETBYINDEX( pFields, entity_field_alias[FIELD_ORIGIN0].field );
-		DELTA_UNSETBYINDEX( pFields, entity_field_alias[FIELD_ORIGIN1].field );
-		DELTA_UNSETBYINDEX( pFields, entity_field_alias[FIELD_ORIGIN2].field );
-	}
-	else if( t->aiment != f->aiment )
-	{
-		DELTA_SETBYINDEX( pFields, entity_field_alias[FIELD_ORIGIN0].field );
-		DELTA_SETBYINDEX( pFields, entity_field_alias[FIELD_ORIGIN1].field );
-		DELTA_SETBYINDEX( pFields, entity_field_alias[FIELD_ORIGIN2].field );
-	}
-}
 
 static entity_field_alias_t player_field_alias[] =
 {
-	{ "origin[0]",			0 },
-	{ "origin[1]",			0 },
-	{ "origin[2]",			0 },
+	{ "origin[0]", 0 },
+	{ "origin[1]", 0 },
+	{ "origin[2]", 0 }
 };
-
-void Player_FieldInit( struct delta_s *pFields )
-{
-	player_field_alias[FIELD_ORIGIN0].field		= DELTA_FINDFIELD( pFields, player_field_alias[FIELD_ORIGIN0].name );
-	player_field_alias[FIELD_ORIGIN1].field		= DELTA_FINDFIELD( pFields, player_field_alias[FIELD_ORIGIN1].name );
-	player_field_alias[FIELD_ORIGIN2].field		= DELTA_FINDFIELD( pFields, player_field_alias[FIELD_ORIGIN2].name );
-}
-
-/*
-==================
-Player_Encode
-
-Callback for sending entity_state_t for players info over network. 
-==================
-*/
-void Player_Encode( struct delta_s *pFields, const unsigned char *from, const unsigned char *to )
-{
-	entity_state_t *f, *t;
-	int localplayer = 0;
-	static int initialized = 0;
-
-	if( !initialized )
-	{
-		Player_FieldInit( pFields );
-		initialized = 1;
-	}
-
-	f = (entity_state_t *)from;
-	t = (entity_state_t *)to;
-
-	// Never send origin to local player, it's sent with more resolution in clientdata_t structure
-	localplayer = ( t->number - 1 ) == ENGINE_CURRENT_PLAYER();
-	if( localplayer )
-	{
-		DELTA_UNSETBYINDEX( pFields, player_field_alias[FIELD_ORIGIN0].field );
-		DELTA_UNSETBYINDEX( pFields, player_field_alias[FIELD_ORIGIN1].field );
-		DELTA_UNSETBYINDEX( pFields, player_field_alias[FIELD_ORIGIN2].field );
-	}
-
-	if( ( t->movetype == MOVETYPE_FOLLOW ) &&
-		 ( t->aiment != 0 ) )
-	{
-		DELTA_UNSETBYINDEX( pFields, player_field_alias[FIELD_ORIGIN0].field );
-		DELTA_UNSETBYINDEX( pFields, player_field_alias[FIELD_ORIGIN1].field );
-		DELTA_UNSETBYINDEX( pFields, player_field_alias[FIELD_ORIGIN2].field );
-	}
-	else if( t->aiment != f->aiment )
-	{
-		DELTA_SETBYINDEX( pFields, player_field_alias[FIELD_ORIGIN0].field );
-		DELTA_SETBYINDEX( pFields, player_field_alias[FIELD_ORIGIN1].field );
-		DELTA_SETBYINDEX( pFields, player_field_alias[FIELD_ORIGIN2].field );
-	}
-}
-
-#define CUSTOMFIELD_ORIGIN0			0
-#define CUSTOMFIELD_ORIGIN1			1
-#define CUSTOMFIELD_ORIGIN2			2
-#define CUSTOMFIELD_ANGLES0			3
-#define CUSTOMFIELD_ANGLES1			4
-#define CUSTOMFIELD_ANGLES2			5
-#define CUSTOMFIELD_SKIN			6
-#define CUSTOMFIELD_SEQUENCE			7
-#define CUSTOMFIELD_ANIMTIME			8
 
 entity_field_alias_t custom_entity_field_alias[] =
 {
-	{ "origin[0]",			0 },
-	{ "origin[1]",			0 },
-	{ "origin[2]",			0 },
-	{ "angles[0]",			0 },
-	{ "angles[1]",			0 },
-	{ "angles[2]",			0 },
-	{ "skin",			0 },
-	{ "sequence",			0 },
-	{ "animtime",			0 },
+	{ "origin[0]", 0 },
+	{ "origin[1]", 0 },
+	{ "origin[2]", 0 },
+	{ "angles[0]", 0 },
+	{ "angles[1]", 0 },
+	{ "angles[2]", 0 },
+	{ "skin", 0 },
+	{ "sequence", 0 },
+	{ "animtime", 0 }
 };
 
-void Custom_Entity_FieldInit( struct delta_s *pFields )
+void Entity_FieldInit( delta_s* fields )
 {
-	custom_entity_field_alias[CUSTOMFIELD_ORIGIN0].field = DELTA_FINDFIELD( pFields, custom_entity_field_alias[CUSTOMFIELD_ORIGIN0].name );
-	custom_entity_field_alias[CUSTOMFIELD_ORIGIN1].field = DELTA_FINDFIELD( pFields, custom_entity_field_alias[CUSTOMFIELD_ORIGIN1].name );
-	custom_entity_field_alias[CUSTOMFIELD_ORIGIN2].field = DELTA_FINDFIELD( pFields, custom_entity_field_alias[CUSTOMFIELD_ORIGIN2].name );
-	custom_entity_field_alias[CUSTOMFIELD_ANGLES0].field = DELTA_FINDFIELD( pFields, custom_entity_field_alias[CUSTOMFIELD_ANGLES0].name );
-	custom_entity_field_alias[CUSTOMFIELD_ANGLES1].field = DELTA_FINDFIELD( pFields, custom_entity_field_alias[CUSTOMFIELD_ANGLES1].name );
-	custom_entity_field_alias[CUSTOMFIELD_ANGLES2].field = DELTA_FINDFIELD( pFields, custom_entity_field_alias[CUSTOMFIELD_ANGLES2].name );
-	custom_entity_field_alias[CUSTOMFIELD_SKIN].field = DELTA_FINDFIELD( pFields, custom_entity_field_alias[CUSTOMFIELD_SKIN].name );
-	custom_entity_field_alias[CUSTOMFIELD_SEQUENCE].field = DELTA_FINDFIELD( pFields, custom_entity_field_alias[CUSTOMFIELD_SEQUENCE].name );
-	custom_entity_field_alias[CUSTOMFIELD_ANIMTIME].field = DELTA_FINDFIELD( pFields, custom_entity_field_alias[CUSTOMFIELD_ANIMTIME].name );
+	for ( int index = 0; index < ARRAYSIZE( entity_field_alias ); ++index )
+		entity_field_alias[index].field = DELTA_FINDFIELD( fields, entity_field_alias[index].name );
 }
 
-/*
-==================
-Custom_Encode
-
-Callback for sending entity_state_t info ( for custom entities ) over network. 
-FIXME:  Move to script
-==================
-*/
-void Custom_Encode( struct delta_s *pFields, const unsigned char *from, const unsigned char *to )
+void Entity_Encode( delta_s* fields, const unsigned char* from, const unsigned char* to )
 {
-	entity_state_t *f, *t;
-	int beamType;
-	static int initialized = 0;
-
-	if( !initialized )
+	static int initialized;
+	if ( !initialized )
 	{
-		Custom_Entity_FieldInit( pFields );
+		Entity_FieldInit( fields );
 		initialized = 1;
 	}
-
-	f = (entity_state_t *)from;
-	t = (entity_state_t *)to;
-
-	beamType = t->rendermode & 0x0f;
-
-	if( beamType != BEAM_POINTS && beamType != BEAM_ENTPOINT )
+	const entity_state_t* previous = (const entity_state_t*)from;
+	const entity_state_t* current = (const entity_state_t*)to;
+	if ( current->number - 1 == ENGINE_CURRENT_PLAYER() )
 	{
-		DELTA_UNSETBYINDEX( pFields, custom_entity_field_alias[CUSTOMFIELD_ORIGIN0].field );
-		DELTA_UNSETBYINDEX( pFields, custom_entity_field_alias[CUSTOMFIELD_ORIGIN1].field );
-		DELTA_UNSETBYINDEX( pFields, custom_entity_field_alias[CUSTOMFIELD_ORIGIN2].field );
+		for ( int index = FIELD_ORIGIN0; index <= FIELD_ORIGIN2; ++index )
+			DELTA_UNSETBYINDEX( fields, entity_field_alias[index].field );
 	}
-
-	if( beamType != BEAM_POINTS )
+	if ( current->impacttime != 0 && current->starttime != 0 )
 	{
-		DELTA_UNSETBYINDEX( pFields, custom_entity_field_alias[CUSTOMFIELD_ANGLES0].field );
-		DELTA_UNSETBYINDEX( pFields, custom_entity_field_alias[CUSTOMFIELD_ANGLES1].field );
-		DELTA_UNSETBYINDEX( pFields, custom_entity_field_alias[CUSTOMFIELD_ANGLES2].field );
+		for ( int index = FIELD_ORIGIN0; index <= FIELD_ANGLES2; ++index )
+			DELTA_UNSETBYINDEX( fields, entity_field_alias[index].field );
 	}
-
-	if( beamType != BEAM_ENTS && beamType != BEAM_ENTPOINT )
+	if ( current->movetype == MOVETYPE_FOLLOW && current->aiment != 0 )
 	{
-		DELTA_UNSETBYINDEX( pFields, custom_entity_field_alias[CUSTOMFIELD_SKIN].field );
-		DELTA_UNSETBYINDEX( pFields, custom_entity_field_alias[CUSTOMFIELD_SEQUENCE].field );
+		for ( int index = FIELD_ORIGIN0; index <= FIELD_ORIGIN2; ++index )
+			DELTA_UNSETBYINDEX( fields, entity_field_alias[index].field );
 	}
-
-	// animtime is compared by rounding first
-	// see if we really shouldn't actually send it
-	if( (int)f->animtime == (int)t->animtime )
+	else if ( current->aiment != previous->aiment )
 	{
-		DELTA_UNSETBYINDEX( pFields, custom_entity_field_alias[CUSTOMFIELD_ANIMTIME].field );
+		for ( int index = FIELD_ORIGIN0; index <= FIELD_ORIGIN2; ++index )
+			DELTA_SETBYINDEX( fields, entity_field_alias[index].field );
 	}
 }
 
-/*
-=================
-RegisterEncoders
+void Player_FieldInit( delta_s* fields )
+{
+	for ( int index = 0; index < ARRAYSIZE( player_field_alias ); ++index )
+		player_field_alias[index].field = DELTA_FINDFIELD( fields, player_field_alias[index].name );
+}
 
-Allows game .dll to override network encoding of certain types of entities and tweak values, etc.
-=================
-*/
-void RegisterEncoders( void )
+void Player_Encode( delta_s* fields, const unsigned char* from, const unsigned char* to )
+{
+	static int initialized;
+	if ( !initialized )
+	{
+		Player_FieldInit( fields );
+		initialized = 1;
+	}
+	const entity_state_t* previous = (const entity_state_t*)from;
+	const entity_state_t* current = (const entity_state_t*)to;
+	if ( current->number - 1 == ENGINE_CURRENT_PLAYER() )
+	{
+		for ( int index = FIELD_ORIGIN0; index <= FIELD_ORIGIN2; ++index )
+			DELTA_UNSETBYINDEX( fields, entity_field_alias[index].field );
+	}
+	if ( current->movetype == MOVETYPE_FOLLOW && current->aiment != 0 )
+	{
+		for ( int index = FIELD_ORIGIN0; index <= FIELD_ORIGIN2; ++index )
+			DELTA_UNSETBYINDEX( fields, entity_field_alias[index].field );
+	}
+	else if ( current->aiment != previous->aiment )
+	{
+		for ( int index = FIELD_ORIGIN0; index <= FIELD_ORIGIN2; ++index )
+			DELTA_SETBYINDEX( fields, entity_field_alias[index].field );
+	}
+}
+
+void Custom_Entity_FieldInit( delta_s* fields )
+{
+	for ( int index = 0; index < ARRAYSIZE( custom_entity_field_alias ); ++index )
+		custom_entity_field_alias[index].field = DELTA_FINDFIELD( fields, custom_entity_field_alias[index].name );
+}
+
+void Custom_Encode( delta_s* fields, const unsigned char* from, const unsigned char* to )
+{
+	static int initialized;
+	if ( !initialized )
+	{
+		Custom_Entity_FieldInit( fields );
+		initialized = 1;
+	}
+	const entity_state_t* previous = (const entity_state_t*)from;
+	const entity_state_t* current = (const entity_state_t*)to;
+	int beamType = current->rendermode & 0x0f;
+	if ( beamType != BEAM_POINTS && beamType != BEAM_ENTPOINT )
+	{
+		for ( int index = FIELD_ORIGIN0; index <= FIELD_ORIGIN2; ++index )
+			DELTA_UNSETBYINDEX( fields, custom_entity_field_alias[index].field );
+	}
+	if ( beamType != BEAM_POINTS )
+	{
+		for ( int index = FIELD_ANGLES0; index <= FIELD_ANGLES2; ++index )
+			DELTA_UNSETBYINDEX( fields, custom_entity_field_alias[index].field );
+	}
+	if ( beamType != BEAM_ENTS && beamType != BEAM_ENTPOINT )
+	{
+		DELTA_UNSETBYINDEX( fields, custom_entity_field_alias[CUSTOMFIELD_SKIN].field );
+		DELTA_UNSETBYINDEX( fields, custom_entity_field_alias[CUSTOMFIELD_SEQUENCE].field );
+	}
+	if ( (int)previous->animtime == (int)current->animtime )
+		DELTA_UNSETBYINDEX( fields, custom_entity_field_alias[CUSTOMFIELD_ANIMTIME].field );
+}
+
+void RegisterEncoders()
 {
 	DELTA_ADDENCODER( "Entity_Encode", Entity_Encode );
 	DELTA_ADDENCODER( "Custom_Encode", Custom_Encode );
 	DELTA_ADDENCODER( "Player_Encode", Player_Encode );
 }
 
-int GetWeaponData( struct edict_s *player, struct weapon_data_s *info )
+int GetWeaponData( edict_t* entity, weapon_data_s* data )
 {
-	memset( info, 0, MAX_WEAPONS * sizeof(weapon_data_t) );
-#if CLIENT_WEAPONS
-	int i;
-	weapon_data_t *item;
-	entvars_t *pev = &player->v;
-	CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance( pev );
-	CBasePlayerWeapon *gun;
-
-	if( !pl )
+	CBasePlayer* player = (CBasePlayer*)CBaseEntity::Instance( &entity->v );
+	memset( data, 0, MAX_WEAPONS * sizeof( *data ) );
+	if ( !player )
 		return 1;
-
-	// go through all of the weapons and make a list of the ones to pack
-	for( i = 0; i < MAX_ITEM_TYPES; i++ )
+	for ( int slot = 0; slot < MAX_ITEM_TYPES; ++slot )
 	{
-		if( pl->m_rgpPlayerItems[i] )
+		for ( CBasePlayerItem* item = player->m_rgpPlayerItems[slot]; item; item = item->m_pNext )
 		{
-			// there's a weapon here. Should I pack it?
-			CBasePlayerItem *pPlayerItem = pl->m_rgpPlayerItems[i];
-
-			while( pPlayerItem )
-			{
-				gun = (CBasePlayerWeapon *)pPlayerItem->GetWeaponPtr();
-				if( gun && gun->UseDecrement() )
-				{
-					ItemInfo II = {0};
-					// Get The ID.
-					gun->GetItemInfo( &II );
-
-					if( II.iId >= 0 && II.iId < MAX_WEAPONS )
-					{
-						item = &info[II.iId];
-					 	
-						item->m_iId			= II.iId;
-						item->m_iClip			= gun->m_iClip;
-
-						item->m_flTimeWeaponIdle	= Q_max( gun->m_flTimeWeaponIdle, -0.001f );
-						item->m_flNextPrimaryAttack	= Q_max( gun->m_flNextPrimaryAttack, -0.001f );
-						item->m_flNextSecondaryAttack	= Q_max( gun->m_flNextSecondaryAttack, -0.001f );
-						item->m_fInReload		= gun->m_fInReload;
-						item->m_fInSpecialReload	= gun->m_fInSpecialReload;
-						item->fuser1			= Q_max( gun->pev->fuser1, -0.001f );
-						item->fuser2			= gun->m_flStartThrow;
-						item->fuser3			= gun->m_flReleaseThrow;
-						item->iuser1			= gun->m_chargeReady;
-						item->iuser2			= gun->m_fInAttack;
-						item->iuser3			= gun->m_fireState;
-
-						//item->m_flPumpTime		= max( gun->m_flPumpTime, -0.001 );
-					}
-				}
-				pPlayerItem = pPlayerItem->m_pNext;
-			}
+			CBasePlayerWeapon* weapon = (CBasePlayerWeapon*)item->GetWeaponPtr();
+			if ( !weapon || !weapon->UseDecrement() )
+				continue;
+			ItemInfo info;
+			memset( &info, 0, sizeof( info ) );
+			weapon->GetItemInfo( &info );
+			weapon_data_t& state = data[info.iId];
+			state.m_iId = info.iId;
+			state.m_iClip = weapon->m_iClip;
+			state.m_flTimeWeaponIdle = weapon->m_flTimeWeaponIdle < -0.001f ? -0.001f : weapon->m_flTimeWeaponIdle;
+			state.m_flNextPrimaryAttack = weapon->m_flNextPrimaryAttack < -0.001f ? -0.001f : weapon->m_flNextPrimaryAttack;
+			state.m_flNextSecondaryAttack = weapon->m_flNextSecondaryAttack < -0.001f ? -0.001f : weapon->m_flNextSecondaryAttack;
+			state.m_flNextReload = weapon->m_flNextReload >= -0.001f ? weapon->m_flNextReload : -0.001f;
+			state.m_fInReload = weapon->m_fInReload;
+			state.m_fInSpecialReload = weapon->m_fInSpecialReload;
+			state.m_fInZoom = weapon->m_iShotsFired;
+			state.m_fAimedDamage = weapon->m_flLastFire;
+			state.m_iWeaponState = weapon->m_iWeaponState;
 		}
 	}
-#endif
 	return 1;
 }
 
-/*
-=================
-UpdateClientData
-
-Data sent to current client only
-engine sets cd to 0 before calling.
-=================
-*/
-void UpdateClientData( const struct edict_s *ent, int sendweapons, struct clientdata_s *cd )
+void UpdateClientData( const edict_t* entity, int sendWeapons, clientdata_s* data )
 {
-	if( !ent || !ent->pvPrivateData )
-		return;
-	entvars_t *pev = (entvars_t *)&ent->v;
-	CBasePlayer *pl = (CBasePlayer *)( CBasePlayer::Instance( pev ) );
-	entvars_t *pevOrg = NULL;
-
-	// if user is spectating different player in First person, override some vars
-	if( pl && pl->pev->iuser1 == OBS_IN_EYE )
+	CBasePlayer* player = (CBasePlayer*)CBaseEntity::Instance( const_cast<entvars_t*>( &entity->v ) );
+	data->flags = entity->v.flags;
+	data->health = entity->v.health;
+	data->viewmodel = MODEL_INDEX( STRING( entity->v.viewmodel ) );
+	data->waterlevel = entity->v.waterlevel;
+	data->watertype = entity->v.watertype;
+	data->weapons = entity->v.weapons;
+	data->origin = entity->v.origin;
+	data->velocity = entity->v.velocity;
+	data->view_ofs = entity->v.view_ofs;
+	data->punchangle = entity->v.punchangle;
+	data->bInDuck = entity->v.bInDuck;
+	data->flTimeStepSound = entity->v.flTimeStepSound;
+	data->flDuckTime = entity->v.flDuckTime;
+	data->flSwimTime = entity->v.flSwimTime;
+	data->waterjumptime = (int)entity->v.teleport_time;
+	strcpy( data->physinfo, ENGINE_GETPHYSINFO( entity ) );
+	data->maxspeed = entity->v.maxspeed;
+	data->fov = entity->v.fov;
+	data->weaponanim = entity->v.weaponanim;
+	data->pushmsec = entity->v.pushmsec;
+	data->iuser1 = entity->v.iuser1;
+	data->iuser2 = entity->v.iuser2;
+	if ( sendWeapons && player )
 	{
-		if( pl->m_hObserverTarget )
+		player->TabulateAmmo();
+		data->ammo_shells = player->ammo_buckshot;
+		data->ammo_nails = player->ammo_9mm;
+		data->ammo_cells = player->ammo_556nato;
+		data->ammo_rockets = player->ammo_556natobox;
+		data->vuser2.x = (float)player->ammo_762nato;
+		data->vuser2.y = (float)player->ammo_45acp;
+		data->vuser2.z = (float)player->ammo_50ae;
+		data->vuser3.x = (float)player->ammo_338mag;
+		data->vuser3.y = (float)player->ammo_57mm;
+		data->vuser3.z = (float)player->ammo_357sig;
+		data->vuser4.y = (float)player->ammo_66mm;
+		data->vuser4.z = (float)player->ammo_762natobox;
+		data->m_flNextAttack = player->m_flNextAttack;
+		data->iuser3 = player->m_bCanShoot;
+		if ( player->m_pActiveItem )
 		{
-			pevOrg = pev;
-			pev = pl->m_hObserverTarget->pev;
-			pl = (CBasePlayer *)(CBasePlayer::Instance( pev ) );
-		}
-	}
-
-	cd->flags		= pev->flags;
-	cd->health		= pev->health;
-
-	cd->viewmodel		= MODEL_INDEX( STRING( pev->viewmodel ) );
-
-	cd->waterlevel		= pev->waterlevel;
-	cd->watertype		= pev->watertype;
-	cd->weapons		= pev->weapons;
-
-	// Vectors
-	cd->origin		= pev->origin;
-	cd->velocity		= pev->velocity;
-	cd->view_ofs		= pev->view_ofs;
-	cd->punchangle		= pev->punchangle;
-
-	cd->bInDuck		= pev->bInDuck;
-	cd->flTimeStepSound	= pev->flTimeStepSound;
-	cd->flDuckTime		= pev->flDuckTime;
-	cd->flSwimTime		= pev->flSwimTime;
-	cd->waterjumptime	= pev->teleport_time;
-
-	strcpy( cd->physinfo, ENGINE_GETPHYSINFO( ent ) );
-
-	cd->maxspeed		= pev->maxspeed;
-	cd->fov			= pev->fov;
-	cd->weaponanim		= pev->weaponanim;
-
-	cd->pushmsec		= pev->pushmsec;
-
-	// Spectator mode
-	if( pevOrg != NULL )
-	{
-		// don't use spec vars from chased player
-		cd->iuser1		= pevOrg->iuser1;
-		cd->iuser2		= pevOrg->iuser2;
-	}
-	else
-	{
-		cd->iuser1		= pev->iuser1;
-		cd->iuser2		= pev->iuser2;
-	}
-#if CLIENT_WEAPONS
-	if( sendweapons )
-	{
-		if( pl )
-		{
-			cd->m_flNextAttack = pl->m_flNextAttack;
-			cd->fuser2 = pl->m_flNextAmmoBurn;
-			cd->fuser3 = pl->m_flAmmoStartCharge;
-			cd->vuser1.x = pl->ammo_9mm;
-			cd->vuser1.y = pl->ammo_357;
-			cd->vuser1.z = pl->ammo_argrens;
-			cd->ammo_nails = pl->ammo_bolts;
-			cd->ammo_shells = pl->ammo_buckshot;
-			cd->ammo_rockets = pl->ammo_rockets;
-			cd->ammo_cells = pl->ammo_uranium;
-			cd->vuser2.x = pl->ammo_hornets;
-
-			if( pl->m_pActiveItem )
+			CBasePlayerWeapon* weapon = (CBasePlayerWeapon*)player->m_pActiveItem->GetWeaponPtr();
+			if ( weapon && weapon->UseDecrement() )
 			{
-				CBasePlayerWeapon *gun;
-				gun = (CBasePlayerWeapon *)pl->m_pActiveItem->GetWeaponPtr();
-				if( gun && gun->UseDecrement() )
-				{
-					ItemInfo II = {0};
-					gun->GetItemInfo( &II );
-
-					cd->m_iId = II.iId;
-
-					cd->vuser3.z = gun->m_iSecondaryAmmoType;
-					cd->vuser4.x = gun->m_iPrimaryAmmoType;
-					cd->vuser4.y = pl->m_rgAmmo[gun->m_iPrimaryAmmoType];
-					cd->vuser4.z = pl->m_rgAmmo[gun->m_iSecondaryAmmoType];
-
-					if( pl->m_pActiveItem->m_iId == WEAPON_RPG )
-					{
-						cd->vuser2.y = ( (CRpg *)pl->m_pActiveItem )->m_fSpotActive;
-						cd->vuser2.z = ( (CRpg *)pl->m_pActiveItem )->m_cActiveRockets;
-					}
-				}
+				ItemInfo info;
+				memset( &info, 0, sizeof( info ) );
+				weapon->GetItemInfo( &info );
+				data->m_iId = info.iId;
+				data->tfstate = info.bIsAccessory;
+				data->vuser4.x = (float)weapon->m_iPrimaryAmmoType;
+				data->vuser4.y = (float)player->m_rgAmmo[weapon->m_iPrimaryAmmoType];
+				data->vuser4.z = (float)player->ammo_762natobox;
 			}
 		}
 	}
-#endif
 }
 
-/*
-=================
-CmdStart
-
-We're about to run this usercmd for the specified player.  We can set up groupinfo and masking here, etc.
-This is the time to examine the usercmd for anything extra.  This call happens even if think does not.
-=================
-*/
-void CmdStart( const edict_t *player, const struct usercmd_s *cmd, unsigned int random_seed )
+void CmdStart( const edict_t* entity, const usercmd_s*, unsigned int seed )
 {
-	entvars_t *pev = (entvars_t *)&player->v;
-	CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance( pev );
-
-	if( !pl )
-		return;
-
-	if( pl->pev->groupinfo != 0 )
+	CBasePlayer* player = (CBasePlayer*)CBaseEntity::Instance( const_cast<entvars_t*>( &entity->v ) );
+	if ( player )
 	{
-		UTIL_SetGroupTrace( pl->pev->groupinfo, GROUP_OP_AND );
+		if ( player->pev->groupinfo )
+			UTIL_SetGroupTrace( player->pev->groupinfo, GROUP_OP_AND );
+		player->random_seed = seed;
 	}
-
-	pl->random_seed = random_seed;
 }
 
-/*
-=================
-CmdEnd
-
-Each cmdstart is exactly matched with a cmd end, clean up any group trace flags, etc. here
-=================
-*/
-void CmdEnd( const edict_t *player )
+void CmdEnd( const edict_t* entity )
 {
-	entvars_t *pev = (entvars_t *)&player->v;
-	CBasePlayer *pl = (CBasePlayer *)CBasePlayer::Instance( pev );
-
-	if( !pl )
-		return;
-	if( pl->pev->groupinfo != 0 )
-	{
+	CBasePlayer* player = (CBasePlayer*)CBaseEntity::Instance( const_cast<entvars_t*>( &entity->v ) );
+	if ( player && player->pev->groupinfo )
 		UTIL_UnsetGroupTrace();
-	}
 }
 
-/*
-================================
-ConnectionlessPacket
-
- Return 1 if the packet is valid.  Set response_buffer_size if you want to send a response packet.  Incoming, it holds the max
-  size of the response_buffer, so you must zero it out if you choose not to respond.
-================================
-*/
-int ConnectionlessPacket( const struct netadr_s *net_from, const char *args, char *response_buffer, int *response_buffer_size )
+int ConnectionlessPacket( const netadr_s*, const char*, char*, int* responseSize )
 {
-	// Parse stuff from args
-	//int max_buffer_size = *response_buffer_size;
-
-	// Zero it out since we aren't going to respond.
-	// If we wanted to response, we'd write data into response_buffer
-	*response_buffer_size = 0;
-
-	// Since we don't listen for anything here, just respond that it's a bogus message
-	// If we didn't reject the message, we'd return 1 for success instead.
+	*responseSize = 0;
 	return 0;
 }
 
-/*
-================================
-GetHullBounds
-
-  Engine calls this to enumerate player collision hulls, for prediction.  Return 0 if the hullnumber doesn't exist.
-================================
-*/
-int GetHullBounds( int hullnumber, float *mins, float *maxs )
+int GetHullBounds( int hull, float*, float* )
 {
-	int iret = 0;
-
-	switch( hullnumber )
-	{
-	case 0:				// Normal player
-		VEC_HULL_MIN.CopyToArray(mins);
-		VEC_HULL_MAX.CopyToArray(maxs);
-		iret = 1;
-		break;
-	case 1:				// Crouched player
-		VEC_DUCK_HULL_MIN.CopyToArray(mins);
-		VEC_DUCK_HULL_MAX.CopyToArray(maxs);
-		iret = 1;
-		break;
-	case 2:				// Point based hull
-		Vector( 0, 0, 0 ).CopyToArray(mins);
-		Vector( 0, 0, 0 ).CopyToArray(maxs);
-		iret = 1;
-		break;
-	}
-
-	return iret;
+	return (unsigned int)hull <= 2;
 }
 
-/*
-================================
-CreateInstancedBaselines
-
-Create pseudo-baselines for items that aren't placed in the map at spawn time, but which are likely
-to be created during play ( e.g., grenades, ammo packs, projectiles, corpses, etc. )
-================================
-*/
-void CreateInstancedBaselines( void )
+void CreateInstancedBaselines()
 {
-	/*int iret = 0;
-	entity_state_t state;
-
-	memset( &state, 0, sizeof(state) );*/
-
-	// Create any additional baselines here for things like grendates, etc.
-	// iret = ENGINE_INSTANCE_BASELINE( pc->pev->classname, &state );
-
-	// Destroy objects.
-	//UTIL_Remove( pc );
 }
 
-/*
-================================
-InconsistentFile
-
-One of the ENGINE_FORCE_UNMODIFIED files failed the consistency check for the specified player
- Return 0 to allow the client to continue, 1 to force immediate disconnection ( with an optional disconnect message of up to 256 characters )
-================================
-*/
-int InconsistentFile( const edict_t *player, const char *filename, char *disconnect_message )
+int InconsistentFile( const edict_t*, const char* filename, char* disconnectMessage )
 {
-	// Server doesn't care?
-	if( CVAR_GET_FLOAT( "mp_consistency" ) != 1.0f )
+	if ( CVAR_GET_FLOAT( "mp_consistency" ) != 1 )
 		return 0;
-
-	// Default behavior is to kick the player
-	sprintf( disconnect_message, "Server is enforcing file consistency for %s\n", filename );
-
-	// Kick now with specified disconnect message.
+	sprintf( disconnectMessage, "Server is enforcing file consistency for %s\n", filename );
 	return 1;
 }
 
-/*
-================================
-AllowLagCompensation
-
- The game .dll should return 1 if lag compensation should be allowed ( could also just set
-  the sv_unlag cvar.
- Most games right now should return 0, until client-side weapon prediction code is written
-  and tested for them ( note you can predict weapons, but not do lag compensation, too, 
-  if you want.
-================================
-*/
-int AllowLagCompensation( void )
+int AllowLagCompensation()
 {
 	return 1;
+}
+
+typedef struct
+{
+	const char* pszBSPName;
+	const char* pszTitleName;
+} TITLECOMMENT;
+
+TITLECOMMENT gTitleComments[] =
+{
+	{ "cz_alamo", "#ALAMO_TITLE" },
+	{ "cz_alamo2", "#ALAMO_TITLE" },
+	{ "cz_brecon01", "#BRECON_TITLE" },
+	{ "cz_brecon02", "#BRECON_TITLE" },
+	{ "cz_brecon03", "#BRECON_TITLE" },
+	{ "cz_brecon04", "#BRECON_TITLE" },
+	{ "cz_brecon05", "#BRECON_TITLE" },
+	{ "cz_brecon06", "#BRECON_TITLE" },
+	{ "cz_downed1", "#DOWNED_TITLE" },
+	{ "cz_downed2", "#DOWNED_TITLE" },
+	{ "cz_downed3", "#DOWNED_TITLE" },
+	{ "cz_downed4", "#DOWNED_TITLE" },
+	{ "cz_druglab1", "#DRUGLAB_TITLE" },
+	{ "cz_druglab2", "#DRUGLAB_TITLE" },
+	{ "cz_druglab3", "#DRUGLAB_TITLE" },
+	{ "cz_druglab4", "#DRUGLAB_TITLE" },
+	{ "cz_fastline1", "#FASTLINE_TITLE" },
+	{ "cz_fastline2", "#FASTLINE_TITLE" },
+	{ "cz_fastline3", "#FASTLINE_TITLE" },
+	{ "cz_fastline4", "#FASTLINE_TITLE" },
+	{ "cz_end", "#END_TITLE" },
+	{ "cz_hankagai1", "#HANKAGAI_TITLE" },
+	{ "cz_hankagai2", "#HANKAGAI_TITLE" },
+	{ "cz_hankagai3", "#HANKAGAI_TITLE" },
+	{ "cz_hankagai4", "#HANKAGAI_TITLE" },
+	{ "cz_hankagai5", "#HANKAGAI_TITLE" },
+	{ "cz_HR01", "#HIGHRISE_TITLE" },
+	{ "cz_HR02", "#HIGHRISE_TITLE" },
+	{ "cz_HR02b", "#HIGHRISE_TITLE" },
+	{ "cz_HR03", "#HIGHRISE_TITLE" },
+	{ "cz_HR04", "#HIGHRISE_TITLE" },
+	{ "cz_HR05", "#HIGHRISE_TITLE" },
+	{ "cz_HR06", "#HIGHRISE_TITLE" },
+	{ "cz_HR07", "#HIGHRISE_TITLE" },
+	{ "cz_lostcause", "#LOSTCAUSE_TITLE" },
+	{ "cz_lostcause2", "#LOSTCAUSE_TITLE" },
+	{ "cz_miami1", "#MIAMI_TITLE" },
+	{ "cz_miami2", "#MIAMI_TITLE" },
+	{ "cz_motor1", "#MOTORCADE_TITLE" },
+	{ "cz_motor2", "#MOTORCADE_TITLE" },
+	{ "cz_motor3", "#MOTORCADE_TITLE" },
+	{ "cz_pipedream1", "#PIPEDREAM_TITLE" },
+	{ "cz_pipedream2", "#PIPEDREAM_TITLE" },
+	{ "cz_pipedream3", "#PIPEDREAM_TITLE" },
+	{ "cz_recoil-intro", "#RECOIL_TITLE" },
+	{ "cz_recoil", "#RECOIL_TITLE" },
+	{ "cz_recoil2", "#RECOIL_TITLE" },
+	{ "cz_run1", "#RUN_TITLE" },
+	{ "cz_run2", "#RUN_TITLE" },
+	{ "cz_run3", "#RUN_TITLE" },
+	{ "cz_sandstorm", "#SANDSTORM_TITLE" },
+	{ "cz_sandstorm2", "#SANDSTORM_TITLE" },
+	{ "cz_sandstorm3", "#SANDSTORM_TITLE" },
+	{ "cz_sandstorm4", "#SANDSTORM_TITLE" },
+	{ "cz_Silo01", "#SILO_TITLE" },
+	{ "cz_Silo02", "#SILO_TITLE" },
+	{ "cz_Silo03", "#SILO_TITLE" },
+	{ "cz_Silo04", "#SILO_TITLE" },
+	{ "cz_Silo05", "#SILO_TITLE" },
+	{ "cz_sniper1", "#SNIPER_TITLE" },
+	{ "cz_sniper2", "#SNIPER_TITLE" },
+	{ "cz_thinice01", "#THINICE_TITLE" },
+	{ "cz_thinice02", "#THINICE_TITLE" },
+	{ "cz_thinice03", "#THINICE_TITLE" },
+	{ "cz_train01", "#TRAINING_TITLE" },
+	{ "cz_train02", "#TRAINING_TITLE" },
+	{ "cz_train03", "#TRAINING_TITLE" },
+	{ "cz_truth1", "#TRUTH_TITLE" },
+	{ "cz_truth2", "#TRUTH_TITLE" },
+	{ "cz_truth3", "#TRUTH_TITLE" },
+	{ "cz_truth4", "#TRUTH_TITLE" },
+	{ "cz_turncrank", "#TURNCRANK_TITLE" },
+	{ "cz_turncrank2", "#TURNCRANK_TITLE" },
+	{ "cz_turncrank3", "#TURNCRANK_TITLE" }
+};
+
+extern "C" EXPORT void SV_SaveGameComment( char* buffer, int bufferSize )
+{
+	const char* mapName = STRING( gpGlobals->mapname );
+	const char* title = NULL;
+	for ( int index = 0; index < ARRAYSIZE( gTitleComments ); ++index )
+	{
+		if ( !strnicmp( mapName, gTitleComments[index].pszBSPName, strlen( gTitleComments[index].pszBSPName ) ) )
+		{
+			title = gTitleComments[index].pszTitleName;
+			break;
+		}
+	}
+	if ( !title )
+		title = mapName && *mapName ? mapName : "unknown";
+	strncpy( buffer, title, bufferSize - 1 );
+	buffer[bufferSize - 1] = '\0';
 }

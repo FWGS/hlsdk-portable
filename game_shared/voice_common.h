@@ -15,4 +15,3 @@
 
 typedef CBitVec<VOICE_MAX_PLAYERS> CPlayerBitVec;
 #endif // VOICE_COMMON_H
-

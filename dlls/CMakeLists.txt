@@ -45,106 +45,120 @@ else()
 endif()
 
 set (SVDLL_SOURCES
-	agrunt.cpp
-	airtank.cpp
 	aflock.cpp
+	ammo.cpp
 	animating.cpp
 	animation.cpp
 	apache.cpp
-	barnacle.cpp
-	barney.cpp
-	bigmomma.cpp
-	bloater.cpp
 	bmodels.cpp
-	bullsquid.cpp
 	buttons.cpp
 	cbase.cpp
 	client.cpp
 	combat.cpp
-	controller.cpp
-	crossbow.cpp
-	crowbar.cpp
+	counterterrorist.cpp
 	defaultai.cpp
 	doors.cpp
 	effects.cpp
-	egon.cpp
 	explode.cpp
 	flyingmonster.cpp
 	func_break.cpp
 	func_tank.cpp
 	game.cpp
 	gamerules.cpp
-	gargantua.cpp
-	gauss.cpp
+	genericitem.cpp
 	genericmonster.cpp
 	ggrenade.cpp
 	globals.cpp
-	glock.cpp
-	gman.cpp
 	h_ai.cpp
 	h_battery.cpp
 	h_cine.cpp
 	h_cycler.cpp
 	h_export.cpp
-	handgrenade.cpp
-	hassassin.cpp
-	headcrab.cpp
 	healthkit.cpp
 	hgrunt.cpp
-	hornet.cpp
-	hornetgun.cpp
-	houndeye.cpp
-	ichthyosaur.cpp
-	islave.cpp
+	hintmessage.cpp
+	hostage.cpp
+	hostage_localnav.cpp
 	items.cpp
-	leech.cpp
 	lights.cpp
 	maprules.cpp
 	monstermaker.cpp
 	monsters.cpp
 	monsterstate.cpp
 	mortar.cpp
-	mp5.cpp
 	multiplay_gamerules.cpp
-	nihilanth.cpp
 	nodes.cpp
-	observer.cpp
-	osprey.cpp
+	particles.cpp
 	pathcorner.cpp
 	plane.cpp
 	plats.cpp
 	player.cpp
-	playermonster.cpp
-	python.cpp
 	rat.cpp
 	roach.cpp
-	rpg.cpp
-	satchel.cpp
 	schedule.cpp
 	scientist.cpp
 	scripted.cpp
-	shotgun.cpp
 	singleplay_gamerules.cpp
 	skill.cpp
 	sound.cpp
 	soundent.cpp
 	spectator.cpp
 	squadmonster.cpp
-	squeakgrenade.cpp
 	subs.cpp
 	talkmonster.cpp
 	teamplay_gamerules.cpp
-	tempmonster.cpp
-	tentacle.cpp
+	terrorist.cpp
 	triggers.cpp
 	tripmine.cpp
 	turret.cpp
 	util.cpp
-	vehicle.cpp
 	weapons.cpp
 	world.cpp
-	xen.cpp
-	zombie.cpp
+	wpn_ak47.cpp
+	wpn_aug.cpp
+	wpn_awp.cpp
+	wpn_blowtorch.cpp
+	wpn_briefcase.cpp
+	wpn_c4.cpp
+	wpn_camera.cpp
+	wpn_deagle.cpp
+	wpn_elite.cpp
+	wpn_famas.cpp
+	wpn_fiberopticcamera.cpp
+	wpn_fiveseven.cpp
+	wpn_flashbang.cpp
+	wpn_g3sg1.cpp
+	wpn_galil.cpp
+	wpn_glock18.cpp
+	wpn_hegrenade.cpp
+	wpn_holster.cpp
+	wpn_knife.cpp
+	wpn_laws.cpp
+	wpn_m249.cpp
+	wpn_m3.cpp
+	wpn_m4a1.cpp
+	wpn_m60.cpp
+	wpn_mac10.cpp
+	wpn_medkit.cpp
+	wpn_mp5navy.cpp
+	wpn_p228.cpp
+	wpn_p90.cpp
+	wpn_radio.cpp
+	wpn_radiocontrolledbomb.cpp
+	wpn_scout.cpp
+	wpn_sg550.cpp
+	wpn_sg552.cpp
+	wpn_shield.cpp
+	wpn_smokegrenade.cpp
+	wpn_syringe.cpp
+	wpn_tmp.cpp
+	wpn_ump45.cpp
+	wpn_usp.cpp
+	wpn_xm1014.cpp
+	wpn_zipline.cpp
+	czeror/cz_music.cpp
+	czeror/cz_seqapi.cpp
+	czeror/cz_sequence.cpp
 	../game_shared/voice_gamemgr.cpp
 	../pm_shared/pm_debug.c
 	../pm_shared/pm_math.c

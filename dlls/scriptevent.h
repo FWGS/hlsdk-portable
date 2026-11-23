@@ -1,6 +1,6 @@
 /***
 *
-*	Copyright (c) 1996-2002, Valve LLC. All rights reserved.
+*	Copyright (c) 1996-2001, Valve LLC. All rights reserved.
 *	
 *	This product contains software technology licensed from Id 
 *	Software, Inc. ("Id Technology").  Id Technology (c) 1996 Id Software, Inc. 
@@ -12,8 +12,7 @@
 *   without written permission from Valve LLC.
 *
 ****/
-#pragma once
-#if !defined(SCRIPTEVENT_H)
+#ifndef SCRIPTEVENT_H
 #define SCRIPTEVENT_H
 
 #define SCRIPT_EVENT_DEAD			1000		// character is now dead
@@ -27,4 +26,4 @@
 #define SCRIPT_EVENT_SOUND_VOICE	1008		// Play named wave file (on CHAN_VOICE)
 #define	SCRIPT_EVENT_SENTENCE_RND1	1009		// Play sentence group 25% of the time
 #define SCRIPT_EVENT_NOT_DEAD		1010		// Bring back to life (for life/death sequences)
-#endif // SCRIPTEVENT_H
+#endif   //SCRIPTEVENT_H
